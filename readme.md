@@ -28,6 +28,7 @@ Desenvolver uma plataforma inteligente que permita aos usuários:
 
 ## Backend (2TW)
 
+* React
 * Node.js
 * Firebase
 
