@@ -9,6 +9,7 @@ header{
   background-color: rgba(0, 0, 0, 0.456);
   border-bottom: 1px solid rgba(255, 255, 255, 0.2);
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  z-index: 1000
 }
 header nav{
   display: grid;
@@ -17,6 +18,10 @@ header nav{
 }
 header div{
   width: 100%;
+}
+li a:hover{
+  font-weight: bold;
+  transition: ease-in-out all 0.3s;
 }
 .logo-header{
   height: 20px;
@@ -97,6 +102,9 @@ main{
 .assunto-cancell hr{
   border-color: var(--cancell);
 }
+section{
+  margin-bottom: 50px;
+}
 section h2{
   font-size: 75px;
   text-align: center;
@@ -106,6 +114,7 @@ section .description{
 }
 section h2+.description{
   text-align: center;
+  margin-top: 10px;
 }
 .motivos{
   display: grid;
@@ -174,6 +183,13 @@ span.vera{
 .funcionalidades .destaque{
   max-width: 150px;
 }
+.funcionalidades .mot,
+.funcionalidades .card{
+  margin-bottom: 30px;
+}
+.mot p.description{
+  text-align: left;
+}
 .funcoes{
   display: grid;
   grid-template-columns: repeat(6, 1fr);
@@ -218,7 +234,7 @@ span.vera{
   z-index: 3;
 }
 .card1 .progress.pro2 .feito{
-  background-color: purple;
+  background-color: rgb(222, 0, 222);
   width: 230px;
 }
 .card1 .progress.pro3 .feito{
@@ -311,6 +327,8 @@ span.vera{
 .card4{
   grid-column: 1/4;
   margin-right: 30px;
+  margin-bottom: 30px;
+
 }
 .card4 span {
   display: grid;
@@ -347,6 +365,13 @@ span.vera{
   flex-direction: column;
   gap: 20px;
   grid-column: 4/7;
+  margin-bottom: 30px;
+}
+.mot4 p.description{
+  text-align: left;
+}
+.card4 span.last-span{
+  border-bottom: none;
 }
 .funcionalidades .description{
   text-align: center;
@@ -437,10 +462,14 @@ span.vera{
 .planos .card li{
   margin-top: 20px;
 }
-.planos .description{
+.sec-planos .description{
+  text-align: center;
+}
+.planos p.description{
   text-align: left;
   margin-bottom: 0px;
 }
+
 .planos ul{
   list-style: none
 }

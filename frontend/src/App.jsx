@@ -141,7 +141,7 @@ function App() {
           <p className="description">Quatro pilares que trabalham juntos para dar visibilidade total, otimização real e evolução consistente das suas finanças</p>
 
           <div className="funcoes">
-            <div className='mot1'>
+            <div className='mot1 mot'>
               <div className="texto">
                 <div className="destaque">
                   <span>Visibilidade</span>
@@ -215,7 +215,7 @@ function App() {
                 <div className="destaque">Melhor preço</div>
               </span>
             </div>
-            <div className="mot2">
+            <div className="mot2 mot">
               <div className="destaque">
                 NF-e inteligente
               </div>
@@ -223,7 +223,7 @@ function App() {
               <p className="description">Fotografe a nota fiscal e a IA extrai cada produto automaticamente. Cruza com preços da região e mostra quanto você economizaria comprando no mercado certo</p>
             </div>
 
-            <div className="mot3">
+            <div className="mot3 mot">
               <div className="destaque">Metas</div>
               <h3>Transforme controle em crescimento</h3>
               <p className="description">Metas financeiras com acompanhamento em tempo real, alertas inteligentes e simulação de impacto. A vera mostra de onde cortar para sua meta ficar possível.</p>
@@ -287,7 +287,7 @@ function App() {
               </span>
               <span>
                 <div className="mercado">
-                  <h3>atacadão</h3>
+                  <h3>Atacadão</h3>
                 </div>
                 <p className="valor">R$ 5,20</p>
                 <p className='porcentagem'>0%</p>
@@ -298,20 +298,20 @@ function App() {
                   <h3>Pão de açucar</h3>
                   <div className="destaque"><small>Mais próximo</small></div>
                 </div>
-                <p className="valor">R4 5,49</p>
+                <p className="valor">R$ 5,49</p>
                 <p className="txt-cancell porcentagem">2%</p>
                 <p className="description">1,8 km</p>
               </span>
-              <span>
+              <span className='last-span'>
                 <div className="mercado">
-                  <h3>carrefour</h3>
+                  <h3>Carrefour</h3>
                 </div>
                 <p className="valor">R$ 5,99</p>
                 <p className="txt-cancell porcentagem">5%</p>
                 <p className="description">2,1 km</p>
               </span>
             </div>
-            <div className="mot4">
+            <div className="mot4 mot">
               <div className="destaque">
                 preços
               </div>
