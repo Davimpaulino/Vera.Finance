@@ -1,0 +1,80 @@
+*{
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+:root {
+  --bg: #0E0E12;
+  --bg-verde: #111B1E;
+  --card: #191924;
+  --border: 1px solid #2C2C3A;
+  --border-c: #2C2C3A;
+  --primary: #00C785;
+  --cancell: #FF3F52;
+  --descripition: #7B7B93;
+  --txt-c: white;
+  --txt: sans-serif;
+}
+#root{
+  background-color: var(--bg);
+  min-height: 100vh;
+  color: var(--txt-c);
+  font-family: var(--txt);
+}
+section{
+  min-height: 100vh;
+}
+button{
+  padding: 1% 3%;
+  border-radius: 8px;
+  border: none;
+  min-width: 100px;
+  min-height: 30px;
+  font-weight: 700;
+  font-family: var(--txt);
+  cursor: pointer;
+}
+a{
+  text-decoration: none;
+  color: var(--txt-c);
+}
+.txt-primary{
+  color: var(--primary);
+}
+.txt-cancell{
+  color: var(--cancell);
+}
+.description{
+  color: var(--descripition);
+}
+
+.btn-secondary{
+  background: transparent;
+  color: var(--txt-c);
+  border: var(--border);
+}
+.btn-primary{
+  background: var(--primary);
+  box-shadow: 0px 1px 10px 0px var(--primary);
+}
+.circle{
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--descripition);
+  margin: 0px 10px;
+}
+.card{
+  background-color: var(--card);
+  border: var(--border);
+  border-radius: 20px;
+}
+.marca{
+  height: 50px;
+  width: 50px;
+  background-color: var(--border-c);
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  margin-right: 3%;
+}
