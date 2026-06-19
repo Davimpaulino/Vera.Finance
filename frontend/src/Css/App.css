@@ -194,8 +194,14 @@ span.vera{
   display: grid;
   grid-template-columns: repeat(6, 1fr);
 }
-.mot1{
+.mot1,
+.mot1 .texto{
   grid-column: 1/4;
+  display: flex;
+  justify-content: center;
+  align-items: start;
+  flex-direction: column;
+  gap: 20px;
 }
 .card1{
   grid-column: 4/7;
@@ -218,7 +224,7 @@ span.vera{
   margin-bottom: 0px;
 }
 .card1 .progress .total{
-  width: 475px;
+  width: 37.5%;
   border-radius: 200px;
   height: 10px;
   background-color: var(--border-c);
