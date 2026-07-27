@@ -1,3 +1,4 @@
+@import url("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css");
 *{
   padding: 0;
   margin: 0;
@@ -6,6 +7,7 @@
 :root {
   --bg: #0E0E12;
   --bg-verde: #111B1E;
+  --bg-nav: #13131B;
   --card: #191924;
   --border: 1px solid #2C2C3A;
   --border-c: #2C2C3A;
@@ -38,6 +40,16 @@ a{
   text-decoration: none;
   color: var(--txt-c);
 }
+input{
+  border-radius: 8px;
+  outline: none;
+  transition: all ease-in-out 0.3s;
+  color: white;
+}
+input:hover,
+input:focus{
+  border-color: var(--primary);
+}
 .txt-primary{
   color: var(--primary);
 }
@@ -67,7 +79,7 @@ a{
 .card{
   background-color: var(--card);
   border: var(--border);
-  border-radius: 20px;
+  border-radius: 12px;
 }
 .marca{
   height: 50px;
@@ -77,4 +89,16 @@ a{
   display: grid;
   place-items: center;
   margin-right: 3%;
+}
+.card-green{
+  background-color: var(--bg-verde);
+  border: var(--border);
+  border-color: var(--primary);
+  border-radius: 12px;
+  padding: 1%;
+}
+
+aside nav,
+aside nav ul li a{
+  color: var(--descripition);
 }

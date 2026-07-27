@@ -3,12 +3,14 @@ import logo from './assets/img/vera..png'
 import star from './assets/icons/material-symbols_star.png'
 import './Css/App.css'
 
+import { Link } from 'react-router-dom';
+
 function App() {
   
 
   return (
     <>
-      <header>
+      <header className='hlp'>
         <div className="logo">
           <img className='logo-header' src={logo} alt="" />
         </div>
@@ -20,8 +22,8 @@ function App() {
           </ul>
         </nav>
         <div className="btns-header">
-          <button className="btn-secondary">Login</button>
-          <button className="btn-primary">Cadastrar</button>
+          <Link to='/login'><button className="btn-secondary">Login</button></Link>
+          <Link to='/cadastro'><button className="btn-primary">Cadastrar</button></Link>
         </div>
       </header>
 
@@ -135,8 +137,8 @@ function App() {
           </div>
 
           <h2>
-            <span>Tudo que você precisa</span>
-            <span className="txt-primary">Nada que você não use</span>
+            <span>Tudo que você precisa.</span>
+            <span className="txt-primary"> Nada que você não use</span>
           </h2>
           <p className="description">Quatro pilares que trabalham juntos para dar visibilidade total, otimização real e evolução consistente das suas finanças</p>
 

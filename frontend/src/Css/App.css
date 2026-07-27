@@ -1,4 +1,4 @@
-header{
+header.hlp{
   position: fixed;
   width: 100%;
   display: flex;
@@ -11,12 +11,12 @@ header{
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
   z-index: 1000
 }
-header nav{
+header.hlp nav{
   display: grid;
   place-items: center;
   width: 100%;
 }
-header div{
+header.hlp div{
   width: 100%;
 }
 li a:hover{
@@ -32,7 +32,7 @@ li a:hover{
   justify-content: end;
   gap: 1%;
 }
-header nav ul{
+header.hlp nav ul{
   display: flex;
   align-items: center;
   justify-content: center;
