@@ -2,11 +2,28 @@ import { useState } from 'react'
 import logo from '../assets/img/vera..png'
 import '../Css/Cadastro-Login/Cadastrar.css';
 
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { use } from 'react';
+
 
 
 function App() {
   
+  const [Email, setEmail] = useState('');
+  const [PassWord, setPassword] = useState('')
+
+  const navigate = useNavigate()
+
+  const EmailCerto = 'davi.paulino@etec.com'
+  const SenhaCerta = 'vera.ia'
+
+  const Validacao = (e) => {
+    e.preventDefault();
+
+    if (Email===EmailCerto && PassWord===SenhaCerta){
+      navigate('/dashboard')
+    }
+  }
 
   return (
     <>
@@ -43,17 +60,22 @@ function App() {
               <h2>Bem-vindo de volta</h2>
               <p className="description">Entre na sua conta para continuar</p>
             </div>
-            <form action="">
+            <form onClick={Validacao}>
               <div className="form-group">
                 <label htmlFor="email">E-mail</label>
-                <input type="email" name='email' id='email' placeholder='Digite seu email'/>
+                <input type="email" value={Email} 
+                onChange={(e) => setEmail(e.target.value)}  
+                name='email' id='email' placeholder='Digite seu email' required/>
               </div>
               <div className="form-group">
                 <label htmlFor="senha">Senha</label>
-                <input type="password" name='senha' id='senha' minLength={6} placeholder='Digite sua senha'/>
+                <input type="password"
+                value={PassWord} 
+                onChange={(e) => setPassword(e.target.value)}
+                name='senha' id='senha' minLength={6} placeholder='Digite sua senha' required/>
                 <small className='esqueci-senha'><Link className='txt-primary'>Esqueci minha senha</Link></small>
               </div>
-              <Link to='/dashboard'><button className="btn-primary">Entrar</button></Link>
+              <button type='submit' className="btn-primary">Entrar</button>
             </form>
             <div className="ou">
                 <hr />

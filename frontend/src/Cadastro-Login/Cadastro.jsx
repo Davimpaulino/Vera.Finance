@@ -56,7 +56,7 @@ function App() {
             <label htmlFor="Confirmar">Confirmar senha</label>
             <input type="password" name='Confirmar' id='Confirmar' minLength={6} placeholder='Confirme sua senha'/>
           </div>
-          <Link to='/dashboard'><button className="btn-primary">Criar conta</button></Link>
+          <button className="btn-primary">Criar conta</button>
         </form>
         <div className="ou">
             <hr />
