@@ -1,23 +1,4 @@
-aside{
-    position: fixed;
-    width: 15%;
-    display: flex;
-    justify-content: space-between;
-    align-items: start;
-    height: 100vh;
-    flex-direction: column;
-    padding: 2%;
-    background-color: var(--bg-nav);
-    border-right: var(--border);
-}
-.sistema{
-    width: 85%;
-    padding: 2%;
-    margin-left: 15%;
-    display: grid;
-    grid-template-columns: repeat(8, 1fr);
-    gap: 20px;
-}
+
 .header-dash{
     display: flex;
     justify-content: space-between;

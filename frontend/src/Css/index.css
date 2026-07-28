@@ -16,6 +16,7 @@
   --descripition: #7B7B93;
   --txt-c: white;
   --txt: sans-serif;
+  --active-nav: #21212C;
 }
 #root{
   background-color: var(--bg);
@@ -98,7 +99,80 @@ input:focus{
   padding: 1%;
 }
 
+aside{
+    position: fixed;
+    width: 15%;
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    height: 100vh;
+    flex-direction: column;
+    padding: 1%;
+    background-color: var(--bg-nav);
+    border-right: var(--border);
+}
+.sistema{
+    width: 85%;
+    padding: 2%;
+    margin-left: 15%;
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 20px;
+}
 aside nav,
 aside nav ul li a{
   color: var(--descripition);
+}
+aside nav{
+  display: flex;
+  justify-content: center;
+  align-items: start;
+  flex-direction: column;
+  gap: 30px;
+  width: 100%;
+}
+aside nav div{
+  width: 100%;
+}
+aside nav ul{
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 8px ;
+  margin-top: 15px;
+}
+aside nav ul li{
+  position: relative;
+  padding: 1px 0px;
+}
+aside nav ul li.active{
+  font-weight: bold;
+}
+aside nav ul li.active::before{
+  content: "";
+  top: -5px;
+  bottom: -5px;
+  position: absolute;
+  right: -12px;
+  left: -12px;
+  background-color: var(--active-nav);
+  border-radius: 15px;
+  z-index: 1;
+}
+aside nav ul li a{
+  display: flex;
+  justify-content: start;
+  align-items: center;
+  white-space: nowrap;
+  z-index: 2;
+  position: relative;
+  transition: all ease-in-out 0.3s;
+}
+aside nav ul li a i{
+  margin-right: 10px;
+}
+aside nav ul li.active a{
+  color: white !important;
+  font-size: 18px;
 }

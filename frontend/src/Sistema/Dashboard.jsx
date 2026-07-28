@@ -16,7 +16,7 @@ function App() {
             <div>
                 <small>Menu Principal</small>
                 <ul>
-                    <li><Link to=''><i class="bi bi-columns-gap"></i> Dashboard</Link></li>
+                    <li className='active'><Link to=''><i class="bi bi-columns-gap"></i> Dashboard</Link></li>
                     <li><Link to=''><i class="bi bi-credit-card"></i> Lançamentos</Link></li>
                     <li><Link to=''><i class="bi bi-tag"></i> Categorias</Link></li>
                     <li><Link to=''><i class="bi bi-clipboard2-data"></i> Relatório</Link></li>
@@ -25,7 +25,7 @@ function App() {
             <div>
                 <small>Módulos Premium</small>
                 <ul>
-                    <li><Link to=''><i class="bi bi-camera"></i> Nota Inteligênte</Link></li>
+                    <li><Link to=''><i class="bi bi-camera"></i> Nota Inteligente</Link></li>
                     <li><Link to=''><i class="bi bi-shop"></i> Comparar Mercados</Link></li>
                     <li><Link to=''><i class="bi bi-list-check"></i> Lista de Compras</Link></li>
                 </ul>
