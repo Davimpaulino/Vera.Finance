@@ -55,17 +55,6 @@
     gap: 5px;
     grid-column: span 2;
 }
-.sistema .card .progress-meta{
-    width: 100%;
-    outline: none;
-    -webkit-appearance: none;
-    appearance: none;
-    height: 5px;
-}
-.sistema .card .progress-meta::-webkit-progress-bar{
-    background-color: var(--border-c);
-    border-radius: 100px;
-}
 .sistema .card .progress-meta::-webkit-progress-value{
     background-color: var(--primary);
     border-radius: 100px;

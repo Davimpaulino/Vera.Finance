@@ -59,6 +59,57 @@ function App() {
             </div>
             <button className='btn-primary'>+ Nova Categoria</button>
         </header>
+
+        <div className="categorias">
+            <div className="card categoria">
+                <h3>Supermercado</h3>
+                <progress value='92' max='100'></progress>
+                <div className="valores">
+                    <p className="description">R$ 1.380 de R$ 1.500</p>
+                    <p className="porcentagem">92%</p>
+                </div>
+            </div>
+            <div className="card categoria">
+                <h3>Supermercado</h3>
+                <progress value='92' max='100'></progress>
+                <div className="valores">
+                    <p className="description">R$ 1.380 de R$ 1.500</p>
+                    <p className="porcentagem">92%</p>
+                </div>
+            </div>
+            <div className="card categoria">
+                <h3>Supermercado</h3>
+                <progress value='92' max='100'></progress>
+                <div className="valores">
+                    <p className="description">R$ 1.380 de R$ 1.500</p>
+                    <p className="porcentagem">92%</p>
+                </div>
+            </div>
+            <div className="card categoria">
+                <h3>Supermercado</h3>
+                <progress value='92' max='100'></progress>
+                <div className="valores">
+                    <p className="description">R$ 1.380 de R$ 1.500</p>
+                    <p className="porcentagem">92%</p>
+                </div>
+            </div>
+            <div className="card categoria">
+                <h3>Supermercado</h3>
+                <progress value='92' max='100'></progress>
+                <div className="valores">
+                    <p className="description">R$ 1.380 de R$ 1.500</p>
+                    <p className="porcentagem">92%</p>
+                </div>
+            </div>
+            <div className="card categoria">
+                <h3>Supermercado</h3>
+                <progress value='92' max='100'></progress>
+                <div className="valores">
+                    <p className="description">R$ 1.380 de R$ 1.500</p>
+                    <p className="porcentagem">92%</p>
+                </div>
+            </div>
+        </div>
     </div>
     </>
   )

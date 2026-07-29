@@ -1,0 +1,21 @@
+.categorias{
+    display: flex;
+    flex-wrap: wrap;
+    grid-column: 1/9;
+    gap: 5%;
+}
+.categoria{
+    min-width: 30%;
+    flex: 1 1 30%;
+    padding: 1% !important;
+    display: flex;
+    flex-direction: column;
+}
+.categoria progress::-webkit-progress-value{
+    background-color: var(--alert);
+}
+.categoria .valores{
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+}

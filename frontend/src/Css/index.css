@@ -13,6 +13,7 @@
   --border-c: #2C2C3A;
   --primary: #00C785;
   --cancell: #FF3F52;
+  --alert: #FFA31A;
   --descripition: #7B7B93;
   --txt-c: white;
   --txt: sans-serif;
@@ -98,7 +99,20 @@ input:focus{
   border-radius: 12px;
   padding: 1%;
 }
-
+progress{
+    width: 100%;
+    outline: none;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 7px;
+}
+progress::-webkit-progress-bar{
+    border-radius: 100px;
+    background-color: var(--border-c);
+}
+progress::-webkit-progress-value{
+  border-radius:100px;
+}
 aside{
     position: fixed;
     width: 15%;
