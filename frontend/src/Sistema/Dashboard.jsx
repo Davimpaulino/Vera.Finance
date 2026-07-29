@@ -16,27 +16,26 @@ function App() {
             <div>
                 <small>Menu Principal</small>
                 <ul>
-                    <li className='active'><Link to=''><i class="bi bi-columns-gap"></i> Dashboard</Link></li>
-                    <li><Link to=''><i class="bi bi-credit-card"></i> Lançamentos</Link></li>
-                    <li><Link to=''><i class="bi bi-tag"></i> Categorias</Link></li>
-                    <li><Link to=''><i class="bi bi-clipboard2-data"></i> Relatório</Link></li>
+                    <li className='active'><Link ><i class="bi bi-columns-gap"></i> Dashboard</Link></li>
+                    <li><Link to='/lancamento'><i class="bi bi-credit-card"></i> Lançamentos</Link></li>
+                    <li><Link to='/categorias'><i class="bi bi-tag"></i> Categorias</Link></li>
+                    <li><Link to='/relatorio'><i class="bi bi-clipboard2-data"></i> Relatório</Link></li>
                 </ul>
             </div>
             <div>
                 <small>Módulos Premium</small>
                 <ul>
-                    <li><Link to=''><i class="bi bi-camera"></i> Nota Inteligente</Link></li>
-                    <li><Link to=''><i class="bi bi-shop"></i> Comparar Mercados</Link></li>
-                    <li><Link to=''><i class="bi bi-list-check"></i> Lista de Compras</Link></li>
+                    <li><Link to='/nota'><i class="bi bi-camera"></i> Nota Inteligente</Link></li>
+                    <li><Link to='/mercados'><i class="bi bi-shop"></i> Comparar Mercados</Link></li>
+                    <li><Link to='/lista'><i class="bi bi-list-check"></i> Lista de Compras</Link></li>
                 </ul>
             </div>
             <div>
                 <small>Acompanhar</small>
                 <ul>
-                    <li><Link to=''><i class="bi bi-bullseye"></i> Metas</Link></li>
-                    <li><Link to=''><i class="bi bi-graph-up"></i> Histórico de Perços</Link></li>
-                    <li><Link to=''> <i class="bi bi-currency-dollar"></i> Economia Acumulada</Link></li>
-                    <li><Link to=''><i class="bi bi-people"></i> Modo Familia</Link></li>
+                    <li><Link to='/metas'><i class="bi bi-bullseye"></i> Metas</Link></li>
+                    <li><Link to='/economia'> <i class="bi bi-currency-dollar"></i> Economia Acumulada</Link></li>
+                    <li><Link to='/familia'><i class="bi bi-people"></i> Modo Familia</Link></li>
                 </ul>
             </div>
         </nav>
