@@ -13,6 +13,7 @@ import Mercados from './Sistema/Mercados.jsx'
 import Lista from './Sistema/Lista.jsx'
 import Metas from './Sistema/Metas.jsx'
 import Economia from './Sistema/Economia.jsx'
+import Familia from './Sistema/Familia.jsx'
 import './Css/index.css'
 
 const router = createBrowserRouter([
@@ -63,6 +64,10 @@ const router = createBrowserRouter([
   {
     path: '/economia',
     element: <Economia/>
+  },
+  {
+    path: '/familia',
+    element: <Familia/>
   }
 ]);
 
