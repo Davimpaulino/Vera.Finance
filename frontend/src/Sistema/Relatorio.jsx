@@ -59,6 +59,112 @@ function App() {
             </div>
             <button className='btn-secondary'><i class="bi bi-filetype-pdf"></i> Exportar PDF</button>
         </header>
+
+        <div className="card">
+            <p className="description">Total Gasto</p>
+            <h2>R$ 3.240,00</h2>
+        </div>
+        <div className="card">
+            <p className="description">Maior Categoria</p>
+            <h2>Mercado</h2>
+            <p className="description">R$ 1.380,00</p>
+        </div>
+        <div className="card">
+            <p className="description">Economia identificada</p>
+            <h2 className='txt-primary'>R$ 124,00</h2>
+        </div>
+        <div className="card">
+            <p className="description">Comparação com Abril</p>
+            <h2><i class="bi bi-arrow-up"></i> 8%</h2>
+        </div>
+
+        <div className="card vs-mes">
+            <h2>Maio VS Abril</h2>
+        </div>
+
+        <div className="card maiores-gastos">
+            <h2>Top 5 Maiores Gastos</h2>
+            <div className='item'>
+                <div className='info'>
+                    <p className="description posicao">1</p>
+                    <div>
+                        <h3>Pão de Açúcar</h3>
+                        <p className="description">Supermercado - 11/05</p>
+                    </div>
+                </div>
+                <h3>R$ 312,50</h3>
+            </div>
+            <div className='item'>
+                <div className='info'>
+                    <p className="description posicao">1</p>
+                    <div>
+                        <h3>Pão de Açúcar</h3>
+                        <p className="description">Supermercado - 11/05</p>
+                    </div>
+                </div>
+                <h3>R$ 312,50</h3>
+            </div>
+            <div className='item'>
+                <div className='info'>
+                    <p className="description posicao">1</p>
+                    <div>
+                        <h3>Pão de Açúcar</h3>
+                        <p className="description">Supermercado - 11/05</p>
+                    </div>
+                </div>
+                <h3>R$ 312,50</h3>
+            </div>
+            <div className='item'>
+                <div className='info'>
+                    <p className="description posicao">1</p>
+                    <div>
+                        <h3>Pão de Açúcar</h3>
+                        <p className="description">Supermercado - 11/05</p>
+                    </div>
+                </div>
+                <h3>R$ 312,50</h3>
+            </div>
+            <div className='item'>
+                <div className='info'>
+                    <p className="description posicao">1</p>
+                    <div>
+                        <h3>Pão de Açúcar</h3>
+                        <p className="description">Supermercado - 11/05</p>
+                    </div>
+                </div>
+                <h3>R$ 312,50</h3>
+            </div>
+        </div>
+        <div className="card insights">
+            <h2>Insights Automáticos</h2>
+            <div className="dica">
+                <i className='bi bi-arrow-down'></i>
+                <p>
+                    <span>Você gastou </span>
+                    <span className="txt-primary">22% a menos </span>
+                    <span>em restaurantes comparados ao mês passado. </span>
+                    <span><b>Continue assim!</b></span>
+                </p>
+            </div>
+            <div className="dica">
+                <i className='bi bi-arrow-down'></i>
+                <p>
+                    <span>Você gastou </span>
+                    <span className="txt-primary">22% a menos </span>
+                    <span>em restaurantes comparados ao mês passado. </span>
+                    <span><b>Continue assim!</b></span>
+                </p>
+            </div>
+            <div className="dica">
+                <i className='bi bi-arrow-down'></i>
+                <p>
+                    <span>Você gastou </span>
+                    <span className="txt-primary">22% a menos </span>
+                    <span>em restaurantes comparados ao mês passado. </span>
+                    <span><b>Continue assim!</b></span>
+                </p>
+            </div>
+        </div>
     </div>
     </>
   )

@@ -58,6 +58,40 @@ function App() {
                 <p className="description">Escanei sua nota fiscal e descubra onde economizar</p>
             </div>
         </header>
+
+        <div className="card scan">
+            <i className='icon bi bi-camera'></i>
+            <h3>Escaneie Sua Nota</h3>
+            <p className="description">Arraste a nota fiscal aqui ou clique para escolher</p>
+            <div className="btn-scan">
+                <button className="btn-primary"><i class="bi bi-download"></i> Escolher Arquivo</button>
+                <button className="btn-secondary"><i className='bi bi-camera'></i> Usar Câmera</button>
+            </div>
+            <div className="description">
+                <span>JPG, PNG, PDF</span>
+                <div className="circle"></div>
+                <span>Máx: 10MB</span>
+            </div>
+        </div>
+
+        <div className="card analise">
+            <header>
+                <div className='info'>
+                    <div className="description">
+                        <span>Carrefour</span>
+                        <div className="circle"></div>
+                        <span>23 de Maio</span>
+                        <div className="circle"></div>
+                        <span>24 Itens</span>
+                    </div>
+                    <h3>R$ 187,40</h3>
+                </div>
+                <div className="card-green">
+                    <p className="txt-primary">Você poderia ter economizado</p>
+                    <h3 className="txt-primary">R$ 22,40</h3>
+                </div>
+            </header>
+        </div>
     </div>
     </>
   )

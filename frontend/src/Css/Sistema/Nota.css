@@ -1,0 +1,37 @@
+.sistema .scan{
+    grid-column: 1/9;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 10%;
+}
+.sistema .scan .icon{
+    font-size: 36px;
+    color: var(--descripition)
+}
+.sistema .scan .btn-scan{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    gap: 1%;
+}
+.sistema .scan div.description{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.sistema .analise{
+    grid-column: 1/9;
+}
+.sistema .analise header{
+    justify-content: space-between;
+    width: 100%;
+}
+.sistema .analise header .info .description{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 5%;
+}
