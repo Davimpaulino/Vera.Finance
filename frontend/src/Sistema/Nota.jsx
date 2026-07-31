@@ -91,6 +91,55 @@ function App() {
                     <h3 className="txt-primary">R$ 22,40</h3>
                 </div>
             </header>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Produto</th>
+                        <th>QTD</th>
+                        <th>Pago</th>
+                        <th>Menor</th>
+                        <th>Diferença</th>
+                        <th>Onde</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <tr className='caro'>
+                        <td><i class="bi bi-exclamation-triangle"></i> Leite Parmalat 1L</td>
+                        <td>2</td>
+                        <td>R$ 5,99</td>
+                        <td>R$ 4,89</td>
+                        <td className='diferenca'><i class="bi bi-arrow-up"></i> R$ 1,10</td>
+                        <td>Extra</td>
+                    </tr>
+                    <tr className='caro'>
+                        <td><i class="bi bi-exclamation-triangle"></i> Leite Parmalat 1L</td>
+                        <td>2</td>
+                        <td>R$ 5,99</td>
+                        <td>R$ 4,89</td>
+                        <td className='diferenca'><i class="bi bi-arrow-up"></i> R$ 1,10</td>
+                        <td>Extra</td>
+                    </tr>
+                    <tr className='caro'>
+                        <td><i class="bi bi-exclamation-triangle"></i> Leite Parmalat 1L</td>
+                        <td>2</td>
+                        <td>R$ 5,99</td>
+                        <td>R$ 4,89</td>
+                        <td className='diferenca'><i class="bi bi-arrow-up"></i> R$ 1,10</td>
+                        <td>Extra</td>
+                    </tr>
+                    <tr>
+                        <td><i class="bi bi-check-circle"></i> Arroz Camil 5kg</td>
+                        <td>1</td>
+                        <td>R$ 13,89</td>
+                        <td>R$ 13,89</td>
+                        <td>---</td>
+                        <td>---</td>
+                    </tr>
+                </tbody>
+            </table>
+            <button className="btn-primary">Adicionar produtos com alerta à lista</button>
         </div>
     </div>
     </>

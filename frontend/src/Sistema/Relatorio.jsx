@@ -79,64 +79,64 @@ function App() {
         </div>
 
         <div className="card vs-mes">
-            <h2>Maio VS Abril</h2>
+            <h3>Maio VS Abril</h3>
         </div>
 
         <div className="card maiores-gastos">
-            <h2>Top 5 Maiores Gastos</h2>
+            <h3>Top 5 Maiores Gastos</h3>
             <div className='item'>
                 <div className='info'>
                     <p className="description posicao">1</p>
                     <div>
-                        <h3>Pão de Açúcar</h3>
+                        <h4>Pão de Açúcar</h4>
                         <p className="description">Supermercado - 11/05</p>
                     </div>
                 </div>
-                <h3>R$ 312,50</h3>
+                <h4>R$ 312,50</h4>
             </div>
             <div className='item'>
                 <div className='info'>
                     <p className="description posicao">1</p>
                     <div>
-                        <h3>Pão de Açúcar</h3>
+                        <h4>Pão de Açúcar</h4>
                         <p className="description">Supermercado - 11/05</p>
                     </div>
                 </div>
-                <h3>R$ 312,50</h3>
+                <h4>R$ 312,50</h4>
             </div>
             <div className='item'>
                 <div className='info'>
                     <p className="description posicao">1</p>
                     <div>
-                        <h3>Pão de Açúcar</h3>
+                        <h4>Pão de Açúcar</h4>
                         <p className="description">Supermercado - 11/05</p>
                     </div>
                 </div>
-                <h3>R$ 312,50</h3>
+                <h4>R$ 312,50</h4>
             </div>
             <div className='item'>
                 <div className='info'>
                     <p className="description posicao">1</p>
                     <div>
-                        <h3>Pão de Açúcar</h3>
+                        <h4>Pão de Açúcar</h4>
                         <p className="description">Supermercado - 11/05</p>
                     </div>
                 </div>
-                <h3>R$ 312,50</h3>
+                <h4>R$ 312,50</h4>
             </div>
             <div className='item'>
                 <div className='info'>
                     <p className="description posicao">1</p>
                     <div>
-                        <h3>Pão de Açúcar</h3>
+                        <h4>Pão de Açúcar</h4>
                         <p className="description">Supermercado - 11/05</p>
                     </div>
                 </div>
-                <h3>R$ 312,50</h3>
+                <h4>R$ 312,50</h4>
             </div>
         </div>
         <div className="card insights">
-            <h2>Insights Automáticos</h2>
+            <h3>Insights Automáticos</h3>
             <div className="dica">
                 <i className='bi bi-arrow-down'></i>
                 <p>

@@ -24,6 +24,7 @@
 }
 .sistema .analise{
     grid-column: 1/9;
+    padding: 2%;
 }
 .sistema .analise header{
     justify-content: space-between;
@@ -34,4 +35,29 @@
     justify-content: center;
     align-items: center;
     margin-bottom: 5%;
+}
+.sistema .analise table{
+    width: 100%;
+    text-align: left;
+    margin: 1% 0;
+    border-collapse: collapse;
+}
+.sistema .analise table th{
+    border-bottom: 2px solid var(--border-c);
+    padding: 10px 8px;
+    font-size: 14px;
+    color: var(--descripition);
+}
+.sistema .analise table tbody{
+    font-weight: bold;
+}
+.sistema .analise table tr.caro{
+    background-color: var(--bg-red);
+}
+.sistema .analise table tr.caro .diferenca{
+    color: red;
+}
+.sistema .analise table td{
+    padding: 16px 8px;
+    border-bottom: var(--border)
 }

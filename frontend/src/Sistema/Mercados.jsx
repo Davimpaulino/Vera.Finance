@@ -58,6 +58,57 @@ function App() {
                 <p className="description">Compare mercados para descobrir os melhores preços</p>
             </div>
         </header>
+
+        <div className="select"></div>
+
+        <div className="card search">
+            <input type="text" placeholder='Pesquise o produto aqui'/>
+            <i class="bi bi-search"></i>
+        </div>
+
+        <div className="mercados card">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Mercado</th>
+                        <th>Preços</th>
+                        <th>Var. 30D</th>
+                        <th>Distância</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <tr className='mais-barato'>
+                        <td>Extra</td>
+                        <td>R$ 4,89</td>
+                        <td className='txt-primary'>8%</td>
+                        <td className='description'>3,4 km</td>
+                    </tr>
+                    <tr>
+                        <td>Extra</td>
+                        <td>R$ 4,89</td>
+                        <td className='txt-primary'>8%</td>
+                        <td className='description'>3,4 km</td>
+                    </tr>
+                    <tr>
+                        <td>Extra</td>
+                        <td>R$ 4,89</td>
+                        <td className='txt-primary'>8%</td>
+                        <td className='description'>3,4 km</td>
+                    </tr>
+                    <tr>
+                        <td>Extra</td>
+                        <td>R$ 4,89</td>
+                        <td className='txt-primary'>8%</td>
+                        <td className='description'>3,4 km</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div className="historico card">
+            <h3>Histórico de Preços</h3>
+        </div>
     </div>
     </>
   )

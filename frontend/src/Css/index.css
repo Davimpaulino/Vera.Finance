@@ -7,6 +7,7 @@
 :root {
   --bg: #0E0E12;
   --bg-verde: #111B1E;
+  --bg-red: rgb(255, 81,81, 0.08);
   --bg-nav: #13131B;
   --card: #191924;
   --border: 1px solid #2C2C3A;
@@ -47,10 +48,15 @@ input{
   outline: none;
   transition: all ease-in-out 0.3s;
   color: white;
+  border: var(--border);
 }
 input:hover,
 input:focus{
   border-color: var(--primary);
+}
+.card input{
+  background-color: rgb(89,89,118,0.2);
+  outline: none;
 }
 .txt-primary{
   color: var(--primary);

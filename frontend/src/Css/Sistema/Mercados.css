@@ -1,0 +1,44 @@
+.sistema .search{
+    grid-column: 1/9;
+    padding: 1%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: row;
+}
+.sistema .search input{
+    width: 98%;
+    padding: 1%;
+    margin-right: 1%;
+}
+.sistema .search i{
+    font-size: 20px;
+}
+.sistema .mercados{
+    grid-column: 1/9;
+    padding: 1% 0 0 0;
+}
+.sistema .mercados table{
+    width: 100%;
+    text-align: left;
+    border-collapse: collapse;
+}
+.sistema .mercados table th{
+    border-bottom: 2px solid var(--border-c);
+    padding: 10px 8px;
+    font-size: 14px;
+    color: var(--descripition);
+}
+.sistema .mercados table tbody{
+    font-weight: bold;
+}
+.sistema .mercados table tr.mais-barato{
+    border-left: 5px solid var(--primary);
+}
+.sistema .mercados table td{
+    padding: 16px 8px;
+    border-bottom: var(--border);
+}
+.sistema .historico{
+    grid-column: 1/9;
+}
