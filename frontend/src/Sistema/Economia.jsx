@@ -34,7 +34,6 @@ function App() {
                 <small>Acompanhar</small>
                 <ul>
                     <li><Link to='/metas'><i class="bi bi-bullseye"></i> Metas</Link></li>
-                    <li><Link to='/historico'><i class="bi bi-graph-up"></i> Histórico de Perços</Link></li>
                     <li className='active'><Link to='/economia'> <i class="bi bi-currency-dollar"></i> Economia Acumulada</Link></li>
                     <li><Link to='/familia'><i class="bi bi-people"></i> Modo Familia</Link></li>
                 </ul>

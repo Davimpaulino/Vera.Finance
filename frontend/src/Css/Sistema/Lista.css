@@ -1,0 +1,97 @@
+.sistema .lista{
+    grid-column: 1/5;
+    grid-row: 2/5;
+    display: flex;
+    flex-direction: column;
+    padding: 4%;
+}
+.sistema .lista header{
+    width: 100%;
+    justify-content: space-between;
+    border: none;
+}
+.sistema .lista header div.description{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: small;
+}
+.sistema .lista .add{
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.sistema .lista input{
+    width: 100%;
+    margin-right: 2%;
+}
+.sistema .lista .add button{
+    min-width: 0;
+    min-height: 0;
+    padding: 2% 3%;
+}
+.sistema .lista .produtos{
+    width: 100%;
+}
+.sistema .lista .produtos .item{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    border-bottom: var(--border);
+    padding: 2%;
+}
+.sistema .lista .produtos .item .info{
+    display: flex;
+    justify-content: start;
+    align-items: center;
+    text-wrap: nowrap;
+}
+.sistema .lista .produtos .item .actions{
+    display: flex;
+    justify-content: end;
+    align-items: center;
+    gap: 15px;
+}
+.sistema .lista .produtos .item .actions button{
+    font-size: 16px;
+}
+
+.sistema .ranking{
+    grid-column: 5/9;
+    display: flex;
+    flex-direction: column;
+}
+.sistema .ranking .mercado{
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    padding: 2%;
+    border-bottom: var(--border);
+}
+.sistema .ranking .mercado .valor,
+.sistema .ranking .mercado .info{
+    width: 50%;
+}
+.sistema .ranking .mercado .valor{
+    text-align: end;
+}
+.sistema .ranking .mercado .info .description{
+    margin-right: 5%;
+}
+.sistema .ranking .mercado .valor .description,
+.sistema .ranking .mercado .valor .txt-primary{
+    margin-left: 5%;
+}
+.sistema .dica{
+    grid-column: 5/9;
+    display: flex;
+    flex-direction: row;
+    gap: 2%;
+    align-items: center;
+}
+.sistema button{
+    grid-column: 5/9;
+    padding: 2%;
+}

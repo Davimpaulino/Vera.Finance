@@ -58,6 +58,151 @@ function App() {
                 <p className="description">Sabemos onde tudo está mais barato</p>
             </div>
         </header>
+
+        <div className="lista card">
+            <header>
+                <h3>Minha Lista</h3>
+                <div className="description">
+                    <span>6 Itens</span>
+                    <div className="circle"></div>
+                    <span>0 Comprados</span>
+                </div>
+            </header>
+            <div className="add">
+                    <input type="text" placeholder='Adicionar Produto'/>
+                    <button className="btn-primary">+</button>
+            </div>
+
+            <div className="produtos">
+                <div className="item">
+                    <div className="info">
+                        <input type="checkbox" />
+                        <h4>Leite Parmalat 1L</h4>
+                    </div>
+                   <div className="actions">
+                        <button className="transp">-</button>
+                        <span>2</span>
+                        <button className="transp">+</button>
+                        <button className="transp"><i class="bi bi-trash3"></i></button>
+                   </div>
+                </div>
+                <div className="item">
+                    <div className="info">
+                        <input type="checkbox" />
+                        <h4>Leite Parmalat 1L</h4>
+                    </div>
+                   <div className="actions">
+                        <button className="transp">-</button>
+                        <span>2</span>
+                        <button className="transp">+</button>
+                        <button className="transp"><i class="bi bi-trash3"></i></button>
+                   </div>
+                </div>
+                <div className="item">
+                    <div className="info">
+                        <input type="checkbox" />
+                        <h4>Leite Parmalat 1L</h4>
+                    </div>
+                   <div className="actions">
+                        <button className="transp">-</button>
+                        <span>2</span>
+                        <button className="transp">+</button>
+                        <button className="transp"><i class="bi bi-trash3"></i></button>
+                   </div>
+                </div>
+                <div className="item">
+                    <div className="info">
+                        <input type="checkbox" />
+                        <h4>Leite Parmalat 1L</h4>
+                    </div>
+                   <div className="actions">
+                        <button className="transp">-</button>
+                        <span>2</span>
+                        <button className="transp">+</button>
+                        <button className="transp"><i class="bi bi-trash3"></i></button>
+                   </div>
+                </div>
+                <div className="item">
+                    <div className="info">
+                        <input type="checkbox" />
+                        <h4>Leite Parmalat 1L</h4>
+                    </div>
+                   <div className="actions">
+                        <button className="transp">-</button>
+                        <span>2</span>
+                        <button className="transp">+</button>
+                        <button className="transp"><i class="bi bi-trash3"></i></button>
+                   </div>
+                </div>
+                <div className="item">
+                    <div className="info">
+                        <input type="checkbox" />
+                        <h4>Leite Parmalat 1L</h4>
+                    </div>
+                   <div className="actions">
+                        <button className="transp">-</button>
+                        <span>2</span>
+                        <button className="transp">+</button>
+                        <button className="transp"><i class="bi bi-trash3"></i></button>
+                   </div>
+                </div>
+            </div>
+        </div>
+
+        <div className="card ranking">
+            <h3>Onde comprar mais barato?</h3>
+            <div className="mercado">
+                <div className="info">
+                    <span className='description'>1</span>
+                    <span>Extra</span>
+                </div>
+                <div className="valor">
+                    <span>R$ 87,40</span>
+                    <span className="txt-primary"><small>Mais Barato</small></span>
+                </div>
+            </div>
+            <div className="mercado">
+                <div className="info">
+                    <span className='description'>2</span>
+                    <span>atacadão</span>
+                </div>
+                <div className="valor">
+                    <span>R$ 94,20</span>
+                    <span className="description"><small>+R$ 6,80</small></span>
+                </div>
+            </div>
+            <div className="mercado">
+                <div className="info">
+                    <span className='description'>2</span>
+                    <span>atacadão</span>
+                </div>
+                <div className="valor">
+                    <span>R$ 94,20</span>
+                    <span className="description"><small>+R$ 6,80</small></span>
+                </div>
+            </div>
+                <div className="mercado">
+                    <div className="info">
+                        <span className='description'>2</span>
+                        <span>atacadão</span>
+                    </div>
+                    <div className="valor">
+                        <span>R$ 94,20</span>
+                        <span className="description"><small>+R$ 6,80</small></span>
+                    </div>
+                </div>
+        </div>
+
+        <div className="dica card">
+            <i class="bi bi-lightbulb-fill"></i>
+            <p>
+                <span>Comprando a carne no atacadão e o restante no Extra, você </span>
+                <span className="txt-primary">economiza R$ 11,20 </span>
+                <span>vs comprar tudo em um lugar</span>
+            </p>
+        </div>
+        
+        <button className="btn-secondary"><i class="bi bi-share"></i> Compartilhar Lista</button>
     </div>
     </>
   )

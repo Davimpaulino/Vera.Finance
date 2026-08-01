@@ -49,6 +49,7 @@ input{
   transition: all ease-in-out 0.3s;
   color: white;
   border: var(--border);
+  padding: 2%;
 }
 input:hover,
 input:focus{
@@ -68,6 +69,13 @@ input:focus{
   color: var(--descripition);
 }
 
+button.transp{
+  background-color: transparent;
+  border: none;
+  min-width: 0px;
+  min-height: 0px;
+  color: var(--descripition);
+}
 .btn-secondary{
   background: transparent;
   color: var(--txt-c);
