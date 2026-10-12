@@ -1,0 +1,32 @@
+:root{
+  --font-display:'Syne', sans-serif;
+  --font-serif:'Fraunces', Georgia, serif;
+  --font-sans:'Plus Jakarta Sans', system-ui, sans-serif;
+  --fw-regular:400;
+  --fw-medium:500;
+  --fw-semibold:600;
+  --fw-bold:700;
+  --fs-micro:11px;
+  --fs-caption:12px;
+  --fs-meta:13px;
+  --fs-body:15px;
+  --fs-body-lg:16px;
+  --fs-lead:19px;
+  --fs-num:20px;
+  --fs-title-sm:22px;
+  --fs-title:26px;
+  --fs-title-lg:28px;
+  --fs-display-sm:34px;
+  --fs-display:44px;
+  --fs-display-lg:56px;
+  --fs-hero:64px;
+  --lh-tight:1.05;
+  --lh-snug:1.2;
+  --lh-normal:1.45;
+  --lh-relaxed:1.6;
+  --ls-tight:-0.02em;
+  --ls-normal:0;
+  --ls-label:0.06em;
+  --ls-caps:0.08em;
+  --num:tabular-nums
+}

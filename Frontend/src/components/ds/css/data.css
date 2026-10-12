@@ -1,0 +1,410 @@
+.vera-table-wrap{
+  width:100%;
+  overflow-x:auto
+}
+.vera-table{
+  width:100%;
+  border-collapse:collapse;
+  font-variant-numeric:tabular-nums
+}
+.vera-table th{
+  text-align:left;
+  font-size:var(--fs-caption);
+  font-weight:var(--fw-bold);
+  letter-spacing:var(--ls-label);
+  text-transform:uppercase;
+  color:var(--text-muted);
+  padding:0 var(--sp-4) var(--sp-3);
+  border-bottom:1px solid var(--border-hairline)
+}
+.vera-table td{
+  text-align:left;
+  padding:var(--sp-3) var(--sp-4);
+  border-bottom:1px solid var(--divider);
+  font-size:var(--fs-body);
+  color:var(--text-1)
+}
+.vera-table tbody tr:hover td{
+  background:var(--surface-hover)
+}
+.vera-table--dense td{
+  padding:var(--sp-2) var(--sp-4)
+}
+.vera-table .vera-table__cell--right{
+  text-align:right
+}
+.vera-table .vera-table__cell--muted{
+  color:var(--text-muted)
+}
+.vera-table .vera-table__cell--value{
+  font-weight:var(--fw-semibold)
+}
+.vera-table .vera-table__cell--nowrap{
+  white-space:nowrap
+}
+.vera-table__row--click{
+  cursor:pointer
+}
+@media (max-width:767px){
+  .vera-table--stack thead{
+    display:none
+  }
+  .vera-table--stack tr{
+    display:grid;
+    grid-template-columns:1fr auto;
+    gap:2px var(--sp-3);
+    padding:var(--sp-3) 0;
+    border-bottom:1px solid var(--divider)
+  }
+  .vera-table--stack td{
+    border:none;
+    padding:0;
+    font-size:var(--fs-meta);
+    color:var(--text-muted)
+  }
+  .vera-table--stack td[data-primary]{
+    grid-column:1;
+    font-size:var(--fs-body);
+    color:var(--text-1)
+  }
+  .vera-table--stack td[data-value]{
+    grid-column:2;
+    grid-row:1 / span 2;
+    align-self:center;
+    font-size:var(--fs-body-lg);
+    font-weight:var(--fw-semibold);
+    color:var(--text-1)
+  }
+}
+.vera-hero{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  min-width:0
+}
+.vera-hero__label{
+  font-size:var(--fs-caption);
+  font-weight:var(--fw-medium);
+  color:var(--text-muted)
+}
+.vera-hero__label--caps{
+  letter-spacing:var(--ls-caps);
+  text-transform:uppercase
+}
+.vera-hero__value{
+  font-family:var(--font-serif);
+  font-weight:var(--fw-semibold);
+  font-size:clamp(40px, 8vw, 64px);
+  line-height:var(--lh-tight);
+  color:var(--accent-text);
+  font-variant-numeric:tabular-nums
+}
+.vera-hero__value--sm{
+  font-size:clamp(34px, 7vw, 44px)
+}
+.vera-hero__value--lg{
+  font-size:clamp(48px, 9vw, 72px)
+}
+.vera-hero__value--neutral{
+  color:var(--text-1)
+}
+.vera-hero__value--danger{
+  color:var(--danger)
+}
+.vera-hero__value--success{
+  color:var(--success)
+}
+.vera-hero__sub{
+  font-size:var(--fs-body-lg);
+  color:var(--text-2);
+  font-variant-numeric:tabular-nums
+}
+.vera-row{
+  display:flex;
+  align-items:center;
+  gap:var(--sp-3);
+  padding:12px var(--sp-4);
+  border-bottom:1px solid var(--divider);
+  min-height:var(--tap-min);
+  min-width:0;
+  transition:background var(--dur-fast) var(--ease-out)
+}
+.vera-row--dense{
+  padding:10px var(--sp-4)
+}
+.vera-row--last{
+  border-bottom:none
+}
+.vera-row--click{
+  cursor:pointer
+}
+.vera-row--click:hover{
+  background:var(--surface-hover)
+}
+.vera-row__icon{
+  width:32px;
+  height:32px;
+  border-radius:var(--r-chip);
+  flex-shrink:0;
+  background:var(--surface-key);
+  color:var(--text-2);
+  display:flex;
+  align-items:center;
+  justify-content:center
+}
+.vera-row__text{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  gap:1px;
+  min-width:0
+}
+.vera-row__title{
+  font-size:var(--fs-body);
+  color:var(--text-1);
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap
+}
+.vera-row__meta{
+  font-size:var(--fs-caption);
+  font-weight:var(--fw-medium);
+  color:var(--text-muted);
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap
+}
+.vera-row__value{
+  font-weight:var(--fw-semibold);
+  font-size:var(--fs-body-lg);
+  color:var(--text-1);
+  font-variant-numeric:tabular-nums;
+  flex-shrink:0
+}
+.vera-row__value--success{
+  color:var(--success)
+}
+.vera-row__value--danger{
+  color:var(--danger)
+}
+.vera-meter{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  min-width:0;
+  color:var(--meter-fill)
+}
+.vera-meter__head{
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  gap:12px
+}
+.vera-meter__label{
+  font-size:var(--fs-body-lg);
+  color:var(--text-1)
+}
+.vera-meter__amount{
+  white-space:nowrap;
+  font-weight:var(--fw-semibold);
+  font-size:var(--fs-num);
+  color:var(--text-1);
+  font-variant-numeric:tabular-nums
+}
+.vera-meter__bar{
+  display:block;
+  width:100%;
+  height:4px;
+  border:0;
+  border-radius:var(--r-pill);
+  background:var(--meter-track);
+  color:inherit;
+  overflow:hidden;
+  -webkit-appearance:none;
+  appearance:none
+}
+.vera-meter__bar--lg{
+  height:6px
+}
+.vera-meter__bar::-webkit-progress-bar{
+  background:var(--meter-track);
+  border-radius:var(--r-pill)
+}
+.vera-meter__bar::-webkit-progress-value{
+  background:currentColor;
+  border-radius:var(--r-pill);
+  transition:width var(--dur-slow) var(--ease-out)
+}
+.vera-meter__bar::-moz-progress-bar{
+  background:currentColor;
+  border-radius:var(--r-pill)
+}
+.vera-meter__foot{
+  font-size:var(--fs-caption);
+  font-weight:var(--fw-medium);
+  color:var(--text-muted);
+  font-variant-numeric:tabular-nums
+}
+.vera-meter--warning{
+  color:var(--warning)
+}
+.vera-meter--danger{
+  color:var(--danger)
+}
+.vera-meter--success{
+  color:var(--success)
+}
+.vera-meter--accent{
+  color:var(--accent)
+}
+.vera-meter--warning .vera-meter__amount,
+.vera-meter--warning .vera-meter__foot{
+  color:var(--warning)
+}
+.vera-meter--danger .vera-meter__amount,
+.vera-meter--danger .vera-meter__foot{
+  color:var(--danger)
+}
+.vera-meter--success .vera-meter__amount,
+.vera-meter--success .vera-meter__foot{
+  color:var(--success)
+}
+.vera-meter--accent .vera-meter__amount,
+.vera-meter--accent .vera-meter__foot{
+  color:var(--accent)
+}
+.vera-price{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+  min-width:0
+}
+.vera-price--end{
+  align-items:flex-end;
+  text-align:right
+}
+.vera-price__row{
+  display:flex;
+  align-items:baseline;
+  gap:6px
+}
+.vera-price__value{
+  font-family:var(--font-serif);
+  font-weight:var(--fw-semibold);
+  font-size:var(--fs-num);
+  color:var(--text-1);
+  font-variant-numeric:tabular-nums
+}
+.vera-price__value--lg{
+  font-size:var(--fs-title-sm)
+}
+.vera-price__value--aged{
+  color:var(--text-2)
+}
+.vera-price__note{
+  font-size:var(--fs-micro);
+  color:var(--text-muted)
+}
+.vera-price__empty{
+  font-size:var(--fs-meta);
+  color:var(--text-muted);
+  font-style:italic
+}
+.vera-projection{
+  display:block;
+  overflow:visible
+}
+.vera-projection__today{
+  stroke:var(--border-field);
+  stroke-width:1;
+  vector-effect:non-scaling-stroke
+}
+.vera-projection__past,
+.vera-projection__future{
+  fill:none;
+  stroke:var(--text-1);
+  stroke-width:2.5;
+  stroke-linecap:round;
+  vector-effect:non-scaling-stroke
+}
+.vera-projection__past{
+  opacity:0.8
+}
+.vera-projection__future{
+  stroke-dasharray:1 8;
+  opacity:0.35
+}
+.vera-projection__dot{
+  fill:var(--accent)
+}
+.vera-stat{
+  background:var(--surface-card);
+  border:1px solid var(--border-hairline);
+  border-radius:var(--r-card);
+  padding:var(--sp-4);
+  display:flex;
+  flex-direction:column;
+  gap:var(--sp-2);
+  min-width:0
+}
+.vera-stat__head{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  min-width:0
+}
+.vera-stat__icon{
+  width:28px;
+  height:28px;
+  border-radius:var(--r-icon);
+  flex-shrink:0;
+  background:var(--surface-key);
+  color:var(--text-2);
+  display:flex;
+  align-items:center;
+  justify-content:center
+}
+.vera-stat__label{
+  font-size:var(--fs-caption);
+  font-weight:var(--fw-medium);
+  color:var(--text-muted);
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap
+}
+.vera-stat__value{
+  font-size:var(--fs-title-sm);
+  font-weight:var(--fw-semibold);
+  color:var(--text-1);
+  font-variant-numeric:tabular-nums;
+  line-height:1.1
+}
+.vera-stat__delta{
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  font-size:var(--fs-caption);
+  font-weight:var(--fw-medium);
+  color:var(--text-muted);
+  font-variant-numeric:tabular-nums
+}
+.vera-stat__value--accent,
+.vera-stat__delta--accent{
+  color:var(--accent-text)
+}
+.vera-stat__value--success,
+.vera-stat__delta--success{
+  color:var(--success)
+}
+.vera-stat__value--warning,
+.vera-stat__delta--warning{
+  color:var(--warning)
+}
+.vera-stat__value--danger,
+.vera-stat__delta--danger{
+  color:var(--danger)
+}
+.vera-stat__value--data,
+.vera-stat__delta--data{
+  color:var(--data)
+}

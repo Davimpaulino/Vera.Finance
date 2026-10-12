@@ -1,0 +1,18 @@
+.vera-brand{
+  display:inline-flex;
+  align-items:baseline;
+  gap:0
+}
+.vera-brand__word{
+  font-family:var(--font-display);
+  font-weight:700;
+  font-size:22px;
+  letter-spacing:var(--ls-tight);
+  color:var(--text-2)
+}
+.vera-brand--sm .vera-brand__word{
+  font-size:17px
+}
+.vera-brand--lg .vera-brand__word{
+  font-size:32px
+}

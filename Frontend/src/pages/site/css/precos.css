@@ -1,0 +1,92 @@
+.precos-intro{
+  max-width:1240px;
+  margin:0 auto;
+  padding:64px var(--gutter-md) 40px;
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+  align-items:center;
+  text-align:center
+}
+.precos-intro__title{
+  font-size:clamp(30px, 3.6vw, 46px);
+  font-weight:700;
+  letter-spacing:var(--ls-tight);
+  line-height:1.1;
+  max-width:680px;
+  text-wrap:pretty;
+  margin:0
+}
+.precos-intro__lead{
+  font-size:var(--fs-body-lg);
+  line-height:var(--lh-relaxed);
+  color:var(--text-muted);
+  max-width:560px;
+  text-wrap:pretty;
+  margin:0
+}
+.precos-grid{
+  max-width:1180px;
+  margin:0 auto;
+  padding:0 var(--gutter-md) 40px
+}
+.precos-erro{
+  text-align:center;
+  color:var(--text-muted)
+}
+.vera-card.precos-card--destaque{
+  border-color:var(--accent)
+}
+.precos-card__head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px
+}
+.precos-card__name{
+  font-size:var(--fs-title);
+  font-weight:700;
+  letter-spacing:var(--ls-tight)
+}
+.precos-card__price{
+  font-family:var(--font-serif);
+  font-weight:600;
+  font-size:44px;
+  line-height:1;
+  font-variant-numeric:tabular-nums
+}
+.precos-card__note{
+  font-size:var(--fs-meta);
+  color:var(--text-muted)
+}
+.precos-itens{
+  display:flex;
+  flex-direction:column;
+  gap:10px
+}
+.precos-item{
+  display:flex;
+  gap:8px;
+  font-size:var(--fs-body);
+  color:var(--text-1)
+}
+.precos-item .vera-icon{
+  color:var(--success)
+}
+.precos-item--off{
+  color:var(--text-muted)
+}
+.precos-item--off .vera-icon{
+  color:var(--text-placeholder)
+}
+.vera-btn.precos-card__cta{
+  margin-top:auto
+}
+.precos-rodape{
+  max-width:820px;
+  margin:0 auto;
+  padding:24px var(--gutter-md) 80px;
+  text-align:center;
+  font-size:var(--fs-caption);
+  color:var(--text-muted)
+}

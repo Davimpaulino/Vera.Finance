@@ -1,0 +1,77 @@
+.seletor{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  min-width:0
+}
+.seletor__aviso{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-size:var(--fs-meta);
+  color:var(--text-muted)
+}
+.seletor__aviso--carregando{
+  color:var(--accent-text)
+}
+.seletor__aviso--erro{
+  color:var(--danger)
+}
+.seletor__resultado{
+  display:flex;
+  flex-direction:column;
+  gap:10px
+}
+.seletor__titulo{
+  font-size:var(--fs-caption);
+  font-weight:var(--fw-medium);
+  letter-spacing:var(--ls-caps);
+  text-transform:uppercase;
+  color:var(--text-muted)
+}
+.seletor__opcoes{
+  display:grid;
+  grid-template-columns:repeat(auto-fill, minmax(220px, 1fr));
+  gap:8px
+}
+.seletor__opcao{
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+  padding:12px 40px 12px 14px;
+  border-radius:var(--r-field);
+  border:1px solid var(--border-field);
+  background:transparent;
+  color:var(--text-1);
+  font:inherit;
+  text-align:left;
+  cursor:pointer;
+  transition:border-color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out)
+}
+.seletor__opcao:hover{
+  border-color:var(--accent);
+  background:var(--accent-wash)
+}
+.seletor__opcao:focus-visible{
+  outline:2px solid var(--accent);
+  outline-offset:2px
+}
+.seletor__nome{
+  font-size:var(--fs-meta);
+  font-weight:var(--fw-semibold);
+  line-height:1.35
+}
+.seletor__meta{
+  font-size:var(--fs-caption);
+  color:var(--text-muted)
+}
+.seletor__mais{
+  position:absolute;
+  top:12px;
+  right:12px;
+  color:var(--accent-text)
+}
+.vera-btn.seletor__generico{
+  align-self:flex-start
+}

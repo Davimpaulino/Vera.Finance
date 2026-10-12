@@ -1,0 +1,292 @@
+.vera-card{
+  background:var(--surface-card);
+  border:1px solid var(--border-hairline);
+  border-radius:var(--r-card);
+  padding:var(--sp-5);
+  display:flex;
+  flex-direction:column;
+  gap:var(--sp-3);
+  overflow:hidden;
+  min-width:0
+}
+.vera-card--wide{
+  border-radius:var(--r-panel)
+}
+.vera-card--flat{
+  background:transparent
+}
+.vera-card--pad-none{
+  padding:0;
+  gap:0
+}
+.vera-card--pad-sm{
+  padding:var(--sp-4)
+}
+.vera-card--pad-lg{
+  padding:var(--sp-8)
+}
+.vera-card--e1{
+  box-shadow:var(--e1)
+}
+.vera-card--e2{
+  box-shadow:var(--e2)
+}
+.vera-card--click{
+  cursor:pointer
+}
+.vera-card--gap-0{
+  gap:0
+}
+.vera-card--gap-14{
+  gap:14px
+}
+.vera-card--gap-18{
+  gap:18px
+}
+.vera-badge{
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  padding:3px 10px;
+  border-radius:var(--r-pill);
+  font-size:var(--fs-micro);
+  font-weight:var(--fw-medium);
+  line-height:1.4;
+  white-space:nowrap;
+  background:var(--surface-key);
+  color:var(--text-2)
+}
+.vera-badge--lg{
+  padding:5px 12px;
+  font-size:var(--fs-caption)
+}
+.vera-badge--caps{
+  letter-spacing:var(--ls-caps);
+  text-transform:uppercase
+}
+.vera-badge--accent{
+  background:var(--accent-wash);
+  color:var(--accent-text)
+}
+.vera-badge--success{
+  background:var(--success-wash);
+  color:var(--success)
+}
+.vera-badge--warning{
+  background:var(--warning-wash);
+  color:var(--warning)
+}
+.vera-badge--danger{
+  background:var(--danger-wash);
+  color:var(--danger)
+}
+.vera-badge--data{
+  background:var(--data-wash);
+  color:var(--data)
+}
+.vera-btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  height:44px;
+  padding:0 22px;
+  gap:8px;
+  font-family:var(--font-sans);
+  font-size:var(--fs-body);
+  font-weight:var(--fw-bold);
+  border-radius:var(--r-pill);
+  cursor:pointer;
+  white-space:nowrap;
+  background:var(--accent);
+  color:var(--on-accent);
+  border:1px solid transparent;
+  transition:background var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out), opacity var(--dur-fast) var(--ease-out)
+}
+.vera-btn--sm{
+  height:36px;
+  padding:0 16px;
+  font-size:var(--fs-meta);
+  gap:6px
+}
+.vera-btn--lg{
+  height:52px;
+  padding:0 32px;
+  font-size:var(--fs-body-lg);
+  gap:10px
+}
+.vera-btn--block{
+  display:flex;
+  width:100%
+}
+.vera-btn--secondary{
+  background:transparent;
+  color:var(--text-1);
+  border-color:var(--border-field)
+}
+.vera-btn--ghost{
+  background:transparent;
+  color:var(--text-1)
+}
+.vera-btn--danger{
+  background:var(--danger);
+  color:var(--on-accent)
+}
+.vera-btn:not([disabled]):active{
+  transform:scale(0.98)
+}
+.vera-btn--primary:not([disabled]):hover{
+  background:var(--accent-hover)
+}
+.vera-btn--secondary:not([disabled]):hover{
+  background:var(--surface-hover);
+  border-color:var(--border-strong)
+}
+.vera-btn--ghost:not([disabled]):hover{
+  background:var(--surface-hover)
+}
+.vera-btn--danger:not([disabled]):hover{
+  filter:brightness(1.08)
+}
+.vera-btn[disabled]{
+  opacity:0.4;
+  cursor:not-allowed
+}
+.vera-chip{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  height:34px;
+  padding:0 14px;
+  border-radius:var(--r-pill);
+  cursor:pointer;
+  font-family:var(--font-sans);
+  font-size:var(--fs-caption);
+  font-weight:var(--fw-medium);
+  white-space:nowrap;
+  background:transparent;
+  color:var(--text-2);
+  border:1px solid var(--border-field);
+  transition:background var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out)
+}
+.vera-chip--sm{
+  height:28px;
+  padding:0 10px
+}
+.vera-chip[aria-pressed='true']{
+  background:var(--surface-key);
+  color:var(--text-1);
+  border-color:var(--border-strong)
+}
+.vera-chip[aria-pressed='false']:hover{
+  background:var(--surface-hover);
+  border-color:var(--border-strong)
+}
+.vera-iconbtn{
+  width:38px;
+  height:38px;
+  border-radius:50%;
+  padding:0;
+  cursor:pointer;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  position:relative;
+  flex-shrink:0;
+  background:var(--surface-field);
+  color:var(--text-2);
+  border:none;
+  transition:background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out)
+}
+.vera-iconbtn--sm{
+  width:32px;
+  height:32px
+}
+.vera-iconbtn--lg{
+  width:44px;
+  height:44px
+}
+.vera-iconbtn--xl{
+  width:62px;
+  height:62px
+}
+.vera-iconbtn--ghost{
+  background:transparent
+}
+.vera-iconbtn--outline{
+  background:transparent;
+  color:var(--text-1);
+  border:1px solid var(--border-field)
+}
+.vera-iconbtn--accent{
+  background:var(--accent);
+  color:var(--on-accent)
+}
+.vera-iconbtn--accent.vera-iconbtn--xl{
+  box-shadow:var(--e2)
+}
+.vera-iconbtn:not([disabled]):hover{
+  background:var(--surface-key);
+  color:var(--text-1)
+}
+.vera-iconbtn--accent:not([disabled]):hover{
+  background:var(--accent-hover);
+  color:var(--on-accent)
+}
+.vera-iconbtn:not([disabled]):active{
+  transform:scale(0.94)
+}
+.vera-iconbtn[disabled]{
+  opacity:0.4;
+  cursor:not-allowed
+}
+.vera-iconbtn__badge{
+  position:absolute;
+  top:-2px;
+  right:-4px;
+  min-width:20px;
+  height:20px;
+  padding:0 6px;
+  border-radius:var(--r-pill);
+  background:var(--danger);
+  color:var(--on-accent);
+  font-size:var(--fs-caption);
+  font-weight:var(--fw-bold);
+  font-variant-numeric:tabular-nums;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  box-shadow:0 0 0 3px var(--surface-app)
+}
+.vera-logo{
+  font-family:var(--font-display);
+  font-weight:700;
+  font-size:22px;
+  letter-spacing:var(--ls-tight);
+  line-height:1;
+  color:var(--text-1);
+  display:inline-flex;
+  align-items:baseline;
+  gap:1px
+}
+.vera-logo--sm{
+  font-size:18px
+}
+.vera-logo--lg{
+  font-size:32px
+}
+.vera-logo--xl{
+  font-size:44px
+}
+.vera-logo__dot{
+  color:var(--accent-dot)
+}
+.vera-logo-mark{
+  display:inline-block;
+  width:12px;
+  height:12px;
+  border-radius:50%;
+  background:var(--accent-dot)
+}
+.vera-logo--pulse{
+  animation:veraPulse 1.6s var(--ease-in-out) infinite
+}

@@ -1,0 +1,351 @@
+a{
+  color:var(--text-1);
+  text-decoration:none
+}
+a:hover{
+  color:var(--accent-text);
+  text-decoration:none
+}
+[data-theme='papel'] a:hover{
+  text-decoration:none
+}
+body{
+  overflow-x:clip
+}
+body.vera-no-scroll{
+  overflow:hidden
+}
+button{
+  font-family:inherit
+}
+@keyframes veraUpIn{
+  from{
+    opacity:0;
+    transform:translateY(14px)
+  }
+  to{
+    opacity:1;
+    transform:none
+  }
+}
+.vera-root{
+  min-height:100vh;
+  background:var(--surface-app);
+  color:var(--text-1);
+  font-family:var(--font-sans);
+  font-size:var(--fs-body);
+  overflow-x:clip
+}
+.vera-page{
+  animation:veraUpIn var(--dur) var(--ease-out)
+}
+.vera-center{
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center
+}
+.vera-stack{
+  display:flex;
+  flex-direction:column;
+  min-width:0
+}
+.vera-stack--2{
+  gap:2px
+}
+.vera-stack--4{
+  gap:4px
+}
+.vera-stack--8{
+  gap:8px
+}
+.vera-stack--10{
+  gap:10px
+}
+.vera-stack--12{
+  gap:12px
+}
+.vera-stack--14{
+  gap:14px
+}
+.vera-stack--16{
+  gap:16px
+}
+.vera-stack--20{
+  gap:20px
+}
+.vera-stack--24{
+  gap:24px
+}
+.vera-stack--28{
+  gap:28px
+}
+.vera-divider{
+  height:1px;
+  background:var(--divider)
+}
+.vera-split{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px
+}
+.vera-split--wrap{
+  flex-wrap:wrap;
+  gap:12px
+}
+.vera-split--base{
+  align-items:baseline
+}
+.vera-inline{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  min-width:0
+}
+.vera-wrap{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap
+}
+.vera-grow{
+  flex:1;
+  min-width:0
+}
+.vera-tile{
+  width:32px;
+  height:32px;
+  border-radius:10px;
+  background:var(--surface-key);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-shrink:0
+}
+.vera-tile--lg{
+  width:40px;
+  height:40px;
+  border-radius:12px
+}
+.vera-tile--success{
+  background:var(--success-wash);
+  color:var(--success)
+}
+.vera-t-title{
+  font-size:var(--fs-body-lg);
+  font-weight:700
+}
+.vera-t-name{
+  font-size:var(--fs-body-lg);
+  font-weight:600
+}
+.vera-t-caption{
+  font-size:var(--fs-caption);
+  color:var(--text-muted)
+}
+.vera-t-meta{
+  font-size:var(--fs-meta);
+  color:var(--text-muted)
+}
+.vera-t-note{
+  font-size:var(--fs-meta);
+  color:var(--text-2);
+  line-height:1.5
+}
+.vera-t-body2{
+  font-size:var(--fs-body);
+  color:var(--text-2)
+}
+.vera-t-num{
+  font-variant-numeric:tabular-nums
+}
+.vera-t-pretty{
+  text-wrap:pretty
+}
+.vera-t-label{
+  font-size:var(--fs-caption);
+  font-weight:600;
+  color:var(--text-muted)
+}
+.vera-t-warning{
+  color:var(--warning)
+}
+.vera-t-danger{
+  color:var(--danger)
+}
+.vera-t-success{
+  color:var(--success)
+}
+.vera-serif-32{
+  font-family:var(--font-serif);
+  font-weight:600;
+  font-size:32px;
+  font-variant-numeric:tabular-nums
+}
+.vera-tip{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:14px 16px;
+  border-radius:var(--r-card);
+  background:var(--accent-wash)
+}
+.vera-tip__text{
+  flex:1;
+  font-size:var(--fs-meta);
+  color:var(--text-2);
+  line-height:1.5
+}
+.vera-btn-row{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap
+}
+.vera-legend{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  font-size:var(--fs-caption);
+  font-weight:500;
+  color:var(--text-muted)
+}
+.vera-legend__now{
+  color:var(--text-2)
+}
+.vera-filter-row{
+  display:flex;
+  gap:12px;
+  align-items:flex-end;
+  flex-wrap:wrap
+}
+.vera-row-form{
+  display:flex;
+  align-items:center;
+  gap:16px;
+  flex-wrap:wrap
+}
+.vera-add-row{
+  display:flex;
+  gap:10px;
+  align-items:center
+}
+.vera-cta-stack{
+  display:flex;
+  gap:12px;
+  flex-wrap:wrap
+}
+.vera-form{
+  display:flex;
+  flex-direction:column;
+  gap:16px
+}
+.vera-form-error{
+  font-size:var(--fs-meta);
+  color:var(--danger);
+  background:var(--danger-wash);
+  border-radius:var(--r-chip);
+  padding:10px 14px
+}
+@media (max-width:767px){
+  .vera-btn-row{
+    flex-direction:column;
+    align-items:stretch
+  }
+  .vera-btn-row .vera-btn{
+    width:100%
+  }
+  .vera-legend > span:nth-child(3){
+    display:none
+  }
+  .vera-filter-row{
+    flex-direction:column;
+    align-items:stretch
+  }
+  .vera-filter-row .vera-btn{
+    width:100%
+  }
+  .vera-filter-row input,
+  .vera-filter-row select{
+    width:100%;
+    min-width:0
+  }
+  .vera-row-form{
+    align-items:flex-start;
+    gap:12px
+  }
+  .vera-cta-stack{
+    flex-direction:column;
+    align-items:stretch
+  }
+  .vera-cta-stack .vera-btn{
+    width:100%
+  }
+}
+@media (max-width:1199px){
+  main button,
+  header button,
+  section button,
+  [role='dialog'] button{
+    min-height:44px
+  }
+  main button[aria-label]{
+    min-width:44px
+  }
+  .vera-tap{
+    display:inline-flex;
+    align-items:center;
+    min-height:44px
+  }
+}
+.v-more{
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  min-height:44px;
+  font-size:var(--fs-meta);
+  font-weight:700;
+  color:var(--text-1);
+  background:none;
+  border:0;
+  padding:0;
+  cursor:pointer;
+  transition:color var(--dur-fast) var(--ease-out), gap var(--dur) var(--ease-out)
+}
+.v-more:hover{
+  color:var(--accent-text);
+  gap:8px
+}
+.v-link-btn{
+  background:none;
+  border:0;
+  padding:0;
+  font:inherit;
+  color:inherit;
+  cursor:pointer
+}
+.vera-link-strong{
+  font-weight:700
+}
+.vera-toast{
+  position:fixed;
+  left:50%;
+  bottom:24px;
+  transform:translateX(-50%);
+  z-index:100;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  max-width:calc(100vw - 32px);
+  padding:12px 18px;
+  border-radius:var(--r-pill);
+  background:var(--text-1);
+  color:var(--surface-app);
+  font-size:var(--fs-meta);
+  font-weight:600;
+  box-shadow:var(--e2);
+  animation:veraUp var(--dur) var(--ease-out)
+}
+.vera-toast--danger{
+  background:var(--danger);
+  color:var(--on-accent)
+}

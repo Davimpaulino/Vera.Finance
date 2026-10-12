@@ -1,0 +1,31 @@
+.legal{
+  max-width:720px;
+  margin:0 auto;
+  padding:64px var(--gutter-md) 80px;
+  display:flex;
+  flex-direction:column;
+  gap:28px
+}
+.legal__title{
+  font-family:var(--font-display);
+  font-size:clamp(30px, 3.6vw, 44px);
+  font-weight:700;
+  letter-spacing:var(--ls-tight);
+  margin:0
+}
+.legal__block{
+  display:flex;
+  flex-direction:column;
+  gap:8px
+}
+.legal__h2{
+  font-size:var(--fs-title-sm);
+  font-weight:700;
+  margin:0
+}
+.legal__p{
+  font-size:var(--fs-body-lg);
+  line-height:var(--lh-relaxed);
+  color:var(--text-2);
+  margin:0
+}

@@ -1,0 +1,29 @@
+.config{
+  max-width:820px
+}
+.vera-btn.config-senha{
+  align-self:flex-start
+}
+.vera-seg.config-superficie{
+  max-width:240px
+}
+.config-sair{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  width:100%;
+  height:48px;
+  border-radius:999px;
+  border:1px solid var(--danger);
+  background:var(--danger-wash);
+  color:var(--danger);
+  font-size:var(--fs-body);
+  font-weight:700;
+  cursor:pointer;
+  transition:background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out)
+}
+.config-sair:hover{
+  background:var(--danger);
+  color:var(--on-accent)
+}

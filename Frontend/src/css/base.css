@@ -1,0 +1,67 @@
+*,
+*::before,
+*::after{
+  box-sizing:border-box
+}
+body{
+  margin:0;
+  background:var(--surface-app);
+  color:var(--text-1);
+  font-family:var(--font-sans);
+  font-size:var(--fs-body);
+  line-height:var(--lh-normal);
+  -webkit-font-smoothing:antialiased
+}
+h1,
+h2,
+h3,
+h4,
+p{
+  margin:0
+}
+button,
+input,
+select,
+textarea{
+  font-family:inherit
+}
+a{
+  color:var(--accent-text);
+  text-decoration:none
+}
+a:hover{
+  color:var(--ambar-300);
+  text-decoration:underline
+}
+[data-theme='papel'] a:hover{
+  color:var(--accent-hover)
+}
+:focus-visible{
+  outline:2px solid var(--accent);
+  outline-offset:2px;
+  border-radius:4px
+}
+[data-num],
+.vera-num{
+  font-variant-numeric:tabular-nums
+}
+@media (prefers-reduced-transparency:reduce){
+  [data-glass]{
+    background:var(--glass-fallback) !important;
+    backdrop-filter:none !important;
+    -webkit-backdrop-filter:none !important
+  }
+}
+@supports not (backdrop-filter:blur(1px)){
+  [data-glass]{
+    background:var(--glass-fallback)
+  }
+}
+@media (prefers-reduced-motion:reduce){
+  *,
+  *::before,
+  *::after{
+    animation-duration:0.01ms !important;
+    transition-duration:0.01ms !important
+  }
+}

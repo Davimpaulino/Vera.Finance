@@ -1,0 +1,106 @@
+.site-header{
+  position:sticky;
+  top:0;
+  z-index:40;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:24px;
+  height:72px;
+  padding:0 var(--gutter-md);
+  border-bottom:1px solid var(--border-hairline);
+  background:var(--glass-bg);
+  backdrop-filter:blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  -webkit-backdrop-filter:blur(var(--glass-blur)) saturate(var(--glass-saturate))
+}
+.site-nav{
+  display:flex;
+  align-items:center;
+  gap:28px
+}
+.site-navlink{
+  position:relative;
+  display:inline-flex;
+  align-items:center;
+  height:44px;
+  font-weight:600;
+  color:var(--text-2);
+  background:none;
+  border:0;
+  padding:0;
+  font-size:inherit;
+  cursor:pointer;
+  transition:color var(--dur-fast) var(--ease-out)
+}
+.site-navlink:hover{
+  color:var(--text-1)
+}
+.site-navlink__bar{
+  position:absolute;
+  left:0;
+  right:0;
+  bottom:9px;
+  height:2px;
+  border-radius:2px;
+  background:var(--accent);
+  transform:scaleX(0);
+  transform-origin:left center;
+  transition:transform var(--dur) var(--ease-out)
+}
+.site-navlink:hover .site-navlink__bar{
+  transform:scaleX(1)
+}
+.site-menu__scrim{
+  position:fixed;
+  inset:72px 0 0 0;
+  z-index:38;
+  background:var(--scrim)
+}
+.site-menu{
+  position:fixed;
+  top:72px;
+  left:0;
+  right:0;
+  z-index:39;
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+  padding:12px var(--gutter-md) 24px;
+  background:var(--surface-app);
+  border-bottom:1px solid var(--border-hairline);
+  box-shadow:0 24px 48px rgba(0, 0, 0, 0.45)
+}
+.site-menu__item{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  width:100%;
+  min-height:52px;
+  padding:0;
+  font-size:var(--fs-body-lg);
+  font-weight:600;
+  color:var(--text-1);
+  background:none;
+  border:0;
+  border-bottom:1px solid var(--divider);
+  cursor:pointer;
+  text-align:left
+}
+.site-menu__item:last-of-type{
+  border-bottom:none
+}
+.site-menu__item .vera-icon{
+  color:var(--text-muted)
+}
+.site-menu__ctas{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  margin-top:12px
+}
+@media (max-width:767px){
+  .site-header .vera-brand--lg .vera-brand__word,
+  .site-header .vera-brand--lg .vera-logo{
+    font-size:24px
+  }
+}

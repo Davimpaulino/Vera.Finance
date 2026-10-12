@@ -1,0 +1,112 @@
+.vera-shell__main{
+  flex:1;
+  min-width:0;
+  display:flex;
+  flex-direction:column
+}
+.vera-shell__top{
+  position:sticky;
+  top:0;
+  z-index:20;
+  height:var(--topbar-h);
+  display:flex;
+  align-items:center;
+  gap:var(--sp-4);
+  padding:0 var(--gutter-lg);
+  border-bottom:1px solid var(--border-hairline);
+  background:var(--glass-bg);
+  backdrop-filter:blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  -webkit-backdrop-filter:blur(var(--glass-blur)) saturate(var(--glass-saturate))
+}
+.vera-shell__body{
+  padding:var(--sp-8) var(--gutter-lg) var(--sp-22);
+  max-width:calc(var(--content-max) + var(--gutter-lg) * 2);
+  width:100%;
+  display:flex;
+  flex-direction:column;
+  gap:28px
+}
+@media (max-width:1279px){
+  .vera-shell__top{
+    padding:0 var(--gutter-md)
+  }
+  .vera-shell__body{
+    padding:var(--sp-6) var(--gutter-md) var(--sp-18)
+  }
+}
+@media (max-width:767px){
+  .vera-shell__top{
+    padding:0 var(--gutter-sm);
+    height:56px
+  }
+  .vera-shell__body{
+    padding:var(--sp-5) var(--gutter-sm) var(--sp-12)
+  }
+}
+.vera-grid{
+  display:grid;
+  gap:var(--grid-gap)
+}
+.vera-grid--2{
+  grid-template-columns:repeat(2, minmax(0, 1fr))
+}
+.vera-grid--3{
+  grid-template-columns:repeat(3, minmax(0, 1fr))
+}
+.vera-grid--4{
+  grid-template-columns:repeat(4, minmax(0, 1fr))
+}
+.vera-grid--sidebar{
+  grid-template-columns:minmax(0, 2fr) minmax(300px, 1fr)
+}
+.vera-grid--top{
+  align-items:flex-start
+}
+.vera-grid--stretch{
+  align-items:stretch
+}
+@media (max-width:1023px){
+  .vera-grid--4{
+    grid-template-columns:repeat(2, minmax(0, 1fr))
+  }
+  .vera-grid--3,
+  .vera-grid--sidebar{
+    grid-template-columns:minmax(0, 1fr)
+  }
+}
+@media (max-width:639px){
+  .vera-grid--2,
+  .vera-grid--4{
+    grid-template-columns:minmax(0, 1fr)
+  }
+  .vera-grid{
+    gap:var(--sp-3)
+  }
+}
+.vera-only-desktop{
+  display:initial
+}
+.vera-only-mobile{
+  display:none
+}
+@media (max-width:767px){
+  .vera-only-desktop{
+    display:none
+  }
+  .vera-only-mobile{
+    display:initial
+  }
+}
+.vera-scroll-x{
+  display:flex;
+  gap:var(--sp-2);
+  overflow-x:auto;
+  scrollbar-width:none;
+  max-width:100%
+}
+.vera-scroll-x::-webkit-scrollbar{
+  display:none
+}
+.vera-scroll-x > *{
+  flex-shrink:0
+}

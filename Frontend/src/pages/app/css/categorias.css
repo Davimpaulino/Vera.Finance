@@ -1,0 +1,36 @@
+.cat-hero{
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap:20px;
+  flex-wrap:wrap
+}
+.cat-hero .vera-cta-stack{
+  gap:10px
+}
+.cat-card__name{
+  flex:1;
+  min-width:0;
+  font-size:var(--fs-body-lg);
+  font-weight:700
+}
+.cat-card__livre{
+  display:flex;
+  align-items:baseline;
+  gap:8px;
+  flex-wrap:wrap
+}
+.cat-card__valor{
+  color:var(--text-1)
+}
+.cat-card__valor--warning{
+  color:var(--warning)
+}
+.cat-card__valor--danger{
+  color:var(--danger)
+}
+@media (max-width:767px){
+  .cat-hero > .vera-cta-stack{
+    width:100%
+  }
+}

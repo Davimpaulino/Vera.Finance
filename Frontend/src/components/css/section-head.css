@@ -1,0 +1,44 @@
+.vera-head{
+  display:flex;
+  align-items:baseline;
+  gap:var(--sp-3);
+  flex-wrap:wrap;
+  min-width:0
+}
+.vera-head__label{
+  font-size:var(--fs-caption);
+  font-weight:700;
+  letter-spacing:var(--ls-label);
+  text-transform:uppercase;
+  color:var(--text-muted)
+}
+.vera-head__meta{
+  font-size:var(--fs-caption);
+  font-weight:500;
+  color:var(--text-muted);
+  font-variant-numeric:tabular-nums
+}
+.vera-head__a{
+  margin-left:auto;
+  display:inline-flex;
+  align-items:center
+}
+@media (max-width:767px){
+  .vera-head{
+    row-gap:6px;
+    align-items:center
+  }
+  .vera-head__label{
+    flex:1 1 auto;
+    order:1
+  }
+  .vera-head__a{
+    order:2;
+    margin-left:auto
+  }
+  .vera-head__meta{
+    order:3;
+    flex:1 1 100%;
+    margin-top:-4px
+  }
+}

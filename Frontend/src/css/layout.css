@@ -1,0 +1,18 @@
+:root{
+  --bp-sm:640px;
+  --bp-md:768px;
+  --bp-lg:1024px;
+  --bp-xl:1280px;
+  --bp-2xl:1536px;
+  --sidebar-w:248px;
+  --sidebar-w-collapsed:76px;
+  --topbar-h:64px;
+  --tabbar-h:72px;
+  --content-max:1240px;
+  --reading-max:640px;
+  --gutter-sm:20px;
+  --gutter-md:32px;
+  --gutter-lg:56px;
+  --grid-gap:24px;
+  --tap-min:44px
+}

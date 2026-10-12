@@ -1,0 +1,17 @@
+.vera-page-skeleton{
+  display:flex;
+  flex-direction:column;
+  gap:20px
+}
+.vera-skeleton.vera-page-skeleton__stat{
+  height:110px;
+  border-radius:var(--r-card)
+}
+.vera-skeleton.vera-page-skeleton__panel{
+  height:280px;
+  border-radius:var(--r-panel)
+}
+.vera-skeleton.vera-page-skeleton__card{
+  height:180px;
+  border-radius:var(--r-card)
+}

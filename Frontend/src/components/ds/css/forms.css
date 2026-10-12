@@ -1,0 +1,512 @@
+.vera-sr-input{
+  position:absolute;
+  opacity:0;
+  width:1px;
+  height:1px;
+  margin:0
+}
+.vera-check{
+  position:relative;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  cursor:pointer;
+  min-height:var(--tap-min);
+  min-width:0
+}
+.vera-check--desc{
+  align-items:flex-start
+}
+.vera-check--disabled{
+  cursor:not-allowed;
+  opacity:0.4
+}
+.vera-check__box{
+  width:20px;
+  height:20px;
+  flex-shrink:0;
+  border-radius:6px;
+  background:transparent;
+  border:1px solid var(--border-strong);
+  color:var(--on-accent);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  transition:background var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out)
+}
+.vera-check--desc .vera-check__box{
+  margin-top:2px
+}
+.vera-sr-input:checked + .vera-check__box{
+  background:var(--accent);
+  border-color:var(--accent)
+}
+.vera-sr-input:focus-visible + .vera-check__box{
+  outline:2px solid var(--accent);
+  outline-offset:2px
+}
+.vera-check__text{
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+  min-width:0
+}
+.vera-check__label{
+  font-size:var(--fs-body);
+  color:var(--text-1)
+}
+.vera-check__label--done{
+  color:var(--text-muted);
+  text-decoration:line-through
+}
+.vera-check__desc{
+  font-size:var(--fs-caption);
+  color:var(--text-muted)
+}
+.vera-input{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  min-width:0
+}
+.vera-input__label,
+.vera-select__label{
+  font-size:var(--fs-meta);
+  font-weight:var(--fw-medium);
+  color:var(--text-muted)
+}
+.vera-input__field,
+.vera-select__field{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  background:var(--surface-field);
+  border:1px solid var(--border-field);
+  border-radius:var(--r-field);
+  padding:13px 16px;
+  min-height:48px;
+  transition:border-color var(--dur-fast) var(--ease-out)
+}
+.vera-input__field:focus-within,
+.vera-select__field:focus-within{
+  border-color:var(--accent)
+}
+.vera-input__field--sm,
+.vera-select__field--sm{
+  padding:9px 12px;
+  min-height:36px
+}
+.vera-input__field--invalid{
+  border-color:var(--danger)
+}
+.vera-input__field--disabled{
+  opacity:0.6
+}
+.vera-input__icon{
+  color:var(--text-muted)
+}
+.vera-input__control,
+.vera-select__control{
+  flex:1;
+  min-width:0;
+  background:transparent;
+  border:none;
+  outline:none;
+  color:var(--text-1);
+  font-size:var(--fs-body);
+  font-family:var(--font-sans)
+}
+.vera-input__control::placeholder,
+.vera-money__control::placeholder{
+  color:var(--text-placeholder)
+}
+.vera-input__control--sm,
+.vera-select__control--sm{
+  font-size:var(--fs-meta)
+}
+.vera-input__control--numeric{
+  font-variant-numeric:tabular-nums
+}
+.vera-input__suffix{
+  font-size:var(--fs-meta);
+  color:var(--text-muted);
+  flex-shrink:0
+}
+.vera-input__hint,
+.vera-select__hint,
+.vera-money__hint{
+  font-size:var(--fs-caption);
+  color:var(--text-muted);
+  line-height:1.5
+}
+.vera-input__hint--error,
+.vera-money__hint--error{
+  color:var(--danger)
+}
+.vera-money{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  min-width:0
+}
+.vera-money__label{
+  font-size:var(--fs-caption);
+  font-weight:var(--fw-medium);
+  letter-spacing:var(--ls-caps);
+  text-transform:uppercase;
+  color:var(--text-muted)
+}
+.vera-money__field{
+  display:flex;
+  align-items:baseline;
+  gap:8px;
+  border-bottom:1px solid var(--border-field);
+  padding-bottom:10px;
+  transition:border-color var(--dur-fast) var(--ease-out)
+}
+.vera-money__field:focus-within{
+  border-color:var(--accent)
+}
+.vera-money__field--sm{
+  padding-bottom:6px
+}
+.vera-money__field--error{
+  border-color:var(--danger)
+}
+.vera-money__prefix{
+  font-size:var(--fs-num);
+  font-weight:var(--fw-medium);
+  color:var(--text-muted)
+}
+.vera-money__field--sm .vera-money__prefix{
+  font-size:var(--fs-meta)
+}
+.vera-money__control{
+  flex:1;
+  min-width:0;
+  background:transparent;
+  border:none;
+  outline:none;
+  color:var(--text-1);
+  font-family:var(--font-sans);
+  font-weight:var(--fw-semibold);
+  font-size:var(--fs-display-sm);
+  font-variant-numeric:tabular-nums;
+  line-height:1.1
+}
+.vera-money__field--sm .vera-money__control{
+  font-size:var(--fs-num)
+}
+.vera-money__control--danger{
+  color:var(--danger)
+}
+.vera-money__hint{
+  font-variant-numeric:tabular-nums
+}
+.vera-seg{
+  display:flex;
+  gap:0;
+  padding:4px;
+  border-radius:var(--r-pill);
+  background:var(--seg-track);
+  min-width:0
+}
+.vera-seg__opt{
+  flex:1;
+  min-width:0;
+  border:none;
+  cursor:pointer;
+  padding:8px 14px;
+  border-radius:var(--r-pill);
+  font-family:var(--font-sans);
+  font-size:var(--fs-body);
+  font-weight:var(--fw-medium);
+  background:transparent;
+  color:var(--text-muted);
+  box-shadow:none;
+  transition:background var(--dur) var(--ease-out), color var(--dur) var(--ease-out);
+  white-space:nowrap
+}
+.vera-seg--sm .vera-seg__opt{
+  font-size:var(--fs-meta)
+}
+.vera-seg__opt[aria-selected='true']{
+  font-weight:var(--fw-bold);
+  background:var(--seg-active-bg);
+  color:var(--seg-active-fg);
+  box-shadow:var(--e1)
+}
+.vera-seg__opt[aria-selected='false']:hover{
+  color:var(--text-1)
+}
+.vera-select__ancora{
+  position:relative
+}
+.vera-select{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  min-width:0
+}
+.vera-select__field{
+  gap:8px;
+  width:100%;
+  cursor:pointer;
+  text-align:left;
+  font:inherit;
+  color:var(--text-1)
+}
+.vera-select__field--disabled{
+  cursor:not-allowed;
+  opacity:0.6
+}
+.vera-select--open .vera-select__field{
+  border-color:var(--accent)
+}
+.vera-select__control{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  overflow:hidden;
+  white-space:nowrap;
+  text-overflow:ellipsis
+}
+.vera-select__control--vazio{
+  color:var(--text-placeholder)
+}
+.vera-select__icone{
+  color:var(--text-muted);
+  flex-shrink:0
+}
+.vera-select__chev{
+  color:var(--text-muted);
+  flex-shrink:0;
+  transition:transform var(--dur-fast) var(--ease-out)
+}
+.vera-select--open .vera-select__chev{
+  transform:rotate(180deg)
+}
+.vera-select__scrim{
+  display:none
+}
+.vera-select__list{
+  position:absolute;
+  top:100%;
+  left:0;
+  right:0;
+  z-index:90;
+  margin:6px 0 0;
+  padding:6px;
+  list-style:none;
+  max-height:264px;
+  overflow-y:auto;
+  background:var(--surface-card);
+  border:1px solid var(--border-field);
+  border-radius:var(--r-field);
+  box-shadow:var(--e2);
+  animation:veraUp var(--dur-fast) var(--ease-out)
+}
+.vera-select__list--acima{
+  top:auto;
+  bottom:100%;
+  margin:0 0 6px
+}
+.vera-select__option{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  min-height:40px;
+  padding:8px 12px;
+  border-radius:calc(var(--r-field) - 4px);
+  cursor:pointer;
+  font-size:var(--fs-body);
+  color:var(--text-2)
+}
+.vera-select__option--ativa{
+  background:var(--surface-hover);
+  color:var(--text-1)
+}
+.vera-select__option--escolhida{
+  color:var(--text-1);
+  font-weight:var(--fw-semibold)
+}
+.vera-select__option--escolhida .vera-select__icone{
+  color:var(--accent-text)
+}
+.vera-select__option-label{
+  flex:1;
+  min-width:0
+}
+.vera-select__check{
+  color:var(--accent-text)
+}
+@media (max-width:767px){
+  .vera-select__scrim{
+    display:block;
+    position:fixed;
+    inset:0;
+    z-index:95;
+    background:var(--scrim)
+  }
+  .vera-select__list,
+  .vera-select__list--acima{
+    position:fixed;
+    top:auto;
+    bottom:0;
+    left:0;
+    right:0;
+    z-index:96;
+    margin:0;
+    max-height:60vh;
+    padding:12px 12px 24px;
+    border-radius:var(--r-sheet) var(--r-sheet) 0 0;
+    box-shadow:var(--e-sheet);
+    animation:veraSheet var(--dur) var(--ease-out)
+  }
+  .vera-select__option{
+    min-height:48px
+  }
+}
+.vera-switch{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:var(--sp-4);
+  cursor:pointer;
+  min-height:var(--tap-min);
+  min-width:0
+}
+.vera-switch--disabled{
+  cursor:not-allowed;
+  opacity:0.4
+}
+.vera-switch__text{
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+  min-width:0
+}
+.vera-switch__label{
+  font-size:var(--fs-body);
+  color:var(--text-1)
+}
+.vera-switch__desc{
+  font-size:var(--fs-caption);
+  color:var(--text-muted);
+  line-height:1.5
+}
+.vera-switch__ctl{
+  position:relative;
+  flex-shrink:0
+}
+.vera-switch__track{
+  display:block;
+  width:44px;
+  height:26px;
+  border-radius:var(--r-pill);
+  background:var(--surface-key);
+  border:1px solid var(--border-field);
+  transition:background var(--dur) var(--ease-out)
+}
+.vera-switch__thumb{
+  display:block;
+  width:20px;
+  height:20px;
+  border-radius:50%;
+  margin-top:2px;
+  margin-left:2px;
+  background:var(--text-2);
+  transition:margin-left var(--dur) var(--ease-out)
+}
+.vera-sr-input:checked + .vera-switch__track{
+  background:var(--accent);
+  border-color:var(--accent)
+}
+.vera-sr-input:checked + .vera-switch__track .vera-switch__thumb{
+  margin-left:21px;
+  background:var(--on-accent)
+}
+.vera-sr-input:focus-visible + .vera-switch__track{
+  outline:2px solid var(--accent);
+  outline-offset:2px
+}
+.vera-tabs{
+  display:flex;
+  gap:var(--sp-6);
+  border-bottom:1px solid var(--border-hairline);
+  min-width:0
+}
+.vera-tabs__tab{
+  background:transparent;
+  border:none;
+  cursor:pointer;
+  padding:0 0 12px;
+  font-family:var(--font-sans);
+  font-size:var(--fs-body);
+  font-weight:var(--fw-medium);
+  color:var(--text-muted);
+  border-bottom:2px solid transparent;
+  margin-bottom:-1px;
+  white-space:nowrap;
+  transition:color var(--dur-fast) var(--ease-out)
+}
+.vera-tabs__tab:hover{
+  color:var(--text-1)
+}
+.vera-tabs__tab[aria-selected='true']{
+  font-weight:var(--fw-bold);
+  color:var(--text-1);
+  border-bottom-color:var(--accent)
+}
+.vera-tabs__count{
+  margin-left:6px;
+  color:var(--text-muted);
+  font-weight:var(--fw-medium);
+  font-variant-numeric:tabular-nums
+}
+.vera-icones{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  min-width:0
+}
+.vera-icones__label{
+  font-size:var(--fs-meta);
+  font-weight:var(--fw-medium);
+  color:var(--text-muted)
+}
+.vera-icones__grade{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px
+}
+.vera-icone{
+  width:44px;
+  height:44px;
+  border-radius:12px;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:var(--surface-key);
+  border:1px solid transparent;
+  color:var(--text-2);
+  transition:border-color var(--dur-fast) var(--ease-out)
+}
+.vera-icone:hover{
+  border-color:var(--border-strong)
+}
+.vera-icone:focus-visible{
+  outline:2px solid var(--accent);
+  outline-offset:2px
+}
+.vera-icone[aria-checked='true']{
+  background:var(--accent-wash);
+  border-color:var(--accent);
+  color:var(--accent-text)
+}
+.vera-card:has(.vera-select--open){
+  position:relative;
+  z-index:5;
+  overflow:visible
+}

@@ -1,0 +1,32 @@
+.gasto-produtos{
+  list-style:none;
+  margin:0;
+  padding:12px 14px;
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  border-radius:var(--r-field);
+  background:var(--surface-sunken)
+}
+.gasto-produtos__item{
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  font-size:var(--fs-meta);
+  color:var(--text-2)
+}
+.gasto-produtos__nome{
+  min-width:0;
+  overflow:hidden;
+  white-space:nowrap;
+  text-overflow:ellipsis
+}
+.gasto-produtos__valor{
+  flex-shrink:0;
+  font-variant-numeric:tabular-nums;
+  color:var(--text-1)
+}
+.gasto-produtos__mais{
+  font-size:var(--fs-caption);
+  color:var(--text-muted)
+}

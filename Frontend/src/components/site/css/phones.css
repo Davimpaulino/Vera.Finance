@@ -1,0 +1,61 @@
+.phone{
+  position:relative;
+  display:block;
+  flex-shrink:0
+}
+.phone__img{
+  display:block;
+  width:100%;
+  height:auto
+}
+.phone__img--papel{
+  display:none
+}
+[data-theme='papel'] .phone__img--tinta{
+  display:none
+}
+[data-theme='papel'] .phone__img--papel{
+  display:block
+}
+.phone--painel{
+  width:300px;
+  transform:rotate(-6deg) translateY(-16px);
+  z-index:2;
+  filter:drop-shadow(0 40px 40px rgba(0, 0, 0, 0.55))
+}
+.phone--comparar{
+  width:252px;
+  transform:rotate(8deg) translate(-42px, 74px);
+  z-index:1;
+  filter:drop-shadow(0 34px 34px rgba(0, 0, 0, 0.5))
+}
+.phones-lista{
+  flex:1 1 400px;
+  min-width:300px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px 0
+}
+.phone--lista{
+  width:196px;
+  transform:rotate(-5deg);
+  z-index:2;
+  filter:drop-shadow(0 26px 27px rgba(0, 0, 0, 0.5))
+}
+.phone--impacto{
+  width:172px;
+  transform:rotate(6deg) translate(-18px, 40px);
+  z-index:1;
+  filter:drop-shadow(0 22px 23px rgba(0, 0, 0, 0.45))
+}
+@media (max-width:767px){
+  .phone--comparar{
+    display:none
+  }
+}
+@media (max-width:420px){
+  .phone--painel{
+    width:272px
+  }
+}

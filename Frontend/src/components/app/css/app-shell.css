@@ -1,0 +1,215 @@
+.app{
+  display:flex;
+  min-height:100vh;
+  align-items:flex-start
+}
+.app__scrim{
+  display:none
+}
+.app-aside{
+  position:sticky;
+  top:0;
+  left:0;
+  z-index:60;
+  height:100vh;
+  width:248px;
+  flex-shrink:0;
+  background:var(--surface-app);
+  border-right:1px solid var(--border-hairline);
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+  padding:20px 14px;
+  overflow:hidden;
+  transition:transform var(--dur) var(--ease-out), width var(--dur) var(--ease-out), visibility var(--dur)
+}
+.app-aside__top{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  min-height:40px
+}
+.vera-brand.app-aside__brand{
+  padding-left:6px
+}
+.app-aside__dot{
+  display:none
+}
+.app-aside__close{
+  display:none
+}
+.app-aside__nav{
+  display:flex;
+  flex-direction:column;
+  gap:4px
+}
+.app-aside__footer{
+  margin-top:auto;
+  display:flex;
+  flex-direction:column;
+  gap:12px
+}
+.app-nav{
+  display:flex;
+  align-items:center;
+  justify-content:flex-start;
+  gap:12px;
+  height:44px;
+  padding:0 14px;
+  border-radius:999px;
+  font-size:var(--fs-body);
+  font-weight:600;
+  flex-shrink:0;
+  color:var(--text-2);
+  transition:background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out)
+}
+.app-nav:hover{
+  background:var(--surface-key);
+  color:var(--text-1)
+}
+.app-nav--on{
+  color:var(--on-accent);
+  background:var(--accent)
+}
+.app-nav--on:hover{
+  background:var(--accent-hover);
+  color:var(--on-accent)
+}
+.app-nav__label{
+  white-space:nowrap
+}
+.app-plan{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  padding:14px;
+  border-radius:var(--r-card);
+  background:var(--accent-wash)
+}
+.app-plan:hover{
+  color:inherit
+}
+.app-plan__head{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  color:var(--accent-text)
+}
+.app-plan__name{
+  font-size:var(--fs-caption);
+  font-weight:700;
+  letter-spacing:var(--ls-label);
+  text-transform:uppercase
+}
+.app-plan__text{
+  font-size:var(--fs-caption);
+  line-height:1.5;
+  color:var(--text-2)
+}
+.app-user.app-nav{
+  height:auto;
+  padding:8px;
+  gap:10px
+}
+.app-user__avatar{
+  width:32px;
+  height:32px;
+  border-radius:999px;
+  background:var(--surface-key);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:var(--fs-meta);
+  font-weight:700;
+  flex-shrink:0;
+  color:var(--text-1)
+}
+.app-user__text{
+  display:flex;
+  flex-direction:column;
+  min-width:0
+}
+.app-user__name{
+  font-size:var(--fs-meta);
+  font-weight:600;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis
+}
+.app-user__cycle{
+  font-size:var(--fs-caption);
+  color:var(--text-muted);
+  font-weight:500
+}
+.app-top__title{
+  display:flex;
+  align-items:baseline;
+  gap:12px;
+  min-width:0;
+  flex:1
+}
+.app-top__h1{
+  font-size:var(--fs-title-sm);
+  font-weight:700;
+  letter-spacing:var(--ls-tight);
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  margin:0
+}
+.app-top__date{
+  font-size:var(--fs-meta);
+  color:var(--text-muted);
+  white-space:nowrap
+}
+.app-top__actions{
+  display:flex;
+  align-items:center;
+  gap:8px
+}
+@media (min-width:768px){
+  .app-aside--collapsed{
+    width:76px
+  }
+  .app-aside--collapsed .app-aside__top{
+    justify-content:center
+  }
+  .app-aside--collapsed .app-aside__brand,
+  .app-aside--collapsed .app-aside__footer,
+  .app-aside--collapsed .app-nav__label{
+    display:none
+  }
+  .app-aside--collapsed .app-aside__dot{
+    display:flex
+  }
+  .app-aside--collapsed .app-nav{
+    justify-content:center
+  }
+}
+.app-aside__dot .vera-logo-mark{
+  display:block
+}
+@media (max-width:767px){
+  .app-aside{
+    position:fixed;
+    width:272px;
+    transform:translateX(-100%);
+    visibility:hidden;
+    box-shadow:var(--e2)
+  }
+  .app-aside--open{
+    transform:none;
+    visibility:visible
+  }
+  .app-aside__close{
+    display:block
+  }
+  .app__scrim--open{
+    display:block;
+    position:fixed;
+    inset:0;
+    z-index:50;
+    background:var(--scrim)
+  }
+}

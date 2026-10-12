@@ -1,0 +1,207 @@
+.vera-icon{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  flex-shrink:0;
+  line-height:1;
+  font-style:normal
+}
+.vera-icon::before{
+  display:block;
+  line-height:1
+}
+.vera-icon--accent{
+  color:var(--accent-text)
+}
+.vera-icon--on-accent{
+  color:var(--on-accent)
+}
+.vera-icon--text-1{
+  color:var(--text-1)
+}
+.vera-icon--text-2{
+  color:var(--text-2)
+}
+.vera-icon--muted{
+  color:var(--text-muted)
+}
+.vera-icon--placeholder{
+  color:var(--text-placeholder)
+}
+.vera-icon--success{
+  color:var(--success)
+}
+.vera-icon--warning{
+  color:var(--warning)
+}
+.vera-icon--danger{
+  color:var(--danger)
+}
+.vera-icon--data{
+  color:var(--data)
+}
+.vera-icon--s8{
+  font-size:8px;
+  width:8px;
+  height:8px
+}
+.vera-icon--s9{
+  font-size:9px;
+  width:9px;
+  height:9px
+}
+.vera-icon--s10{
+  font-size:10px;
+  width:10px;
+  height:10px
+}
+.vera-icon--s11{
+  font-size:11px;
+  width:11px;
+  height:11px
+}
+.vera-icon--s12{
+  font-size:12px;
+  width:12px;
+  height:12px
+}
+.vera-icon--s13{
+  font-size:13px;
+  width:13px;
+  height:13px
+}
+.vera-icon--s14{
+  font-size:14px;
+  width:14px;
+  height:14px
+}
+.vera-icon--s15{
+  font-size:15px;
+  width:15px;
+  height:15px
+}
+.vera-icon--s16{
+  font-size:16px;
+  width:16px;
+  height:16px
+}
+.vera-icon--s17{
+  font-size:17px;
+  width:17px;
+  height:17px
+}
+.vera-icon--s18{
+  font-size:18px;
+  width:18px;
+  height:18px
+}
+.vera-icon--s19{
+  font-size:19px;
+  width:19px;
+  height:19px
+}
+.vera-icon--s20{
+  font-size:20px;
+  width:20px;
+  height:20px
+}
+.vera-icon--s21{
+  font-size:21px;
+  width:21px;
+  height:21px
+}
+.vera-icon--s22{
+  font-size:22px;
+  width:22px;
+  height:22px
+}
+.vera-icon--s23{
+  font-size:23px;
+  width:23px;
+  height:23px
+}
+.vera-icon--s24{
+  font-size:24px;
+  width:24px;
+  height:24px
+}
+.vera-icon--s25{
+  font-size:25px;
+  width:25px;
+  height:25px
+}
+.vera-icon--s26{
+  font-size:26px;
+  width:26px;
+  height:26px
+}
+.vera-icon--s27{
+  font-size:27px;
+  width:27px;
+  height:27px
+}
+.vera-icon--s28{
+  font-size:28px;
+  width:28px;
+  height:28px
+}
+.vera-icon--s29{
+  font-size:29px;
+  width:29px;
+  height:29px
+}
+.vera-icon--s30{
+  font-size:30px;
+  width:30px;
+  height:30px
+}
+.vera-icon--s31{
+  font-size:31px;
+  width:31px;
+  height:31px
+}
+.vera-icon--s32{
+  font-size:32px;
+  width:32px;
+  height:32px
+}
+.vera-icon--s33{
+  font-size:33px;
+  width:33px;
+  height:33px
+}
+.vera-icon--s34{
+  font-size:34px;
+  width:34px;
+  height:34px
+}
+.vera-icon--s35{
+  font-size:35px;
+  width:35px;
+  height:35px
+}
+.vera-icon--s36{
+  font-size:36px;
+  width:36px;
+  height:36px
+}
+.vera-icon--s37{
+  font-size:37px;
+  width:37px;
+  height:37px
+}
+.vera-icon--s38{
+  font-size:38px;
+  width:38px;
+  height:38px
+}
+.vera-icon--s39{
+  font-size:39px;
+  width:39px;
+  height:39px
+}
+.vera-icon--s40{
+  font-size:40px;
+  width:40px;
+  height:40px
+}

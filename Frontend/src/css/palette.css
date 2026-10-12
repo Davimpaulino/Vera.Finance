@@ -1,0 +1,31 @@
+:root{
+  --tinta-900:#0a0c0e;
+  --tinta-800:#0c0e10;
+  --tinta-700:#14171a;
+  --tinta-600:#181c20;
+  --tinta-500:#22262b;
+  --papel-000:#ffffff;
+  --papel-100:#faf8f5;
+  --papel-200:#f0ede8;
+  --papel-300:#e5e1da;
+  --cinza-050:#f5f2ee;
+  --cinza-300:#b8bcc2;
+  --cinza-500:#8a8f96;
+  --cinza-600:#6b7075;
+  --cinza-700:#5a5f66;
+  --cinza-800:#4a4f55;
+  --cinza-900:#17191c;
+  --ambar-300:#e8834e;
+  --ambar-400:#e8843f;
+  --ambar-500:#d96c2f;
+  --ambar-700:#a84d14;
+  --ardosia-100:#dce5e7;
+  --ardosia-400:#5d7d88;
+  --ardosia-600:#33505a;
+  --verde-400:#4ecb8b;
+  --verde-700:#0f6b3f;
+  --amarelo-400:#e8b93a;
+  --amarelo-700:#8a6410;
+  --vermelho-400:#e8695c;
+  --vermelho-700:#b8281b
+}

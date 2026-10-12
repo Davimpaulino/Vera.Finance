@@ -1,0 +1,19 @@
+.painel-notas__head{
+  padding:14px 16px 10px
+}
+.painel-notas__empty{
+  padding:4px 16px 16px;
+  font-size:var(--fs-meta);
+  color:var(--text-muted)
+}
+.painel-vazio{
+  padding:16px;
+  font-size:var(--fs-meta);
+  color:var(--text-muted)
+}
+.painel-tip__icon{
+  color:var(--accent-text)
+}
+.vera-btn-row.painel-acoes{
+  margin-top:4px
+}
