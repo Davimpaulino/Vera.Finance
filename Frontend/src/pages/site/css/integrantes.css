@@ -81,14 +81,3 @@
   line-height:1.25;
   text-wrap:balance
 }
-.integrante__funcao{
-  font-size:var(--fs-body);
-  line-height:var(--lh-relaxed);
-  color:var(--text-2);
-  margin:0;
-  text-wrap:pretty
-}
-.integrante__funcao--vazia{
-  color:var(--text-muted);
-  font-style:italic
-}
