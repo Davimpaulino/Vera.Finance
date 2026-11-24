@@ -6,6 +6,8 @@ import { pareceTokenFirebase, verificarTokenFirebase } from '../utils/tokenFireb
 import { ContaModel } from '../models/ContaModel.js';
 
 const paraBase64 = texto => Buffer.from(texto).toString('base64url');
+// Sessão do login próprio vale 30 dias; depois a pessoa entra de novo.
+const VALIDADE_DO_TOKEN_MS = 30 * 24 * 60 * 60 * 1000;
 
 export function assinarToken(dados) {
   const corpo = paraBase64(JSON.stringify({ ...dados, emitidoEm: Date.now() }));
@@ -29,7 +31,9 @@ function lerTokenProprio(token) {
   )
     return null;
   try {
-    return JSON.parse(Buffer.from(corpo, 'base64url').toString('utf8'));
+    const dados = JSON.parse(Buffer.from(corpo, 'base64url').toString('utf8'));
+    if (!dados.emitidoEm || Date.now() - dados.emitidoEm > VALIDADE_DO_TOKEN_MS) return null;
+    return dados;
   } catch {
     return null;
   }

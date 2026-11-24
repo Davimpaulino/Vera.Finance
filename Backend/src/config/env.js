@@ -1,4 +1,21 @@
+import { randomBytes } from 'node:crypto';
+
 process.env.TZ = process.env.TZ || 'America/Sao_Paulo';
+
+// Segredo que assina o token do login próprio. Sem ele configurado, qualquer pessoa que lesse o
+// código poderia forjar um token de qualquer conta. Por isso, na falta do segredo, sorteia um a cada
+// início (as sessões do login próprio caem quando o servidor reinicia) e avisa no log.
+const SEGREDO_FRACO = new Set(['', 'troque-este-segredo']);
+function segredoDeLogin() {
+  const definido = process.env.SEGREDO_LOGIN || '';
+  if (!SEGREDO_FRACO.has(definido) && definido.length >= 32) return definido;
+  if (process.env.NODE_ENV !== 'test')
+    console.warn(
+      '[segurança] SEGREDO_LOGIN ausente ou curto (mínimo 32 caracteres). Usando um segredo aleatório: ' +
+        'as sessões do login por senha caem a cada reinício. Configure SEGREDO_LOGIN no Render.'
+    );
+  return randomBytes(48).toString('base64url');
+}
 
 export const configuracao = {
   porta: Number(process.env.PORT) || 4000,
@@ -18,7 +35,7 @@ export const configuracao = {
     emailCliente: process.env.FIREBASE_CLIENT_EMAIL || '',
     chavePrivada: (process.env.FIREBASE_PRIVATE_KEY || '').replace(/\\n/g, '\n')
   },
-  segredoLogin: process.env.SEGREDO_LOGIN || 'troque-este-segredo',
+  segredoLogin: segredoDeLogin(),
   idProjetoFirebase: process.env.FIREBASE_PROJECT_ID || 'verafinance-d43d6'
 };
 

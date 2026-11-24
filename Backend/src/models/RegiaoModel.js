@@ -6,7 +6,9 @@ import { RedeModel } from './RedeModel.js';
 // A resposta fica guardada por 7 dias por região para não repetir a consulta a cada busca.
 const SERVIDORES = [
   'https://overpass-api.de/api/interpreter',
-  'https://maps.mail.ru/osm/tools/overpass/api/interpreter'
+  // Servidor de reserva na União Europeia (antes era um servidor na Rússia, fora do padrão da LGPD
+  // para transferência internacional).
+  'https://overpass.kumi.systems/api/interpreter'
 ];
 const VALIDADE_MS = 7 * 24 * 60 * 60 * 1000;
 const RAIO_MAXIMO_KM = 15;
@@ -49,7 +51,10 @@ function paraMercado(elemento) {
 }
 
 async function consultar(origem, raioKm) {
-  const perto = `(around:${Math.round(raioKm * 1000)},${origem.lat},${origem.lng})`;
+  // O ponto vai arredondado (~100 m): o mapa não precisa do endereço exato de quem pergunta.
+  const lat = Number(origem.lat).toFixed(3);
+  const lng = Number(origem.lng).toFixed(3);
+  const perto = `(around:${Math.round(raioKm * 1000) + 150},${lat},${lng})`;
   const consulta = `[out:json][timeout:25];(nwr[shop=supermarket]${perto};nwr[shop=wholesale]${perto};);out center tags;`;
   for (const servidor of [...SERVIDORES, SERVIDORES[0]]) {
     try {

@@ -53,13 +53,35 @@ export default function App() {
   }, [user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    const titulos = {
-      '/': 'vera.finance',
-      '/precos': 'Preços · vera.finance',
-      '/entrar': 'Entrar · vera.finance',
-      '/cadastro': 'Criar conta · vera.finance'
+    // Título e descrição por página (o Google usa os dois no resultado da busca).
+    const paginas = {
+      '/': [
+        'vera.finance · controle de gastos e comparador de preços de supermercado',
+        'Organize a renda por categorias, saiba até que dia o dinheiro dura e compare o preço da sua lista de compras nos supermercados perto de você. Grátis.'
+      ],
+      '/precos': [
+        'Planos e preços · vera.finance',
+        'Comece grátis. Compare o plano grátis e o vera+ para controle de gastos, metas, modo família e leitura de notas fiscais.'
+      ],
+      '/entrar': ['Entrar · vera.finance', 'Entre na sua conta da vera.finance.'],
+      '/cadastro': [
+        'Criar conta grátis · vera.finance',
+        'Crie a sua conta grátis e descubra até que dia o seu dinheiro dura.'
+      ],
+      '/termos': ['Termos de uso · vera.finance', 'Termos de uso da vera.finance.'],
+      '/privacidade': [
+        'Política de privacidade · vera.finance',
+        'Como a vera.finance trata os seus dados pessoais, conforme a LGPD.'
+      ]
     };
-    document.title = titulos[path] || 'vera.finance';
+    const [titulo, descricao] = paginas[path] || ['vera.finance', paginas['/'][1]];
+    document.title = titulo;
+    document.querySelector('meta[name="description"]')?.setAttribute('content', descricao);
+    document.querySelector('link[rel="canonical"]')?.setAttribute('href', `${window.location.origin}${path}`);
+    // Área logada não entra no Google.
+    document
+      .querySelector('meta[name="robots"]')
+      ?.setAttribute('content', path.startsWith('/app') || path.startsWith('/onboarding') ? 'noindex, nofollow' : 'index, follow');
   }, [path]);
 
   if (path === '/') return <Landing />;

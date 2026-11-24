@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /app
+Disallow: /onboarding
+
+Sitemap: https://vera-finance.onrender.com/sitemap.xml

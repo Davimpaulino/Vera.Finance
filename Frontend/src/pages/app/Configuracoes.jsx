@@ -205,6 +205,15 @@ export default function Configuracoes() {
       toast(e.message, 'danger');
     }
   };
+  const desistirDeApagar = async () => {
+    try {
+      await api.post('/me/cancelar-exclusao', {});
+      setUser({ ...user, exclusaoAgendadaPara: null });
+      toast('Pronto: a conta não será mais apagada.');
+    } catch (e) {
+      toast(e.message, 'danger');
+    }
+  };
   const exportar = async () => {
     try {
       await api.download('/lancamentos/export', 'vera-lancamentos.csv');
@@ -428,13 +437,23 @@ export default function Configuracoes() {
             meta="confirme as pendentes no painel"
             onClick={() => navigate('/app')}
           />
-          <ListRow
-            icon="trash-2"
-            title="Apagar a conta"
-            meta="apaga tudo em 30 dias, sem volta"
-            last
-            onClick={() => setConfirmar('apagar')}
-          />
+          {user.exclusaoAgendadaPara ? (
+            <ListRow
+              icon="repeat"
+              title="Desistir de apagar a conta"
+              meta={`a conta será apagada em ${diaDeMes(user.exclusaoAgendadaPara)}`}
+              last
+              onClick={desistirDeApagar}
+            />
+          ) : (
+            <ListRow
+              icon="trash-2"
+              title="Apagar a conta"
+              meta="apaga tudo em 30 dias; até lá dá para desistir"
+              last
+              onClick={() => setConfirmar('apagar')}
+            />
+          )}
         </Card>
         <button type="button" className="config-sair" onClick={sair}>
           <Icon name="log-out" size={18} />

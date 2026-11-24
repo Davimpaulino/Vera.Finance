@@ -1,5 +1,6 @@
 import { Router } from '../utils/router.js';
 import { exigirLogin } from '../middlewares/auth.js';
+import { limitar } from '../middlewares/limite.js';
 import { authController } from '../controllers/authController.js';
 import { userController } from '../controllers/userController.js';
 import { onboardingController } from '../controllers/onboardingController.js';
@@ -17,15 +18,21 @@ import { notificacaoController } from '../controllers/notificacaoController.js';
 
 const r = new Router();
 const auth = exigirLogin;
+const MINUTO = 60 * 1000;
+const limiteDeLogin = limitar('login', 10, 15 * MINUTO);
+const limiteDeCadastro = limitar('cadastro', 5, 60 * MINUTO);
+const limiteDeConsulta = limitar('email', 20, 15 * MINUTO);
+const limiteDeLeads = limitar('leads', 5, 60 * MINUTO);
+const limiteDeNotas = limitar('notas', 30, 60 * MINUTO);
 
 // Públicas
 r.get('/api/saude', publicoController.saude);
 r.get('/api/planos', publicoController.planos);
-r.post('/api/leads', publicoController.lead);
+r.post('/api/leads', limiteDeLeads, publicoController.lead);
 r.get('/api/auth/configuracao', authController.configuracao);
-r.post('/api/auth/cadastrar', authController.cadastrar);
-r.post('/api/auth/entrar', authController.entrar);
-r.post('/api/auth/email-em-uso', authController.emailEmUso);
+r.post('/api/auth/cadastrar', limiteDeCadastro, authController.cadastrar);
+r.post('/api/auth/entrar', limiteDeLogin, authController.entrar);
+r.post('/api/auth/email-em-uso', limiteDeConsulta, authController.emailEmUso);
 r.get('/api/mercados', mercadoController.list);
 r.get('/api/onboarding/raio', onboardingController.raio);
 
@@ -36,7 +43,8 @@ r.patch('/api/me', auth, userController.update);
 r.patch('/api/me/plano', auth, userController.trocarPlano);
 r.post('/api/me/cancelar-assinatura', auth, userController.cancelarAssinatura);
 r.delete('/api/me', auth, userController.agendarExclusao);
-r.post('/api/me/senha', auth, authController.trocarSenha);
+r.post('/api/me/cancelar-exclusao', auth, userController.cancelarExclusao);
+r.post('/api/me/senha', limiteDeLogin, auth, authController.trocarSenha);
 
 // Cadastro guiado
 r.post('/api/onboarding/sugestao', auth, onboardingController.sugestao);
@@ -76,7 +84,7 @@ r.patch('/api/lista/:id', auth, listaController.update);
 r.delete('/api/lista/:id', auth, listaController.remove);
 
 r.get('/api/notas', auth, notaController.pendentes);
-r.post('/api/notas/ler', auth, notaController.ler);
+r.post('/api/notas/ler', limiteDeNotas, auth, notaController.ler);
 r.post('/api/notas/:id/confirmar', auth, notaController.confirmar);
 r.delete('/api/notas/:id', auth, notaController.descartar);
 
