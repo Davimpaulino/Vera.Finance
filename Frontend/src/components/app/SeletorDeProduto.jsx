@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { Button, Icon, Input } from '../ds/index.js';
 import { api } from '../../services/api.js';
-import { brlCents } from '../../lib/format.js';
 import { cx } from '../../lib/cx.js';
+import { CartaoDeOpcao, FiltrosDeOpcoes, useOpcoesDeProduto } from './OpcoesDeProduto.jsx';
 import './css/seletor-de-produto.css';
 
 const MINIMO = 3;
@@ -66,7 +66,8 @@ export function SeletorDeProduto({ termoInicial = '', onEscolher, onGenerico, ro
   };
 
   const opcoes = busca ? busca.opcoes : [];
-  const visiveis = todas ? opcoes : opcoes.slice(0, VISIVEIS);
+  const estado = useOpcoesDeProduto(opcoes);
+  const visiveis = todas ? estado.filtradas : estado.filtradas.slice(0, VISIVEIS);
   const atual = busca && busca.termo === limpo;
 
   return (
@@ -75,7 +76,9 @@ export function SeletorDeProduto({ termoInicial = '', onEscolher, onGenerico, ro
         className="seletor__busca"
         onSubmit={e => {
           e.preventDefault();
-          if (atual && !opcoes.length && !carregando) generico();
+          if (!atual || carregando) return;
+          if (estado.filtradas.length) escolher(estado.filtradas[0]);
+          else generico();
         }}
       >
         <Input
@@ -104,36 +107,23 @@ export function SeletorDeProduto({ termoInicial = '', onEscolher, onGenerico, ro
         <div className="seletor__resultado">
           <span className="seletor__titulo">
             Escolha a marca e o tamanho · {opcoes.length}{' '}
-            {opcoes.length === 1 ? 'produto encontrado' : 'produtos encontrados'}
+            {opcoes.length === 1 ? 'produto encontrado' : 'produtos encontrados'} nos mercados do seu
+            raio
           </span>
+          <FiltrosDeOpcoes estado={estado} total={opcoes.length} />
           <div className="seletor__opcoes">
             {visiveis.map(opcao => (
-              <button
+              <CartaoDeOpcao
                 key={opcao.chave}
-                type="button"
-                className="seletor__opcao"
+                opcao={opcao}
+                melhorCusto={estado.melhorCusto.has(opcao.chave)}
                 onClick={() => escolher(opcao)}
-              >
-                <span className="seletor__nome">{opcao.produto}</span>
-                <span className="seletor__meta">
-                  {[
-                    opcao.marca,
-                    opcao.tamanho,
-                    opcao.menorPreco != null ? `a partir de ${brlCents(opcao.menorPreco)}` : null,
-                    opcao.redes > 1 ? `em ${opcao.redes} redes` : null
-                  ]
-                    .filter(Boolean)
-                    .join(' · ')}
-                </span>
-                <span className="seletor__mais">
-                  <Icon name="plus" size={15} />
-                </span>
-              </button>
+              />
             ))}
           </div>
-          {opcoes.length > VISIVEIS ? (
+          {estado.filtradas.length > VISIVEIS ? (
             <button type="button" className="v-more" onClick={() => setTodas(v => !v)}>
-              {todas ? 'Mostrar menos' : `Ver todos os ${opcoes.length}`}
+              {todas ? 'Mostrar menos' : `Ver todos os ${estado.filtradas.length}`}
               <Icon name={todas ? 'chevron-down' : 'chevron-right'} size={16} />
             </button>
           ) : null}
@@ -150,9 +140,11 @@ export function SeletorDeProduto({ termoInicial = '', onEscolher, onGenerico, ro
         </span>
       ) : null}
 
-      {onGenerico && atual && !carregando && !opcoes.length ? (
+      {onGenerico && atual && !carregando ? (
         <Button variant="ghost" size="sm" icon="plus" className="seletor__generico" onClick={generico}>
-          Adicionar “{limpo}” sem escolher marca
+          {opcoes.length
+            ? `Tanto faz a marca: adicionar só “${limpo}”`
+            : `Adicionar “${limpo}” sem escolher marca`}
         </Button>
       ) : null}
     </div>

@@ -6,10 +6,12 @@ import { categoriaDoProduto } from './NfceModel.js';
 import { diffDays } from '../utils/dates.js';
 import { round2 } from '../utils/money.js';
 import { normalize, tokens } from '../utils/text.js';
+import { precoPorUnidade, tamanhoDaBusca } from '../utils/embalagem.js';
 
 // Comparação com os mercados reais da região, juntando duas fontes:
 // o preço do site da rede para o CEP da pessoa (só o que a rede entrega ali) e o preço das notas
 // fiscais lidas naquela loja. Mercados sem nenhuma das duas aparecem como "sem preço".
+const PRECO_POR_CEP = new Set(['vtex', 'gpa']);
 const FRESCO_DIAS = 14;
 const VALIDO_DIAS = 45;
 const GENERICAS = new Set([
@@ -145,6 +147,7 @@ function agrupar(resultados) {
       if (grupo) {
         if (!grupo.ofertas.has(rede.id)) grupo.ofertas.set(rede.id, produto);
         grupo.score = Math.max(grupo.score, produto.score);
+        if (produto.preco < grupo.menor) grupo.unidade = produto.unidade;
         grupo.menor = Math.min(grupo.menor, produto.preco);
       } else
         grupos.push({
@@ -152,13 +155,58 @@ function agrupar(resultados) {
           referencia: produto,
           ofertas: new Map([[rede.id, produto]]),
           score: produto.score,
-          menor: produto.preco
+          menor: produto.preco,
+          unidade: produto.unidade
         });
     })
   );
   return grupos.sort(
     (a, b) => b.ofertas.size - a.ofertas.size || b.score - a.score || a.menor - b.menor
   );
+}
+
+/**
+ * Ordem das opções para a pessoa escolher: primeiro o tamanho que ela digitou ("arroz 5kg"),
+ * depois o quanto o nome bate com a busca, depois em quantas redes o produto aparece
+ * (dá para comparar de verdade) e, no empate, o menor preço por kg/l.
+ */
+function ordenarOpcoes(grupos, termo) {
+  const pedido = tamanhoDaBusca(termo);
+  const nota = grupo => ({
+    tamanho: pedido && tamanho(grupo.referencia.produto) === pedido ? 1 : 0,
+    relevancia: Math.round(grupo.score * 10),
+    unitario: precoPorUnidade(grupo.menor, grupo.referencia.produto, grupo.unidade)?.valor ?? Infinity
+  });
+  return grupos
+    .map(grupo => ({ grupo, nota: nota(grupo) }))
+    .sort(
+      (a, b) =>
+        b.nota.tamanho - a.nota.tamanho ||
+        b.nota.relevancia - a.nota.relevancia ||
+        b.grupo.ofertas.size - a.grupo.ofertas.size ||
+        a.nota.unitario - b.nota.unitario ||
+        a.grupo.menor - b.grupo.menor
+    )
+    .map(({ grupo }) => grupo);
+}
+
+/** Uma opção de produto como a tela mostra: marca, tamanho, foto, menor preço e preço por kg/l. */
+function paraOpcao(grupo) {
+  const precos = [...grupo.ofertas.values()].map(oferta => oferta.preco);
+  return {
+    chave: grupo.chave,
+    produto: grupo.referencia.produto,
+    marca: marcaBonita(grupo.referencia.marca),
+    tamanho: tamanho(grupo.referencia.produto).replace('.', ','),
+    ean: grupo.referencia.ean || '',
+    imagem: [...grupo.ofertas.values()].find(oferta => oferta.imagem)?.imagem || '',
+    menorPreco: grupo.menor,
+    maiorPreco: round2(Math.max(...precos)),
+    unidade: grupo.unidade || 'un',
+    precoUnidade: precoPorUnidade(grupo.menor, grupo.referencia.produto, grupo.unidade),
+    redes: grupo.ofertas.size,
+    emPromocao: [...grupo.ofertas.values()].some(oferta => oferta.precoDe > oferta.preco)
+  };
 }
 
 function ultimoDaNota(precos, mercadoId, hoje = new Date()) {
@@ -294,18 +342,7 @@ export const PrecoRegionalModel = {
         ...(await CatalogoModel.buscar(rede, termo, cep))
       }))
     );
-    return agrupar(resultados)
-      .slice(0, 40)
-      .map(grupo => ({
-        chave: grupo.chave,
-        produto: grupo.referencia.produto,
-        marca: marcaBonita(grupo.referencia.marca),
-        tamanho: tamanho(grupo.referencia.produto).replace('.', ','),
-        ean: grupo.referencia.ean || '',
-        imagem: grupo.referencia.imagem || '',
-        menorPreco: grupo.menor,
-        redes: grupo.ofertas.size
-      }));
+    return ordenarOpcoes(agrupar(resultados), termo).slice(0, 40).map(paraOpcao);
   },
 
   /**
@@ -322,7 +359,13 @@ export const PrecoRegionalModel = {
       }))
     );
     const grupos = agrupar(resultados);
-    const alvo = grupos.find(grupo => grupo.chave === opcao) || grupos[0] || null;
+    // Sem escolha, vale o produto vendido em mais redes — no tamanho que a pessoa digitou, se ela disse.
+    const pedido = tamanhoDaBusca(termo);
+    const alvo =
+      grupos.find(grupo => grupo.chave === opcao) ||
+      (pedido && grupos.find(grupo => tamanho(grupo.referencia.produto) === pedido)) ||
+      grupos[0] ||
+      null;
 
     const candidatosDaNota = await PrecoModel.buscarProdutos(termo);
     const produtoDaNota = candidatosDaNota[0]?.produto || null;
@@ -360,11 +403,13 @@ export const PrecoRegionalModel = {
         preco: escolhido.preco,
         precoDe: escolhido.precoDe,
         unidade: escolhido.unidade,
+        precoUnidade: precoPorUnidade(escolhido.preco, escolhido.produto, escolhido.unidade),
         estado: 'fresh',
         idadeDias: 0,
         leituras: 0,
         fonte: 'site',
-        regional: !!cep && rede.plataforma !== 'paguemenos',
+        // Só VTEX e GPA dão o preço da loja que atende o CEP; os outros sites têm preço único.
+        regional: !!cep && PRECO_POR_CEP.has(rede.plataforma),
         lojaOnline: lojaOnline || null,
         produtoNaLoja: escolhido.produto,
         marca: marcaBonita(escolhido.marca),
@@ -385,6 +430,7 @@ export const PrecoRegionalModel = {
           distanciaKm: mercado.distanciaKm,
           tipo: mercado.tipo,
           ...daNota,
+          precoUnidade: precoPorUnidade(daNota.preco, produtoDaNota),
           fonte: 'nota',
           produtoNaLoja: produtoDaNota,
           igual: false
@@ -459,13 +505,9 @@ export const PrecoRegionalModel = {
       produto,
       categoria: produto ? categoriaDoProduto(produto) : null,
       opcao: alvo?.chave || null,
-      opcoes: grupos.slice(0, 30).map(grupo => ({
-        chave: grupo.chave,
-        produto: grupo.referencia.produto,
-        marca: marcaBonita(grupo.referencia.marca),
-        menorPreco: grupo.menor,
-        redes: grupo.ofertas.size
-      })),
+      // Mesmo formato das opções da lista (com código de barras e tamanho), para "Levar para a lista"
+      // guardar o produto exato.
+      opcoes: ordenarOpcoes(grupos, termo).slice(0, 30).map(paraOpcao),
       sugestoes: grupos.slice(0, 6).map(grupo => grupo.referencia.produto),
       mercados: [
         ...comPreco.map(linha => ({
