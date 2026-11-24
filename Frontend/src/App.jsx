@@ -8,7 +8,6 @@ import { PageSkeleton } from './components/Loading.jsx';
 import Landing from './pages/site/Landing.jsx';
 import Precos from './pages/site/Precos.jsx';
 import Legal from './pages/site/Legal.jsx';
-import Integrantes from './pages/site/Integrantes.jsx';
 import Login from './pages/auth/Login.jsx';
 import Cadastro from './pages/auth/Cadastro.jsx';
 const Onboarding = lazy(() => import('./pages/auth/Onboarding.jsx'));
@@ -58,15 +57,13 @@ export default function App() {
       '/': 'vera.finance',
       '/precos': 'Preços · vera.finance',
       '/entrar': 'Entrar · vera.finance',
-      '/cadastro': 'Criar conta · vera.finance',
-      '/integrantes': 'Integrantes · vera.finance'
+      '/cadastro': 'Criar conta · vera.finance'
     };
     document.title = titulos[path] || 'vera.finance';
   }, [path]);
 
   if (path === '/') return <Landing />;
   if (path === '/precos') return <Precos />;
-  if (path === '/integrantes') return <Integrantes />;
   if (path === '/termos') return <Legal tipo="termos" />;
   if (path === '/privacidade') return <Legal tipo="privacidade" />;
 
