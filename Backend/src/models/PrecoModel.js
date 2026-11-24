@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { banco } from '../config/banco.js';
 import { matchScore, normalize } from '../utils/text.js';
 
@@ -23,12 +24,17 @@ export const PrecoModel = {
     return id;
   },
 
-  /** Grava os preços de uma nota lida. A chave da nota no id evita contar a mesma nota duas vezes. */
+  /**
+   * Grava os preços de uma nota lida na base anônima. O id usa um resumo (hash) da chave da nota:
+   * evita contar a mesma nota duas vezes sem guardar a chave de acesso, que abre a nota completa
+   * no portal da Fazenda (e lá pode aparecer o CPF de quem comprou).
+   */
   async gravarDaNota(nota, mercadoId) {
     const data = nota.compradoEm || new Date().toISOString();
+    const resumo = createHash('sha256').update(`vera-precos|${nota.chave}`).digest('hex').slice(0, 24);
     const caminhos = {};
     nota.itens.forEach((item, i) => {
-      caminhos[`precos/${nota.chave}-${i + 1}`] = {
+      caminhos[`precos/n${resumo}-${i + 1}`] = {
         produto: item.produto,
         produtoKey: normalize(item.produto),
         categoria: item.categoria,

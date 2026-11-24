@@ -1,5 +1,6 @@
 import { UsuarioModel } from '../models/UsuarioModel.js';
 import { PlanoModel } from '../models/PlanoModel.js';
+import { ExclusaoModel } from '../models/ExclusaoModel.js';
 import { FamiliaModel } from '../models/FamiliaModel.js';
 import { GeoModel } from '../models/GeoModel.js';
 import { HttpError, toNumber } from '../utils/http.js';
@@ -116,7 +117,13 @@ export const userController = {
 
   async agendarExclusao({ user }) {
     const quando = new Date(Date.now() + 30 * 86400000).toISOString();
-    await UsuarioModel.atualizar(user.uid, { exclusaoAgendadaPara: quando });
+    await ExclusaoModel.agendar(user.uid, quando);
     return { exclusaoAgendadaPara: quando };
+  },
+
+  /** Desiste da exclusão marcada (dentro dos 30 dias). */
+  async cancelarExclusao({ user }) {
+    await ExclusaoModel.cancelar(user.uid);
+    return { exclusaoAgendadaPara: null };
   }
 };

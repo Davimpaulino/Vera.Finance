@@ -17,7 +17,12 @@ import { useUi } from '../../context/UiContext.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { useShell } from '../../components/app/AppShell.jsx';
 import { api } from '../../services/api.js';
-import { brlCents, diaDeMes, idadeNota, km, mes, plural } from '../../lib/format.js';
+import { brlCents, diaDeMes, idadeNota, km, mes, plural, precoUnitario } from '../../lib/format.js';
+import {
+  CartaoDeOpcao,
+  FiltrosDeOpcoes,
+  useOpcoesDeProduto
+} from '../../components/app/OpcoesDeProduto.jsx';
 import { cx } from '../../lib/cx.js';
 import './css/comparar.css';
 
@@ -56,6 +61,7 @@ export default function Comparar() {
   const [ativa, setAtiva] = useState(-1);
   const [localizando, setLocalizando] = useState(false);
   const { setUser } = useAuth();
+  const estadoOpcoes = useOpcoesDeProduto(r && r.opcoes ? r.opcoes : undefined);
 
   const comparar = useCallback(
     async (termo, opcao) => {
@@ -317,30 +323,26 @@ export default function Comparar() {
             label="Escolha a marca e o tamanho"
             meta={`${r.opcoes.length} produtos encontrados para “${termo}”`}
           />
+          <FiltrosDeOpcoes estado={estadoOpcoes} total={r.opcoes.length} />
           <div className="cmp-opcoes">
-            {(todasOpcoes ? r.opcoes : r.opcoes.slice(0, 8)).map(opcao => (
-              <button
+            {(todasOpcoes ? estadoOpcoes.filtradas : estadoOpcoes.filtradas.slice(0, 8)).map(opcao => (
+              <CartaoDeOpcao
                 key={opcao.chave}
-                type="button"
-                aria-pressed={opcao.chave === r.opcao ? 'true' : 'false'}
-                className="cmp-opcao"
+                opcao={opcao}
+                selecionada={opcao.chave === r.opcao}
+                melhorCusto={estadoOpcoes.melhorCusto.has(opcao.chave)}
+                icone="arrow-left-right"
                 onClick={() => comparar(termo, opcao.chave)}
-              >
-                <span className="cmp-opcao__nome">{opcao.produto}</span>
-                <span className="cmp-opcao__meta">
-                  {opcao.marca ? `${opcao.marca} · ` : ''}a partir de {brlCents(opcao.menorPreco)}
-                  {opcao.redes > 1 ? ` · em ${opcao.redes} redes` : ''}
-                </span>
-              </button>
+              />
             ))}
           </div>
-          {r.opcoes.length > 8 ? (
+          {estadoOpcoes.filtradas.length > 8 ? (
             <button
               type="button"
               className="v-more cmp-opcoes__mais"
               onClick={() => setTodasOpcoes(v => !v)}
             >
-              {todasOpcoes ? 'Mostrar menos' : `Ver todos os ${r.opcoes.length}`}
+              {todasOpcoes ? 'Mostrar menos' : `Ver todos os ${estadoOpcoes.filtradas.length}`}
               <Icon name={todasOpcoes ? 'chevron-down' : 'chevron-right'} size={16} />
             </button>
           ) : null}
@@ -383,6 +385,9 @@ export default function Comparar() {
                         <span className="cmp-produto">
                           {m.igual ? m.produtoNaLoja : `parecido: ${m.produtoNaLoja}`}
                         </span>
+                      ) : null}
+                      {m.precoUnidade && m.unidade !== 'kg' ? (
+                        <span className="cmp-produto">{precoUnitario(m.precoUnidade)}</span>
                       ) : null}
                       {m.lojaOnline ? (
                         <span className="cmp-produto">loja que atende o seu CEP: {m.lojaOnline}</span>

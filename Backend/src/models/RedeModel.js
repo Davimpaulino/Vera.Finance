@@ -2,7 +2,8 @@
 // `nomes` reconhece a rede pelo nome ou pela marca do mercado no mapa.
 // `plataforma` diz como ler o site: vtex (catálogo VTEX com regionalização por CEP),
 // gpa (Pão de Açúcar, loja escolhida pelo CEP), paguemenos (página de busca), tenda (API pública
-// do Tenda Atacado) ou occ (Oracle Commerce, busca pública).
+// do Tenda Atacado), occ (Oracle Commerce, busca pública) ou sfcc (Salesforce Commerce Cloud,
+// grade de busca pública: São Vicente).
 // Ficaram de fora redes que não publicam preço (Carrefour, Assaí, Dia, BH, Sonda…) e redes cuja
 // plataforma exige login para consultar (VipCommerce, oSuper: Comper, Fort, Condor, Koch).
 export const REDES = [
@@ -167,6 +168,32 @@ export const REDES = [
     plataforma: 'vtex'
   },
   {
+    id: 'oba',
+    nome: 'Oba Hortifruti',
+    site: 'https://www.obahortifruti.com.br',
+    nomes: /\boba\b.*hortifruti|oba\s*(hortifruti|mercado)/i,
+    tipo: 'mercado',
+    plataforma: 'vtex'
+  },
+  {
+    id: 'coop',
+    nome: 'Coop',
+    site: 'https://www.coopsupermercado.com.br',
+    nomes: /^coop\b|\bcoop\s*(supermercado|cooperativa)/i,
+    tipo: 'mercado',
+    plataforma: 'vtex'
+  },
+  {
+    id: 'saovicente',
+    nome: 'São Vicente',
+    site: 'https://www.svicente.com.br',
+    // "São Vicente" também é cidade: só vale quando o nome fala do supermercado (ou da marca).
+    nomes: /super(mercados?)?\s+s[aã]o\s+vicente|^s[aã]o\s+vicente(\s+(super|online|express))?\s*$|svicente/i,
+    tipo: 'mercado',
+    plataforma: 'sfcc',
+    siteSfcc: 'Sites-SaoVicente-Site'
+  },
+  {
     id: 'tenda',
     nome: 'Tenda Atacado',
     site: 'https://www.tendaatacado.com.br',
@@ -208,7 +235,13 @@ export const RedeModel = {
 
   /** Rede de um mercado pelo nome ou pela marca. */
   identificar(...textos) {
-    const texto = textos.filter(Boolean).join(' ');
-    return REDES.find(rede => rede.nomes.test(texto)) || null;
+    const partes = textos.filter(Boolean).map(String);
+    const texto = partes.join(' ');
+    // Testa o nome e a marca juntos e também cada um sozinho (a marca "São Vicente" só é
+    // reconhecida quando aparece inteira, para não confundir com a cidade).
+    return (
+      REDES.find(rede => rede.nomes.test(texto) || partes.some(parte => rede.nomes.test(parte))) ||
+      null
+    );
   }
 };

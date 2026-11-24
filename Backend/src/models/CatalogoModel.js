@@ -5,6 +5,7 @@ import { CatalogoGpaModel } from './CatalogoGpaModel.js';
 import { CatalogoPagueMenosModel } from './CatalogoPagueMenosModel.js';
 import { CatalogoTendaModel } from './CatalogoTendaModel.js';
 import { CatalogoOccModel } from './CatalogoOccModel.js';
+import { CatalogoSfccModel } from './CatalogoSfccModel.js';
 
 // Busca de produtos no site de cada rede, já filtrada pelo CEP de quem pergunta.
 // Cada plataforma tem o seu leitor; aqui ficam a pontuação, o cache e o histórico.
@@ -17,7 +18,8 @@ const LEITORES = {
   gpa: CatalogoGpaModel,
   paguemenos: CatalogoPagueMenosModel,
   tenda: CatalogoTendaModel,
-  occ: CatalogoOccModel
+  occ: CatalogoOccModel,
+  sfcc: CatalogoSfccModel
 };
 
 // Prefere o produto cujo nome começa pela palavra buscada ("arroz…" antes de "ração … arroz")

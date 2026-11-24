@@ -100,3 +100,7 @@ export const iniciais = nome =>
     .slice(0, 2)
     .map(p => p[0].toUpperCase())
     .join('');
+
+/** Preço por kg, litro ou unidade, para comparar embalagens: "R$ 4,98/kg". */
+export const precoUnitario = p =>
+  p && p.valor != null ? `${brlCents(p.valor)}/${p.unidade === 'l' ? 'L' : p.unidade}` : '';

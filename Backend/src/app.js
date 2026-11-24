@@ -21,7 +21,18 @@ function cors(req, res) {
  * Handler de node:http. Cada rota é uma cadeia de funções (ctx) => resultado.
  * O resultado pode ser: dado (200 JSON), { status, body }, ou { raw, contentType, headers }.
  */
+// Cabeçalhos de segurança da API: nada de cache de dados pessoais, sem farejar tipo, sem iframe.
+function seguranca(res) {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('Referrer-Policy', 'no-referrer');
+  res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+  res.setHeader('Cache-Control', 'no-store');
+  res.setHeader('Content-Security-Policy', "default-src 'none'; frame-ancestors 'none'");
+}
+
 export async function handle(req, res) {
+  seguranca(res);
   cors(req, res);
   if (req.method === 'OPTIONS') {
     res.writeHead(204);

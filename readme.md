@@ -152,6 +152,24 @@ Abra no terminal:
 npm run dev
 ---
 
+# 🔐 Configuração (variáveis de ambiente)
+
+Backend (Render → Environment):
+
+| Variável | Para quê |
+|---|---|
+| `SEGREDO_LOGIN` | **Obrigatória.** Segredo aleatório de 32+ caracteres que assina as sessões do login por senha (`openssl rand -base64 48`). Sem ela, as sessões caem a cada reinício. |
+| `CORS_ORIGIN` | Endereço do site (ex.: `https://vera-finance.onrender.com`). Nunca `*`. |
+| `FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL`, `FIREBASE_PRIVATE_KEY` | Conta de serviço do Firebase (Admin SDK). |
+| `FIREBASE_URL_BANCO` | URL do Realtime Database. |
+| `NODE_ENV` | `production` |
+
+Regras do banco: o arquivo `database.rules.json` fecha o Realtime Database para leitura e escrita
+diretas (só a API, com a conta de serviço, acessa). Publique com `firebase deploy --only database`
+ou cole o conteúdo em Firebase Console → Realtime Database → Regras.
+
+---
+
 # 🌐 Deploy
 
 

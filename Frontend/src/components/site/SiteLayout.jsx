@@ -53,7 +53,6 @@ export function SiteLayout({ children }) {
           <div className="site-nav">
             <NavLink onClick={comoFunciona}>Como funciona</NavLink>
             <NavLink to="/precos">Preços</NavLink>
-            <NavLink to="/integrantes">Integrantes</NavLink>
             <NavLink to="/entrar">Entrar</NavLink>
             <Button size="sm" onClick={() => navigate('/cadastro')}>
               Criar conta
@@ -80,10 +79,6 @@ export function SiteLayout({ children }) {
             </button>
             <button type="button" className="site-menu__item" onClick={ir('/precos')}>
               Preços
-              <Icon name="chevron-right" size={18} />
-            </button>
-            <button type="button" className="site-menu__item" onClick={ir('/integrantes')}>
-              Integrantes
               <Icon name="chevron-right" size={18} />
             </button>
             <button
