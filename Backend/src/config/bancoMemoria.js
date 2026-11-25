@@ -3,30 +3,10 @@ import {
   gerarId,
   limparValor,
   achatarEmCaminhos,
-  filhosComId
+  filhosComId,
+  vazio,
+  podar
 } from './caminhos.js';
-
-function vazio(valor) {
-  if (valor === null || valor === undefined) return true;
-  if (typeof valor === 'object') return Object.keys(valor).length === 0;
-  return false;
-}
-
-function podar(valor) {
-  if (Array.isArray(valor)) {
-    const lista = valor.map(podar).filter(item => !vazio(item));
-    return lista.length ? lista : null;
-  }
-  if (valor && typeof valor === 'object') {
-    const objeto = {};
-    for (const [chave, filho] of Object.entries(valor)) {
-      const podado = podar(filho);
-      if (!vazio(podado)) objeto[chave] = podado;
-    }
-    return Object.keys(objeto).length ? objeto : null;
-  }
-  return valor;
-}
 
 export function criarBancoMemoria() {
   let raiz = {};

@@ -1,9 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-process.env.BANCO = 'memoria';
-delete process.env.GOOGLE_APPLICATION_CREDENTIALS;
-delete process.env.FIREBASE_PRIVATE_KEY;
+await import('./apoio/ambiente.js');
 
 // Respostas falsas do mapa (Overpass) e dos sites das redes, para testar sem internet.
 const MAPA = {

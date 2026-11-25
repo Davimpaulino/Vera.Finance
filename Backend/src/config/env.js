@@ -29,6 +29,11 @@ export const configuracao = {
     segredo: process.env.FIREBASE_SEGREDO_BANCO || '',
     forcarMemoria: process.env.BANCO === 'memoria'
   },
+  // Com DATABASE_URL os dados vão para o PostgreSQL; o login (Firebase Auth) continua igual.
+  postgres: {
+    url: process.env.DATABASE_URL || '',
+    ssl: process.env.PGSSL || ''
+  },
   contaDeServico: {
     arquivo: process.env.GOOGLE_APPLICATION_CREDENTIALS || '',
     idProjeto: process.env.FIREBASE_PROJECT_ID || '',

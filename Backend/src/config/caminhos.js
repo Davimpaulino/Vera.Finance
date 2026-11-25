@@ -40,3 +40,27 @@ export function filhosComId(valor) {
     .filter(([, filho]) => filho && typeof filho === 'object')
     .map(([id, filho]) => ({ id, ...filho }));
 }
+
+// Vazio como no Firebase: nulo, objeto ou lista sem filhos.
+export function vazio(valor) {
+  if (valor === null || valor === undefined) return true;
+  if (typeof valor === 'object') return Object.keys(valor).length === 0;
+  return false;
+}
+
+// Tira os nós vazios, como o Firebase faz ao gravar.
+export function podar(valor) {
+  if (Array.isArray(valor)) {
+    const lista = valor.map(podar).filter(item => !vazio(item));
+    return lista.length ? lista : null;
+  }
+  if (valor && typeof valor === 'object') {
+    const objeto = {};
+    for (const [chave, filho] of Object.entries(valor)) {
+      const podado = podar(filho);
+      if (!vazio(podado)) objeto[chave] = podado;
+    }
+    return Object.keys(objeto).length ? objeto : null;
+  }
+  return valor;
+}

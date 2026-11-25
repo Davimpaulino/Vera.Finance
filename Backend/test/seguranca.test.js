@@ -3,11 +3,9 @@ import assert from 'node:assert/strict';
 import { createServer } from 'node:http';
 import { createHmac } from 'node:crypto';
 
-process.env.BANCO = 'memoria';
+await import('./apoio/ambiente.js');
 process.env.NODE_ENV = 'test';
 delete process.env.SEGREDO_LOGIN;
-delete process.env.GOOGLE_APPLICATION_CREDENTIALS;
-delete process.env.FIREBASE_PRIVATE_KEY;
 const { handle } = await import('../src/app.js');
 const { banco } = await import('../src/config/banco.js');
 const { configuracao } = await import('../src/config/env.js');
