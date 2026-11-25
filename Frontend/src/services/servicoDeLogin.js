@@ -47,6 +47,41 @@ const armazenamento = {
   }
 };
 
+// Aceite dos termos feito no cadastro. Fica guardado até a sessão abrir, porque no celular
+// o login do Google/Apple sai do site (redirecionamento) e volta sem passar pelo formulário.
+const CHAVE_DO_ACEITE = 'vera.aceite';
+const aceitePendente = {
+  ler() {
+    try {
+      return JSON.parse(sessionStorage.getItem(CHAVE_DO_ACEITE) || 'null');
+    } catch {
+      return null;
+    }
+  },
+  guardar(aceite) {
+    try {
+      if (aceite) sessionStorage.setItem(CHAVE_DO_ACEITE, JSON.stringify(aceite));
+    } catch {
+      return;
+    }
+  },
+  apagar() {
+    try {
+      sessionStorage.removeItem(CHAVE_DO_ACEITE);
+    } catch {
+      return;
+    }
+  }
+};
+
+/** Abre a sessão na API (cria o perfil na primeira vez), levando o aceite pendente, se houver. */
+async function abrirSessao(corpo = {}) {
+  const aceite = aceitePendente.ler();
+  const perfil = await api.post('/auth/sessao', aceite ? { ...corpo, aceite } : corpo);
+  if (aceite) aceitePendente.apagar();
+  return perfil;
+}
+
 const usuarioFirebase = () => (firebaseHabilitado ? autenticacaoFirebase.currentUser : null);
 
 // Quem entrou pelo Firebase (e-mail, Google, Apple) manda o token do Firebase;
@@ -98,6 +133,7 @@ async function entrarNoBackend(email, senha, lembrar) {
 
 export const servicoDeLogin = {
   firebaseHabilitado,
+  abrirSessao,
 
   observar(aoMudar) {
     if (!firebaseHabilitado) {
@@ -140,21 +176,23 @@ export const servicoDeLogin = {
       } else {
         await entrarNoBackend(email, senha, lembrar);
       }
-      return api.post('/auth/sessao', {});
+      return abrirSessao();
     } catch (erro) {
       throw traduzirErro(erro);
     }
   },
 
-  async cadastrar(nome, email, senha) {
+  /** Cadastro por e-mail. `aceite` é { versao } dos termos aceitos no formulário. */
+  async cadastrar(nome, email, senha, aceite) {
     if (String(senha).length < 8) throw new Error('A senha precisa ter pelo menos 8 caracteres.');
     // Um e-mail, uma conta: se ele já existe (pela senha ou pelo Google), não cria outra.
     const { emUso } = await api.post('/auth/email-em-uso', { email });
     if (emUso)
       throw new Error('Já existe uma conta com esse e-mail. Entre com a sua senha ou com o Google.');
+    aceitePendente.guardar(aceite);
     try {
       const cadastrarNoBackend = async () => {
-        const { token } = await api.post('/auth/cadastrar', { nome, email, senha });
+        const { token } = await api.post('/auth/cadastrar', { nome, email, senha, aceite });
         armazenamento.guardar(token, true);
       };
       if (firebaseHabilitado) {
@@ -174,14 +212,17 @@ export const servicoDeLogin = {
       } else {
         await cadastrarNoBackend();
       }
-      return api.post('/auth/sessao', { nome });
+      return abrirSessao({ nome });
     } catch (erro) {
+      aceitePendente.apagar();
       throw traduzirErro(erro);
     }
   },
 
-  async entrarComProvedor(provedor) {
+  /** Google ou Apple. No cadastro, `aceite` é { versao } dos termos aceitos. */
+  async entrarComProvedor(provedor, aceite) {
     if (!firebaseHabilitado) throw new Error(SEM_FIREBASE);
+    aceitePendente.guardar(aceite);
     const provedorFirebase =
       provedor === 'apple' ? new OAuthProvider('apple.com') : new GoogleAuthProvider();
     if (provedor === 'apple') {
@@ -200,8 +241,9 @@ export const servicoDeLogin = {
         throw erro;
       }
       armazenamento.apagar();
-      return api.post('/auth/sessao', {});
+      return abrirSessao();
     } catch (erro) {
+      aceitePendente.apagar();
       throw traduzirErro(erro);
     }
   },

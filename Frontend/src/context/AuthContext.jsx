@@ -33,7 +33,7 @@ export function AuthProvider({ children }) {
           return;
         }
         try {
-          await api.post('/auth/sessao', {});
+          await servicoDeLogin.abrirSessao();
           await refresh();
         } catch {
           setStatus('out');
@@ -52,12 +52,12 @@ export function AuthProvider({ children }) {
         await servicoDeLogin.entrar(email, senha, lembrar);
         return refresh();
       },
-      async register(nome, email, senha) {
-        await servicoDeLogin.cadastrar(nome, email, senha);
+      async register(nome, email, senha, aceite) {
+        await servicoDeLogin.cadastrar(nome, email, senha, aceite);
         return refresh();
       },
-      async social(provider) {
-        await servicoDeLogin.entrarComProvedor(provider);
+      async social(provider, aceite) {
+        await servicoDeLogin.entrarComProvedor(provider, aceite);
         return refresh();
       },
       async logout() {
