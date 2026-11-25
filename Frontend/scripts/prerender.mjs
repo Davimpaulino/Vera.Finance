@@ -1,4 +1,5 @@
-// Gera o HTML pronto das páginas públicas depois do build (npm run build).
+// Gera o HTML pronto das páginas públicas depois do build (npm run build)
+// e carimba a versão do service worker (dist/sw.js).
 // Robôs de busca e de IA que não rodam JavaScript passam a ler o conteúdo, não só <div id="root">.
 // Não usa navegador: importa o build SSR (src/entry-server.jsx) e chama renderToString.
 import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
@@ -70,6 +71,11 @@ for (const rota of ROTAS_PUBLICAS) {
   await writeFile(destino, html);
   console.log(`pré-renderizado: ${rota} -> ${destino.slice(RAIZ.length + 1)}`);
 }
+
+// Versão nova do cache do service worker a cada build: no próximo acesso os caches antigos saem.
+const arquivoSw = join(DIST, 'sw.js');
+const sw = await readFile(arquivoSw, 'utf8');
+await writeFile(arquivoSw, sw.replaceAll('__VERSAO_DO_BUILD__', Date.now().toString(36)));
 
 // O build SSR só serve para gerar o HTML; não vai para o site.
 await rm(SSR, { recursive: true, force: true });

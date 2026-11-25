@@ -184,6 +184,33 @@ ou cole o conteúdo em Firebase Console → Realtime Database → Regras.
 
 https://vera-finance.onrender.com/
 
+### Site estático (Frontend)
+
+- Build: `npm ci && npm run build` (pasta `Frontend`). Publicar a pasta `Frontend/dist`.
+- O `npm run build` faz três coisas: o build normal do Vite, um build SSR de
+  `src/entry-server.jsx` e o `scripts/prerender.mjs`, que grava o HTML pronto das páginas
+  públicas (`/`, `/precos`, `/perguntas`, `/termos`, `/privacidade`, `/entrar`, `/cadastro`)
+  em `dist/<rota>/index.html`. Assim buscadores e robôs de IA, que não rodam JavaScript, leem o
+  conteúdo. Não precisa de navegador no build. Título, descrição, canonical e robots de cada
+  página vêm de `src/lib/paginas.js` (o mesmo arquivo que o app usa no navegador).
+- Regra de rewrite no Render (Redirects/Rewrites): **Source** `/*`, **Destination**
+  `/index.html`, **Action** `Rewrite`. O Render só aplica a regra quando não existe arquivo no
+  caminho, então `/precos` continua abrindo `precos/index.html` e só as rotas do app (`/app`,
+  `/app/lista`, `/cadastro/perguntas`...) caem no `index.html`. Não crie regras que mandem as
+  páginas públicas para o `index.html`, senão elas perdem o HTML pré-renderizado.
+- `npm run preview` serve o `dist` do mesmo jeito, para conferir antes de publicar.
+- Depois do deploy, confira: o código-fonte de `https://<site>/precos` (Ctrl+U) precisa ter o
+  título `Planos e preços · vera.finance` e o texto dos planos.
+
+### App instalável (PWA)
+
+- `public/manifest.webmanifest` (nome, ícones, abre em `/app`) e `public/sw.js`.
+- O service worker só é registrado no build de produção. Ele guarda os arquivos de
+  `/assets/` (têm hash no nome) e busca as páginas na rede primeiro, com a última cópia como
+  reserva sem internet. Chamadas da API e pedidos com `Authorization` nunca vão para o cache.
+- A versão do cache muda a cada build; os caches antigos são apagados quando a versão nova
+  assume.
+
 ## Avisar os buscadores (IndexNow)
 
 Depois de cada deploy que muda páginas públicas, avise Bing e os outros buscadores do IndexNow:
