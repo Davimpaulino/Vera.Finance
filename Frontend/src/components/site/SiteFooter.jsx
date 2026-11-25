@@ -67,7 +67,10 @@ export function SiteFooter() {
       <div className="site-footer__top">
         <div className="site-footer__about">
           <Brand size="md" />
-          <p>Preços de notas fiscais reais. A vera não vende produtos e não recebe de mercado.</p>
+          <p>
+            Preços dos sites das redes e de notas fiscais. A vera não vende produtos e não recebe de
+            mercado.
+          </p>
           <form className="vera-filter-row site-footer__form" onSubmit={enviar}>
             <Input
               placeholder="seu e-mail"

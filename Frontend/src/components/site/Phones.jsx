@@ -24,7 +24,7 @@ export const PhonePainel = () => (
     tinta={painelTinta}
     papel={painelPapel}
     className="phone--painel"
-    alt="Painel do vera.finance no celular: R$ 1.284 livres até 31 de agosto e as categorias Comida e Rolê"
+    alt="Imagem ilustrativa. Painel do vera.finance no celular: R$ 1.284 livres até 31 de agosto e as categorias Comida e Rolê"
   />
 );
 
@@ -33,7 +33,7 @@ export const PhoneComparar = () => (
     tinta={compararTinta}
     papel={compararPapel}
     className="phone--comparar"
-    alt="Comparação do arroz branco 5kg: Atacadão R$ 23,40, Nagumo R$ 24,90, Covabra R$ 26,10"
+    alt="Imagem ilustrativa. Comparação do arroz branco 5kg: Atacadão R$ 23,40, Nagumo R$ 24,90, Covabra R$ 26,10"
   />
 );
 
@@ -44,13 +44,13 @@ export function PhonesLista() {
         tinta={listaTinta}
         papel={listaPapel}
         className="phone--lista"
-        alt="Lista da semana com 5 itens, mais barata no Atacadão por R$ 178,60"
+        alt="Imagem ilustrativa. Lista da semana com 5 itens, mais barata no Atacadão por R$ 178,60"
       />
       <Celular
         tinta={impactoTinta}
         papel={impactoPapel}
         className="phone--impacto"
-        alt="Impacto da compra no ciclo: Comida chega a R$ 806"
+        alt="Imagem ilustrativa. Impacto da compra no ciclo: Comida chega a R$ 806"
       />
     </div>
   );
