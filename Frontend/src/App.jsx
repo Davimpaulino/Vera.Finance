@@ -3,11 +3,13 @@ import { Logo } from './components/ds/index.js';
 import { Redirect, useRouter } from './lib/router.jsx';
 import { useAuth } from './context/AuthContext.jsx';
 import { useUi } from './context/UiContext.jsx';
+import { urlDoSite } from './lib/site.js';
 import { AppShell } from './components/app/AppShell.jsx';
 import { PageSkeleton } from './components/Loading.jsx';
 import Landing from './pages/site/Landing.jsx';
 import Precos from './pages/site/Precos.jsx';
 import Legal from './pages/site/Legal.jsx';
+import Perguntas from './pages/site/Perguntas.jsx';
 import Login from './pages/auth/Login.jsx';
 import Cadastro from './pages/auth/Cadastro.jsx';
 const Onboarding = lazy(() => import('./pages/auth/Onboarding.jsx'));
@@ -63,6 +65,10 @@ export default function App() {
         'Planos e preços · vera.finance',
         'Comece grátis. Compare o plano grátis e o vera+ para controle de gastos, metas, modo família e leitura de notas fiscais.'
       ],
+      '/perguntas': [
+        'Perguntas frequentes · vera.finance',
+        'Se a vera é grátis, quanto custa o vera+, quais redes têm preço online, como ler a nota fiscal e como a vera cuida dos seus dados.'
+      ],
       '/entrar': ['Entrar · vera.finance', 'Entre na sua conta da vera.finance.'],
       '/cadastro': [
         'Criar conta grátis · vera.finance',
@@ -77,7 +83,8 @@ export default function App() {
     const [titulo, descricao] = paginas[path] || ['vera.finance', paginas['/'][1]];
     document.title = titulo;
     document.querySelector('meta[name="description"]')?.setAttribute('content', descricao);
-    document.querySelector('link[rel="canonical"]')?.setAttribute('href', `${window.location.origin}${path}`);
+    // Canonical sempre no endereço público, mesmo abrindo por outro domínio.
+    document.querySelector('link[rel="canonical"]')?.setAttribute('href', urlDoSite(path));
     // Área logada não entra no Google.
     document
       .querySelector('meta[name="robots"]')
@@ -86,6 +93,7 @@ export default function App() {
 
   if (path === '/') return <Landing />;
   if (path === '/precos') return <Precos />;
+  if (path === '/perguntas') return <Perguntas />;
   if (path === '/termos') return <Legal tipo="termos" />;
   if (path === '/privacidade') return <Legal tipo="privacidade" />;
 

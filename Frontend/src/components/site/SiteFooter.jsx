@@ -24,6 +24,7 @@ const COLS = [
     itens: [
       ['Como funciona', '/#como-funciona'],
       ['Planos', '/precos'],
+      ['Perguntas frequentes', '/perguntas'],
       ['Base de preços', '/app/comparar']
     ]
   },
