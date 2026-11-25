@@ -39,6 +39,7 @@ r.get('/api/onboarding/raio', onboardingController.raio);
 // Sessão e perfil
 r.post('/api/auth/sessao', auth, authController.sessao);
 r.get('/api/me', auth, userController.me);
+r.get('/api/me/exportar', auth, userController.exportar);
 r.patch('/api/me', auth, userController.update);
 r.patch('/api/me/plano', auth, userController.trocarPlano);
 r.post('/api/me/cancelar-assinatura', auth, userController.cancelarAssinatura);

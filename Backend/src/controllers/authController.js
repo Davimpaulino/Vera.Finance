@@ -4,11 +4,12 @@ import { ContaModel } from '../models/ContaModel.js';
 import { UsuarioModel } from '../models/UsuarioModel.js';
 import { assinarToken } from '../middlewares/auth.js';
 import { HttpError, requireFields } from '../utils/http.js';
+import { VERSAO_DOS_TERMOS, lerAceite } from '../config/termos.js';
 
 const emailValido = email => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email || ''));
 
 export const authController = {
-  configuracao: async () => ({ loginProprio, modoBanco }),
+  configuracao: async () => ({ loginProprio, modoBanco, versaoDosTermos: VERSAO_DOS_TERMOS }),
 
   async cadastrar({ body }) {
     requireFields(body, ['nome', 'email', 'senha']);
@@ -29,7 +30,8 @@ export const authController = {
     await ContaModel.registrar(credencial.email, credencial.uid);
     await UsuarioModel.criarSeNaoExistir(credencial.uid, {
       nome: body.nome,
-      email: credencial.email
+      email: credencial.email,
+      termosAceitos: lerAceite(body)
     });
     return {
       status: 201,
@@ -71,12 +73,17 @@ export const authController = {
   },
 
   async sessao({ user, body }) {
+    const termosAceitos = lerAceite(body);
     const perfil = await UsuarioModel.criarSeNaoExistir(user.uid, {
       nome: body.nome || user.name,
-      email: user.email
+      email: user.email,
+      termosAceitos
     });
-    if (!perfil.nome && (body.nome || user.name))
-      return UsuarioModel.atualizar(user.uid, { nome: body.nome || user.name });
-    return perfil;
+    // Perfil que já existia: o aceite (de uma versão nova, por exemplo) também fica registrado.
+    const mudancas = {};
+    if (!perfil.nome && (body.nome || user.name)) mudancas.nome = body.nome || user.name;
+    if (termosAceitos && perfil.termosAceitos?.versao !== termosAceitos.versao)
+      mudancas.termosAceitos = termosAceitos;
+    return Object.keys(mudancas).length ? UsuarioModel.atualizar(user.uid, mudancas) : perfil;
   }
 };
