@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 
 const calc = () => {
+  // Na pré-renderização do build não há janela: gera a versão de computador.
+  if (typeof window === 'undefined') return 'desktop';
   const w = window.innerWidth;
   return w < 768 ? 'mobile' : w < 1200 ? 'tablet' : 'desktop';
 };

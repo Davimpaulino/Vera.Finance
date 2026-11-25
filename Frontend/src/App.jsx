@@ -3,7 +3,7 @@ import { Logo } from './components/ds/index.js';
 import { Redirect, useRouter } from './lib/router.jsx';
 import { useAuth } from './context/AuthContext.jsx';
 import { useUi } from './context/UiContext.jsx';
-import { urlDoSite } from './lib/site.js';
+import { metaDaPagina } from './lib/paginas.js';
 import { AppShell } from './components/app/AppShell.jsx';
 import { PageSkeleton } from './components/Loading.jsx';
 import Landing from './pages/site/Landing.jsx';
@@ -55,40 +55,11 @@ export default function App() {
   }, [user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    // Título e descrição por página (o Google usa os dois no resultado da busca).
-    const paginas = {
-      '/': [
-        'vera.finance · controle de gastos e comparador de preços de supermercado',
-        'Organize a renda por categorias, saiba até que dia o dinheiro dura e compare o preço da sua lista de compras nos supermercados perto de você. Grátis.'
-      ],
-      '/precos': [
-        'Planos e preços · vera.finance',
-        'Comece grátis. Compare o plano grátis e o vera+ para controle de gastos, metas, modo família e leitura de notas fiscais.'
-      ],
-      '/perguntas': [
-        'Perguntas frequentes · vera.finance',
-        'Se a vera é grátis, quanto custa o vera+, quais redes têm preço online, como ler a nota fiscal e como a vera cuida dos seus dados.'
-      ],
-      '/entrar': ['Entrar · vera.finance', 'Entre na sua conta da vera.finance.'],
-      '/cadastro': [
-        'Criar conta grátis · vera.finance',
-        'Crie a sua conta grátis e descubra até que dia o seu dinheiro dura.'
-      ],
-      '/termos': ['Termos de uso · vera.finance', 'Termos de uso da vera.finance.'],
-      '/privacidade': [
-        'Política de privacidade · vera.finance',
-        'Como a vera.finance trata os seus dados pessoais, conforme a LGPD.'
-      ]
-    };
-    const [titulo, descricao] = paginas[path] || ['vera.finance', paginas['/'][1]];
-    document.title = titulo;
-    document.querySelector('meta[name="description"]')?.setAttribute('content', descricao);
-    // Canonical sempre no endereço público, mesmo abrindo por outro domínio.
-    document.querySelector('link[rel="canonical"]')?.setAttribute('href', urlDoSite(path));
-    // Área logada não entra no Google.
-    document
-      .querySelector('meta[name="robots"]')
-      ?.setAttribute('content', path.startsWith('/app') || path.startsWith('/onboarding') ? 'noindex, nofollow' : 'index, follow');
+    const meta = metaDaPagina(path);
+    document.title = meta.titulo;
+    document.querySelector('meta[name="description"]')?.setAttribute('content', meta.descricao);
+    document.querySelector('link[rel="canonical"]')?.setAttribute('href', meta.canonical);
+    document.querySelector('meta[name="robots"]')?.setAttribute('content', meta.robots);
   }, [path]);
 
   if (path === '/') return <Landing />;
