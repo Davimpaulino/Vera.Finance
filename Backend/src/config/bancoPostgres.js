@@ -40,11 +40,14 @@ export const TABELAS_DA_RAIZ = {
   exclusoes: 'uid'
 };
 
-// Número qualquer, fixo, para que dois servidores subindo juntos não criem as tabelas ao mesmo tempo.
+// Número fixo qualquer: dois servidores subindo juntos não criam as tabelas ao mesmo tempo.
 const TRAVA_DO_ESQUEMA = 7_341_112;
 const ERROS_DE_CONCORRENCIA = new Set(['40P01', '40001']);
 
-/** Opções do pool a partir da DATABASE_URL. PGSSL (opcional) manda no SSL: "disable", "no-verify" ou "require". */
+/**
+ * Opções do pool a partir da DATABASE_URL (sslmode=require liga o SSL).
+ * PGSSL, opcional, manda no SSL: "disable", "no-verify" ou "require".
+ */
 export function opcoesDeConexao(url, pgssl = process.env.PGSSL) {
   const endereco = new URL(url);
   const modoDaUrl = (endereco.searchParams.get('sslmode') || '').toLowerCase();
@@ -126,7 +129,7 @@ function descer(valor, sub) {
   return achado === undefined ? null : achado;
 }
 
-/** Mesma regra do bancoMemoria: grava "valor" no trecho "sub" do documento e poda o que ficou vazio. */
+/** Mesma regra do bancoMemoria: grava "valor" no trecho "sub" do documento e poda os vazios. */
 function aplicarNoValor(atual, sub, valor) {
   const novo = podar(limparValor(valor));
   if (!sub.length) return vazio(novo) ? null : novo;
@@ -282,7 +285,8 @@ async function montarGalho(executor, alvo) {
      order by caminho collate "C"`
   );
   rows.forEach(linha => (raiz[linha.caminho] = linha.dados));
-  return podar(raiz);
+  // Raiz vazia é {} (e não null), igual ao bancoMemoria.
+  return podar(raiz) || {};
 }
 
 async function removerGalho(cliente, alvo) {
@@ -369,7 +373,8 @@ export function criarBancoPostgres({ url, ssl } = {}) {
         if (vazio(podado)) return;
         if (typeof podado !== 'object')
           throw new Error(`Não dá para gravar um valor simples em /${partes.join('/')}.`);
-        for (const [chave, filho] of Object.entries(podado)) await aplicar([...partes, chave], filho);
+        for (const [chave, filho] of Object.entries(podado))
+          await aplicar([...partes, chave], filho);
       }
       for (const [caminho, valor] of entradas) await aplicar(partesDoCaminho(caminho), valor);
       await descarregar();
