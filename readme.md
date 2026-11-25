@@ -164,6 +164,13 @@ Backend (Render → Environment):
 | `FIREBASE_URL_BANCO` | URL do Realtime Database. |
 | `NODE_ENV` | `production` |
 
+Frontend (build do site estático no Render → Environment):
+
+| Variável | Para quê |
+|---|---|
+| `VITE_API_URL` | Endereço da API (ex.: `https://sua-api.onrender.com`). |
+| `VITE_SITE_URL` | Endereço público do site, sem `/` no fim. Padrão: `https://vera-finance.onrender.com`. Vai para o canonical, `og:url`, `og:image` e JSON-LD do `index.html` e para os links absolutos das páginas (`src/lib/site.js`). Ao trocar para um domínio próprio, atualize também as URLs de `public/sitemap.xml`, `public/robots.txt` e `public/llms.txt`. |
+
 Regras do banco: o arquivo `database.rules.json` fecha o Realtime Database para leitura e escrita
 diretas (só a API, com a conta de serviço, acessa). Publique com `firebase deploy --only database`
 ou cole o conteúdo em Firebase Console → Realtime Database → Regras.
@@ -176,6 +183,22 @@ ou cole o conteúdo em Firebase Console → Realtime Database → Regras.
 ## Render (2TW)
 
 https://vera-finance.onrender.com/
+
+## Avisar os buscadores (IndexNow)
+
+Depois de cada deploy que muda páginas públicas, avise Bing e os outros buscadores do IndexNow:
+
+```bash
+cd Frontend
+npm run indexnow                                   # usa VITE_SITE_URL ou o endereço padrão
+npm run indexnow -- https://seu-dominio.com.br     # outro endereço
+npm run indexnow -- --teste                        # só mostra o que seria enviado
+```
+
+O script lê as URLs de `public/sitemap.xml` e usa a chave do arquivo `public/<chave>.txt`, que
+precisa estar no ar (abra `https://<site>/<chave>.txt` para conferir antes de enviar).
+
+Para aparecer no Google, cadastre o site no Google Search Console e envie o `sitemap.xml`.
 
 
 ---
