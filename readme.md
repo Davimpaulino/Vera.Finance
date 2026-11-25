@@ -170,6 +170,38 @@ ou cole o conteúdo em Firebase Console → Realtime Database → Regras.
 
 ---
 
+# 🔑 Levar as contas do login por senha para o Firebase Authentication
+
+As contas criadas pelo login próprio da API (e-mail e senha guardados em `credenciais` no banco)
+podem ir para o Firebase Authentication sem ninguém trocar de senha: o script leva o hash scrypt
+como está, com o mesmo identificador (uid), e-mail e nome.
+
+Na pasta `Backend`, com a conta de serviço do Firebase no `.env` (as mesmas variáveis do Render):
+
+```bash
+# 1. Simulação (padrão): só lê e mostra o relatório, não grava nada
+node --env-file=.env scripts/importar-usuarios-firebase.mjs
+
+# 2. Conferiu o relatório? Importa de verdade (lotes de até 1000 contas)
+node --env-file=.env scripts/importar-usuarios-firebase.mjs --executar
+```
+
+Contas que já existem no Firebase (mesmo uid ou mesmo e-mail) são puladas, e o relatório final
+lista as inválidas, as puladas e as que falharam. Rode primeiro num projeto de teste.
+
+Depois que todas as contas estiverem no Firebase, o login próprio pode ser desligado: o site já
+entra pelo Firebase, e as rotas `/api/auth/entrar`, `/api/auth/cadastrar`, `/api/me/senha` e o
+plano B em `Frontend/src/services/servicoDeLogin.js` deixam de ser necessários.
+
+---
+
+# ✅ Integração contínua
+
+Cada push e pull request roda os testes do backend (`cd Backend && npm test`) e o build do
+frontend (`cd Frontend && npm run build`) no GitHub Actions (`.github/workflows/ci.yml`).
+
+---
+
 # 🌐 Deploy
 
 
