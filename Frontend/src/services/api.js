@@ -41,13 +41,13 @@ export const api = {
   patch: (p, b = {}) => request('PATCH', p, b),
   del: p => request('DELETE', p),
 
-  /** Baixa um arquivo autenticado (CSV de exportação). */
-  async download(path, filename) {
+  /** Baixa um arquivo autenticado (CSV dos lançamentos, JSON com todos os dados). */
+  async download(path, filename, erro = 'Não deu para gerar a planilha.') {
     const token = await tokenProvider();
     const res = await fetch(BASE + '/api' + path, {
       headers: token ? { Authorization: `Bearer ${token}` } : {}
     });
-    if (!res.ok) throw new ApiError(res.status, 'Não deu para gerar a planilha.');
+    if (!res.ok) throw new ApiError(res.status, erro);
     const url = URL.createObjectURL(await res.blob());
     const a = document.createElement('a');
     a.href = url;
