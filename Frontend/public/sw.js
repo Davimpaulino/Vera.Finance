@@ -38,6 +38,10 @@ self.addEventListener('activate', evento => {
 const podeGuardar = resposta =>
   resposta && resposta.ok && !resposta.redirected && resposta.type === 'basic';
 
+// No Render, um /assets/ que não existe mais (aba aberta antes de um deploy) cai no rewrite e
+// volta 200 com o HTML da casca. Guardado com o nome do .js, o erro ficaria preso no cache.
+const ehHtml = resposta => (resposta.headers.get('content-type') || '').includes('text/html');
+
 const guardar = (pedido, resposta) => {
   if (!podeGuardar(resposta)) return;
   const copia = resposta.clone();
@@ -78,7 +82,7 @@ self.addEventListener('fetch', evento => {
         guardada =>
           guardada ||
           fetch(pedido).then(resposta => {
-            guardar(pedido, resposta);
+            if (!ehHtml(resposta)) guardar(pedido, resposta);
             return resposta;
           })
       )
