@@ -1,5 +1,5 @@
 import { round2 } from '../utils/money.js';
-import { ColetaBloqueada, pedirNaRede } from './ColetaModel.js';
+import { pedirNaRede } from './ColetaModel.js';
 
 // Pão de Açúcar (grupo GPA): o CEP escolhe a loja que atende o endereço, e a busca traz
 // o preço e o estoque daquela loja.
@@ -13,24 +13,24 @@ const cabecalhos = rede => ({
   Referer: `${rede.site}/`
 });
 
+// Loja que atende o CEP, ou loja null quando a API respondeu sem nenhuma (a rede não entrega ali).
+// API fora do ar (rede, HTTP de erro, resposta que não é JSON) não é "sem loja": o erro sobe, a
+// rede fica como 'falhou' na busca e o monitor de saúde das redes acusa a quebra. Só a resposta
+// de verdade fica guardada, para uma falha passageira não esconder a rede por um dia inteiro.
 async function lojaDoCep(rede, cep) {
   const chave = `${rede.id}|${cep}`;
   const guardada = lojas.get(chave);
   if (guardada && Date.now() - guardada.em < DIA_MS) return guardada;
-  let loja = null;
-  try {
-    const resposta = await pedirNaRede(`${API}/${rede.marcaGpa}/delivery/options?zipCode=${cep}`, {
-      headers: cabecalhos(rede),
-      signal: AbortSignal.timeout(9000)
-    });
-    const dados = await resposta.json();
-    const opcao = (dados.content?.deliveryTypes || []).find(tipo => tipo.storeid);
-    if (opcao) loja = { id: opcao.storeid, nome: String(opcao.storeName || '').replace(/^\d+\s*-\s*/, '') };
-  } catch (erro) {
-    // Bloqueio do robots.txt não é "sem loja para o CEP": sobe para a rede ficar como 'falhou'.
-    if (erro instanceof ColetaBloqueada) throw erro;
-    loja = null;
-  }
+  const resposta = await pedirNaRede(`${API}/${rede.marcaGpa}/delivery/options?zipCode=${cep}`, {
+    headers: cabecalhos(rede),
+    signal: AbortSignal.timeout(9000)
+  });
+  if (!resposta.ok) throw new Error(`HTTP ${resposta.status} nas opções de entrega`);
+  const dados = await resposta.json();
+  const opcao = (dados?.content?.deliveryTypes || []).find(tipo => tipo.storeid);
+  const loja = opcao
+    ? { id: opcao.storeid, nome: String(opcao.storeName || '').replace(/^\d+\s*-\s*/, '') }
+    : null;
   const achada = { em: Date.now(), loja };
   lojas.set(chave, achada);
   return achada;

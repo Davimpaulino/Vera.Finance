@@ -42,6 +42,19 @@ globalThis.fetch = async (endereco, opcoes = {}) => {
       return resposta(200, { items: [{ requestIndex: 0, availability: 'cannotBeDelivered' }] });
   }
   if (url.host === 'api.tendaatacado.com.br') return resposta(500, { erro: 'fora do ar' });
+  // Pão de Açúcar (GPA): o CEP do pedido escolhe como a API se comporta.
+  if (url.host === 'api.vendas.gpa.digital') {
+    const cep = url.searchParams.get('zipCode');
+    if (url.pathname.endsWith('/delivery/options')) {
+      if (cep === '01310100') return resposta(200, { content: { deliveryTypes: [{ storeid: 7, storeName: '501 - Paulista' }] } });
+      if (cep === '11111111') throw new TypeError('fetch failed', { cause: { code: 'ENOTFOUND' } });
+      if (cep === '22222222') return resposta(503, { erro: 'fora do ar' });
+      if (cep === '33333333') return { ok: true, status: 200, json: async () => JSON.parse('<html>') };
+      return resposta(200, { content: { deliveryTypes: [] } });
+    }
+    if (url.pathname.endsWith('/search/search'))
+      return resposta(200, { products: [{ name: 'Arroz Camil 5kg', brand: 'CAMIL', price: 27.9, stock: true }] });
+  }
   // Página de busca sem nenhum produto: o leitor não acha nada (mudou o HTML?).
   if (url.host === 'www.superpaguemenos.com.br') return resposta(200, '<html><body>nada</body></html>', 'texto');
   throw new Error(`fetch inesperado: ${url}`);
@@ -128,4 +141,35 @@ test('CEP de teste vem de --cep ou de CEP_DE_TESTE', async () => {
   pedidos.length = 0;
   assert.equal(await principal(['--redes=savegnago', '--cep=20040-002'], { redes, escrever: () => {} }), 0);
   assert.ok(pedidos.includes('simulação para 20040002'));
+});
+
+test('Pão de Açúcar fora do ar é erro, não "sem entrega no CEP"', async () => {
+  const gpa = RedeModel.buscar('paodeacucar');
+  assert.equal((await verificarRede(gpa, { cep: '01310100' })).estado, 'ok');
+
+  const semRede = await verificarRede(gpa, { cep: '11111111' });
+  assert.equal(semRede.estado, 'erro');
+  assert.match(semRede.detalhe, /ENOTFOUND/);
+  const http = await verificarRede(gpa, { cep: '22222222' });
+  assert.equal(http.estado, 'erro');
+  assert.match(http.detalhe, /HTTP 503/);
+  assert.equal((await verificarRede(gpa, { cep: '33333333' })).estado, 'erro', 'resposta que não é JSON');
+
+  // A API respondeu, mas sem loja para o CEP: aí sim a rede só não entrega ali.
+  assert.equal((await verificarRede(gpa, { cep: '44444444' })).estado, 'semEntrega');
+
+  const saida = [];
+  const escrever = texto => saida.push(texto);
+  assert.equal(await principal(['--redes=paodeacucar', '--cep=11111111'], { redes: [gpa], escrever }), 1);
+  assert.match(saida.join('\n'), /Quebradas: Pão de Açúcar\./);
+});
+
+test('falha da API do Pão de Açúcar não fica guardada como "sem loja"', async () => {
+  const { CatalogoGpaModel } = await import('../src/models/CatalogoGpaModel.js');
+  const gpa = RedeModel.buscar('paodeacucar');
+  await assert.rejects(CatalogoGpaModel.buscar(gpa, 'arroz', '22222222'), /HTTP 503/);
+  // A tentativa seguinte pergunta de novo à API: a falha não ficou guardada por 24 h.
+  pedidos.length = 0;
+  await assert.rejects(CatalogoGpaModel.buscar(gpa, 'arroz', '22222222'), /HTTP 503/);
+  assert.equal(pedidos.filter(p => p.includes('zipCode=22222222')).length, 1);
 });
