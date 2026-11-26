@@ -1,0 +1,131 @@
+/* Verificador de CEP e lista de redes da página Onde funciona. */
+/* O formulário e a região do resultado vão juntos num bloco só do .conteudo: a região fica
+   sempre na página, mesmo vazia (leitor de tela só anuncia o que aparece numa região aria-live
+   que já existia), e o espaço vem da margem do resultado, não do gap do .conteudo. */
+.onde-consulta{
+  display:flex;
+  flex-direction:column
+}
+.onde-busca{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  padding:24px;
+  border-radius:var(--r-panel);
+  border:1px solid var(--border-hairline);
+  background:var(--surface-card)
+}
+.vera-input.onde-busca__campo{
+  flex:1 1 220px;
+  max-width:280px
+}
+.onde-busca__dica{
+  font-size:var(--fs-caption);
+  color:var(--text-muted)
+}
+.onde-busca__saida{
+  display:flex;
+  flex-direction:column;
+  gap:16px
+}
+.onde-busca__saida > :first-child{
+  margin-top:20px
+}
+.onde-resultado{
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+  padding:24px;
+  border-radius:var(--r-panel);
+  border:1px solid var(--border-strong);
+  background:var(--surface-card)
+}
+.onde-resultado__onde{
+  font-size:var(--fs-meta);
+  color:var(--text-muted)
+}
+.onde-resultado__titulo{
+  font-size:var(--fs-title-sm);
+  font-weight:700;
+  line-height:var(--lh-snug)
+}
+.onde-resultado__lista{
+  list-style:none;
+  margin:0;
+  padding:0;
+  display:flex;
+  flex-direction:column
+}
+.onde-resultado__rede{
+  display:flex;
+  justify-content:space-between;
+  align-items:baseline;
+  flex-wrap:wrap;
+  gap:4px 16px;
+  padding:10px 0;
+  border-bottom:1px solid var(--divider)
+}
+.onde-resultado__nome{
+  font-weight:700
+}
+.onde-resultado__meta{
+  font-size:var(--fs-meta);
+  color:var(--text-muted)
+}
+.onde-grupos{
+  display:grid;
+  grid-template-columns:repeat(auto-fit, minmax(240px, 1fr));
+  gap:16px
+}
+.onde-grupo{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  padding:20px 22px;
+  border-radius:var(--r-card);
+  border:1px solid var(--border-hairline);
+  background:var(--surface-card)
+}
+.onde-grupo__titulo{
+  margin:0;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-size:var(--fs-body-lg);
+  font-weight:700
+}
+.onde-grupo__total{
+  font-size:var(--fs-caption);
+  font-weight:700;
+  padding:2px 8px;
+  border-radius:var(--r-pill);
+  color:var(--accent-text);
+  background:var(--accent-wash);
+  font-variant-numeric:var(--num)
+}
+.onde-grupo__lista{
+  list-style:none;
+  margin:0;
+  padding:0;
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px
+}
+.onde-grupo__rede{
+  padding:4px 12px;
+  border-radius:var(--r-pill);
+  border:1px solid var(--border-hairline);
+  font-size:var(--fs-meta);
+  color:var(--text-2)
+}
+@media (max-width:767px){
+  .onde-busca,
+  .onde-resultado{
+    padding:18px
+  }
+  /* No celular a linha vira coluna: a base de 220px viraria altura do campo. */
+  .vera-input.onde-busca__campo{
+    flex:0 0 auto;
+    max-width:none
+  }
+}

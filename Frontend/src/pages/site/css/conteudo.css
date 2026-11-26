@@ -1,0 +1,265 @@
+/* Páginas de conteúdo (central de ajuda, blog, onde funciona): mesmo visual de Legal e Perguntas. */
+.conteudo{
+  max-width:720px;
+  margin:0 auto;
+  padding:40px var(--gutter-md) 80px;
+  display:flex;
+  flex-direction:column;
+  gap:20px
+}
+.conteudo__cabeca{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  margin-bottom:8px
+}
+.conteudo__title{
+  font-family:var(--font-display);
+  font-size:clamp(30px, 3.6vw, 44px);
+  font-weight:700;
+  letter-spacing:var(--ls-tight);
+  line-height:var(--lh-snug);
+  margin:0;
+  text-wrap:balance
+}
+.conteudo__lead{
+  margin:0;
+  font-size:var(--fs-lead);
+  line-height:var(--lh-relaxed);
+  color:var(--text-2);
+  text-wrap:pretty
+}
+.conteudo__data{
+  margin:0;
+  font-size:var(--fs-meta);
+  color:var(--text-muted)
+}
+.conteudo__h2{
+  font-size:var(--fs-title-sm);
+  font-weight:700;
+  line-height:var(--lh-snug);
+  margin:20px 0 0;
+  padding-top:24px;
+  border-top:1px solid var(--border-hairline)
+}
+.conteudo__p{
+  font-size:var(--fs-body-lg);
+  line-height:var(--lh-relaxed);
+  color:var(--text-2);
+  margin:0;
+  text-wrap:pretty
+}
+.conteudo__p--nota{
+  font-size:var(--fs-body);
+  color:var(--text-muted)
+}
+.conteudo__lista{
+  margin:0;
+  padding-left:22px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  font-size:var(--fs-body-lg);
+  line-height:var(--lh-relaxed);
+  color:var(--text-2)
+}
+/* Link no meio do texto: sublinhado, para não depender só da cor (o site não sublinha links). */
+.conteudo__p a,
+.conteudo__lead a,
+.conteudo__lista a,
+.conteudo-relacionados a{
+  text-decoration:underline;
+  text-decoration-color:var(--border-strong);
+  text-decoration-thickness:1px;
+  text-underline-offset:3px
+}
+.conteudo__p a:hover,
+.conteudo__lead a:hover,
+.conteudo__lista a:hover,
+.conteudo-relacionados a:hover{
+  text-decoration:underline;
+  text-decoration-color:currentColor
+}
+.conteudo__secao{
+  display:flex;
+  flex-direction:column;
+  gap:20px
+}
+
+/* Passo a passo: números grandes à esquerda, nome do passo em destaque. */
+.conteudo__passos{
+  list-style:none;
+  counter-reset:passo;
+  margin:0;
+  padding:0;
+  display:flex;
+  flex-direction:column;
+  gap:18px
+}
+.conteudo__passo{
+  counter-increment:passo;
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+  padding-left:48px;
+  scroll-margin-top:96px
+}
+.conteudo__passo::before{
+  content:counter(passo);
+  position:absolute;
+  left:0;
+  top:0;
+  width:32px;
+  height:32px;
+  border-radius:var(--r-pill);
+  display:grid;
+  place-items:center;
+  font-size:var(--fs-meta);
+  font-weight:700;
+  color:var(--accent-text);
+  background:var(--accent-wash);
+  font-variant-numeric:var(--num)
+}
+.conteudo__passo-nome{
+  font-size:var(--fs-body-lg);
+  font-weight:700;
+  line-height:32px;
+  color:var(--text-1)
+}
+
+/* Trilha (Início › Seção › Página). */
+.conteudo-trilha__lista{
+  list-style:none;
+  margin:0;
+  padding:0;
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  font-size:var(--fs-meta);
+  color:var(--text-muted)
+}
+.conteudo-trilha__item{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  min-width:0
+}
+.conteudo-trilha__item + .conteudo-trilha__item::before{
+  content:'›';
+  color:var(--text-muted)
+}
+.conteudo-trilha__item[aria-current='page']{
+  color:var(--text-2);
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  max-width:100%
+}
+
+/* Índice da central de ajuda e do blog. */
+.conteudo-indice{
+  list-style:none;
+  margin:0;
+  padding:0;
+  display:flex;
+  flex-direction:column
+}
+.conteudo-indice__item{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  padding:22px 0;
+  border-top:1px solid var(--border-hairline)
+}
+.conteudo-indice__item:last-child{
+  border-bottom:1px solid var(--border-hairline)
+}
+.conteudo-indice__titulo{
+  margin:0;
+  font-size:var(--fs-title-sm);
+  font-weight:700;
+  line-height:var(--lh-snug)
+}
+.conteudo-indice__titulo a{
+  color:var(--text-1)
+}
+.conteudo-indice__titulo a:hover{
+  color:var(--accent-text)
+}
+
+/* Leia também. */
+.conteudo-relacionados{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  margin-top:12px;
+  padding:20px 22px;
+  border:1px solid var(--border-hairline);
+  border-radius:var(--r-card);
+  background:var(--surface-card)
+}
+.conteudo-relacionados__titulo{
+  font-size:var(--fs-caption);
+  font-weight:700;
+  letter-spacing:var(--ls-caps);
+  text-transform:uppercase;
+  color:var(--text-muted)
+}
+.conteudo-relacionados__lista{
+  margin:0;
+  padding-left:18px;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  font-size:var(--fs-body);
+  line-height:var(--lh-normal)
+}
+
+/* Convite para criar a conta, no fim da página. */
+.conteudo-chamada{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  margin-top:12px;
+  padding:28px;
+  border-radius:var(--r-panel);
+  border:1px solid var(--border-hairline);
+  background:var(--surface-sunken)
+}
+.conteudo-chamada__titulo{
+  font-family:var(--font-display);
+  font-size:var(--fs-title);
+  font-weight:700;
+  letter-spacing:var(--ls-tight)
+}
+.conteudo-chamada__texto{
+  margin:0 0 6px;
+  font-size:var(--fs-body);
+  line-height:var(--lh-relaxed);
+  color:var(--text-2)
+}
+/* Links com cara de botão: sem o sublinhado e a cor dos links comuns. */
+.conteudo-acoes a.vera-btn,
+.conteudo-acoes a.vera-btn:hover{
+  text-decoration:none
+}
+.conteudo-acoes a.vera-btn--primary,
+.conteudo-acoes a.vera-btn--primary:hover{
+  color:var(--on-accent)
+}
+.conteudo-acoes a.vera-btn--secondary,
+.conteudo-acoes a.vera-btn--secondary:hover{
+  color:var(--text-1)
+}
+@media (max-width:767px){
+  .conteudo{
+    padding-top:28px
+  }
+  .conteudo-chamada{
+    padding:22px
+  }
+  .conteudo-acoes .vera-btn{
+    width:100%
+  }
+}

@@ -1,4 +1,5 @@
 import { banco } from '../config/banco.js';
+import { PlanoModel } from './PlanoModel.js';
 
 const PADRAO = {
   plano: 'gratis',
@@ -23,12 +24,14 @@ export const UsuarioModel = {
   async buscar(uid) {
     const perfil = await banco.ler(caminhoDoPerfil(uid));
     if (!perfil) return null;
+    // Plano e assinatura saem já com o cancelamento vencido aplicado (veja PlanoModel.emVigor):
+    // toda conferência de limite (notas, metas, família) e a tela de Configurações leem daqui.
     return {
       id: uid,
       ...perfil,
       local: { mercados: [], ...perfil.local },
       familiaId: perfil.familiaId || null,
-      assinatura: perfil.assinatura || null
+      ...PlanoModel.emVigor(perfil)
     };
   },
 
