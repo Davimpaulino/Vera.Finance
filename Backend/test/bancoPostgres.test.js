@@ -338,6 +338,66 @@ test('texto com caractere nulo ou metade de emoji é limpo; id assim é recusado
   await iguais('usuarios/ana/lista');
 });
 
+test('nomes que todo objeto do JavaScript tem são caminhos comuns', comBanco, async () => {
+  await nosDois(async banco => {
+    await banco.gravar('constructor/a', { x: 1 });
+    await banco.gravar('toString', { y: 2 });
+    await banco.gravar('usuarios/ana/perfil', { nome: 'Ana' });
+    await banco.gravar('usuarios/ana/lista/constructor', { produto: 'arroz' });
+    await banco.gravar('mercados/hasOwnProperty', { nome: 'A' });
+  });
+  await iguais('constructor', 'constructor/a', 'toString', 'usuarios/ana', 'mercados');
+  assert.equal(await contar('documentos'), 2);
+  assert.deepEqual(await postgres.listar('usuarios/ana/lista'), [
+    { id: 'constructor', produto: 'arroz' }
+  ]);
+  // Campo que o dado não tem é null, mesmo com o nome de algo que todo objeto tem.
+  assert.equal(await postgres.ler('valueOf'), null);
+  assert.equal(await postgres.ler('usuarios/ana/perfil/constructor'), null);
+  const corpo = JSON.parse('{"local": {"mercados": {"__proto__": {"marcaDoTeste": true}}}}');
+  await assert.rejects(postgres.mesclar('usuarios/ana/perfil', corpo), { status: 400 });
+  assert.equal({}.marcaDoTeste, undefined);
+  assert.deepEqual(await postgres.ler('usuarios/ana/perfil'), { nome: 'Ana' });
+});
+
+test('diferenças com a memória: só as descritas no comentário do adaptador', comBanco, async () => {
+  // Lista gravada num galho volta como lista nos dois.
+  const categorias = [{ nome: 'Comida' }, { nome: 'Casa' }];
+  await nosDois(async banco => {
+    await banco.gravar('usuarios/ana/categorias', categorias);
+    await banco.gravar('usuarios/ana/categorias/2', { nome: 'Lazer' });
+    await banco.gravar('mercados', [{ nome: 'A' }]);
+  });
+  await iguais('usuarios/ana', 'usuarios/ana/categorias', 'mercados');
+  assert.deepEqual(await postgres.ler('usuarios/ana/categorias'), [
+    ...categorias,
+    { nome: 'Lazer' }
+  ]);
+  assert.deepEqual(
+    await postgres.listar('usuarios/ana/categorias'),
+    await memoria.listar('usuarios/ana/categorias')
+  );
+
+  // Valor simples num galho: a memória aceita; o PostgreSQL recusa e não grava nada.
+  await memoria.gravar('usuarios/ana/lista', 'texto');
+  assert.equal(await memoria.ler('usuarios/ana/lista'), 'texto');
+  await assert.rejects(postgres.gravar('usuarios/ana/lista', 'texto'), /valor simples/);
+  assert.equal(await postgres.ler('usuarios/ana/lista'), null);
+
+  // A ordem das chaves do documento não é guardada (o jsonb ordena por tamanho e depois byte a
+  // byte); o conteúdo é.
+  await postgres.gravar('usuarios/ana/perfil', { zeta: 1, b: 2, alfa: 3 });
+  const perfil = await postgres.ler('usuarios/ana/perfil');
+  assert.deepEqual(perfil, { zeta: 1, b: 2, alfa: 3 });
+  assert.deepEqual(Object.keys(perfil), ['b', 'alfa', 'zeta']);
+
+  // Ids em ordem de chave, como no Firebase: números em ordem numérica, depois byte a byte.
+  await postgres.remover('mercados');
+  for (const id of ['b', '10', 'B', '9', 'a']) await postgres.gravar(`mercados/${id}`, { nome: id });
+  const ids = (await postgres.listar('mercados')).map(mercado => mercado.id);
+  assert.deepEqual(ids, ['9', '10', 'B', 'a', 'b']);
+});
+
 test('caminho sem tabela própria vai para a reserva sem perder dado', comBanco, async () => {
   await nosDois(async banco => {
     await banco.gravar('configuracoes/geral', { versao: 3, ligado: true });

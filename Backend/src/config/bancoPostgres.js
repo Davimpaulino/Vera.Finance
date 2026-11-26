@@ -11,11 +11,20 @@ import {
   podar
 } from './caminhos.js';
 
-// Adaptador PostgreSQL com a mesma interface e o mesmo comportamento do bancoMemoria.js
-// (que imita o Firebase Realtime Database): os models continuam falando em caminhos
-// ("usuarios/<uid>/lista/<id>") e aqui cada caminho vira uma linha de uma tabela própria.
-// Caminhos mais fundos que a linha (um campo do perfil, um campo de um item) são lidos e
-// gravados dentro do jsonb da linha.
+// Adaptador PostgreSQL com a mesma interface do bancoMemoria.js (que imita o Firebase Realtime
+// Database): os models continuam falando em caminhos ("usuarios/<uid>/lista/<id>") e aqui cada
+// caminho vira uma linha de uma tabela própria. Caminhos mais fundos que a linha (um campo do
+// perfil, um campo de um item) são lidos e gravados dentro do jsonb da linha.
+//
+// O comportamento é o da memória, menos isto (test/bancoPostgres.test.js fixa cada ponto):
+// - Valor simples (texto, número) num galho, como usuarios/<uid>/lista, dá erro: o galho é feito
+//   de linhas e não tem onde guardar um valor solto. A memória aceita.
+// - A ordem das chaves dentro de um documento não é guardada (o jsonb reordena); o conteúdo é.
+// - Um galho volta com os ids em ordem de chave, como no Firebase: os que são números primeiro,
+//   em ordem numérica, e depois os demais byte a byte ("B" antes de "a"). A memória segue a
+//   ordem de inserção.
+// - Um galho com ids 0, 1, 2... volta como lista, como no Firebase. É o que fica de gravar uma
+//   lista ali, então gravar e ler devolve a mesma lista que a memória.
 
 const SQL_DO_ESQUEMA = readFileSync(new URL('./esquema.sql', import.meta.url), 'utf8');
 
@@ -116,7 +125,8 @@ export function localizar(partes) {
     }
     return { doc: documentoReserva(partes.slice(0, 3).join('/')), sub: partes.slice(3) };
   }
-  if (TABELAS_DA_RAIZ[topo]) {
+  // hasOwn: "constructor" ou "toString" não são tabelas, mesmo existindo em todo objeto.
+  if (Object.hasOwn(TABELAS_DA_RAIZ, topo)) {
     if (partes.length === 1) return { nivel: 'tabela', tabela: topo };
     return { doc: documentoDaRaiz(topo, partes[1]), sub: partes.slice(2) };
   }
@@ -125,8 +135,12 @@ export function localizar(partes) {
 
 const identidade = doc => `${doc.tabela}|${doc.coluna}|${JSON.stringify(doc.chaves)}`;
 
+// Só desce por chaves do próprio dado: "constructor" num perfil sem esse campo é null.
+const filhoProprio = (no, parte) =>
+  no != null && Object.hasOwn(Object(no), parte) ? no[parte] : undefined;
+
 function descer(valor, sub) {
-  const achado = sub.reduce((no, parte) => (no == null ? undefined : no[parte]), valor);
+  const achado = sub.reduce(filhoProprio, valor);
   return achado === undefined ? null : achado;
 }
 
@@ -146,7 +160,17 @@ function aplicarNoValor(atual, sub, valor) {
   return podar(raiz);
 }
 
-const objetoOuNulo = objeto => (Object.keys(objeto).length ? objeto : null);
+/**
+ * Monta um galho a partir de pares [id, valor]; null quando não há nenhum. Com ids 0, 1, 2...
+ * volta uma lista, como o Firebase faz com o que foi gravado como lista.
+ */
+function galho(pares) {
+  if (!pares.length) return null;
+  // Object.keys põe os ids numéricos primeiro, em ordem numérica.
+  const objeto = Object.fromEntries(pares);
+  const ids = Object.keys(objeto);
+  return ids.every((id, i) => id === String(i)) ? Object.values(objeto) : objeto;
+}
 
 // --- SQL -------------------------------------------------------------------------------------
 
@@ -240,20 +264,36 @@ async function montarUsuarios(executor, uid) {
       [prefixo]
     )
   ]);
-  const usuarios = {};
-  const doUsuario = id => (usuarios[id] ||= {});
+  // Map em vez de objeto: o id vem do banco e não pode cair numa propriedade herdada.
+  const usuarios = new Map();
+  const doUsuario = dono => {
+    if (!usuarios.has(dono)) usuarios.set(dono, new Map());
+    return usuarios.get(dono);
+  };
   perfis.rows.forEach(linha => {
-    if (!vazio(linha.perfil)) doUsuario(linha.uid).perfil = linha.perfil;
+    if (!vazio(linha.perfil)) doUsuario(linha.uid).set('perfil', linha.perfil);
   });
   itens.rows.forEach(linha => {
     const pessoa = doUsuario(linha.usuario_id);
-    (pessoa[linha.colecao] ||= {})[linha.id] = linha.dados;
+    if (!pessoa.has(linha.colecao)) pessoa.set(linha.colecao, []);
+    pessoa.get(linha.colecao).push([linha.id, linha.dados]);
   });
   reservas.rows.forEach(linha => {
     const [, dono, nome] = linha.caminho.split('/');
-    doUsuario(dono)[nome] = linha.dados;
+    doUsuario(dono).set(nome, linha.dados);
   });
-  return usuarios;
+  // uid -> tudo da pessoa, já montado.
+  return new Map(
+    [...usuarios].map(([dono, pessoa]) => [
+      dono,
+      galho(
+        [...pessoa].map(([nome, valor]) => [
+          nome,
+          COLECOES_DO_USUARIO.has(nome) ? galho(valor) : valor
+        ])
+      )
+    ])
+  );
 }
 
 async function montarTabela(executor, tabela) {
@@ -261,7 +301,7 @@ async function montarTabela(executor, tabela) {
   const { rows } = await executor.query(
     `select ${coluna} as chave, dados from ${tabela} order by ${coluna} collate "C"`
   );
-  return objetoOuNulo(Object.fromEntries(rows.map(linha => [linha.chave, linha.dados])));
+  return galho(rows.map(linha => [linha.chave, linha.dados]));
 }
 
 async function montarGalho(executor, alvo) {
@@ -272,22 +312,22 @@ async function montarGalho(executor, alvo) {
        order by id collate "C"`,
       [alvo.uid, alvo.colecao]
     );
-    return objetoOuNulo(Object.fromEntries(rows.map(linha => [linha.id, linha.dados])));
+    return galho(rows.map(linha => [linha.id, linha.dados]));
   }
   if (alvo.nivel === 'usuario')
-    return (await montarUsuarios(executor, alvo.uid))[alvo.uid] || null;
-  if (alvo.nivel === 'usuarios') return objetoOuNulo(await montarUsuarios(executor));
+    return (await montarUsuarios(executor, alvo.uid)).get(alvo.uid) ?? null;
+  if (alvo.nivel === 'usuarios') return galho([...(await montarUsuarios(executor))]);
   // Raiz: tudo, como o export do Firebase.
-  const raiz = { usuarios: objetoOuNulo(await montarUsuarios(executor)) };
+  const raiz = [['usuarios', galho([...(await montarUsuarios(executor))])]];
   for (const tabela of Object.keys(TABELAS_DA_RAIZ))
-    raiz[tabela] = await montarTabela(executor, tabela);
+    raiz.push([tabela, await montarTabela(executor, tabela)]);
   const { rows } = await executor.query(
     `select caminho, dados from documentos where position('/' in caminho) = 0
      order by caminho collate "C"`
   );
-  rows.forEach(linha => (raiz[linha.caminho] = linha.dados));
+  rows.forEach(linha => raiz.push([linha.caminho, linha.dados]));
   // Raiz vazia é {} (e não null), igual ao bancoMemoria.
-  return podar(raiz) || {};
+  return Object.fromEntries(raiz.filter(([, valor]) => !vazio(valor)));
 }
 
 async function removerGalho(cliente, alvo) {
