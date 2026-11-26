@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { SiteLayout } from '../../components/site/SiteLayout.jsx';
-import { SiteFooter } from '../../components/site/SiteFooter.jsx';
 import { PageError, PageSkeleton } from '../../components/Loading.jsx';
 import { carregarConteudo, useConteudo } from '../../conteudo/carregar.js';
 import './css/conteudo.css';
@@ -44,7 +43,6 @@ export function PaginaDeConteudo({ caminho }) {
           <PageSkeleton />
         )}
       </section>
-      <SiteFooter />
     </SiteLayout>
   );
 }

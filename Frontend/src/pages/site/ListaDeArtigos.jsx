@@ -1,5 +1,4 @@
 import { SiteLayout } from '../../components/site/SiteLayout.jsx';
-import { SiteFooter } from '../../components/site/SiteFooter.jsx';
 import { Chamada } from '../../components/site/Chamada.jsx';
 import { JsonLd } from '../../components/site/JsonLd.jsx';
 import { Trilha } from '../../components/site/Trilha.jsx';
@@ -80,7 +79,6 @@ export default function ListaDeArtigos({ secao }) {
         <Chamada />
       </section>
       <JsonLd dados={dados} />
-      <SiteFooter />
     </SiteLayout>
   );
 }

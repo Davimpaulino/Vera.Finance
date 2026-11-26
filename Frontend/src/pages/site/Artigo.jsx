@@ -1,5 +1,4 @@
 import { SiteLayout } from '../../components/site/SiteLayout.jsx';
-import { SiteFooter } from '../../components/site/SiteFooter.jsx';
 import { Chamada } from '../../components/site/Chamada.jsx';
 import { JsonLd } from '../../components/site/JsonLd.jsx';
 import { Texto } from '../../components/site/Texto.jsx';
@@ -121,7 +120,6 @@ export default function Artigo({ artigo }) {
         <Chamada />
       </article>
       <JsonLd dados={artigoEstruturado(artigo, trilha)} />
-      <SiteFooter />
     </SiteLayout>
   );
 }

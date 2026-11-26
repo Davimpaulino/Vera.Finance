@@ -1,7 +1,18 @@
 // Páginas do site: não baixam o Firebase, a home só baixa as imagens do tema, e passam no axe.
 import { expect, test, usarTema, violacoesWcag } from './apoio.js';
 
-const DO_SITE = ['/', '/precos', '/perguntas', '/termos', '/privacidade'];
+const DO_SITE = [
+  '/',
+  '/precos',
+  '/perguntas',
+  '/onde-funciona',
+  '/ajuda',
+  '/ajuda/ler-nota-fiscal',
+  '/blog',
+  '/blog/qr-code-da-nota-fiscal-nfc-e',
+  '/termos',
+  '/privacidade'
+];
 const PUBLICAS = [...DO_SITE, '/entrar', '/cadastro'];
 const PEDACO_DO_FIREBASE = /\/assets\/firebase-[\w-]+\.js$/;
 

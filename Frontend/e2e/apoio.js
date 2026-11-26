@@ -41,6 +41,11 @@ export const usarTema = (page, tema) =>
 
 /** Roda o axe-core com as regras da WCAG 2.1 AA e devolve um resumo legível das violações. */
 export async function violacoesWcag(page, { excluir = [] } = {}) {
+  // Sem animação: o contraste medido no meio de uma transição de cor (o item do menu que acabou de
+  // ficar ativo, por exemplo) dá falso alarme quando a máquina está lenta.
+  await page.addStyleTag({
+    content: '*,*::before,*::after{transition:none!important;animation:none!important}'
+  });
   let axe = new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']);
   for (const seletor of excluir) axe = axe.exclude(seletor);
   const { violations } = await axe.analyze();
