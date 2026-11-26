@@ -80,11 +80,22 @@ export const GeoModel = {
     return daRua || (cep.length === 8 ? cep : '');
   },
 
+  /** { cidade, lat, lng } do CEP (sem lat/lng quando o mapa não achou o endereço), ou null. */
   async porCep(cep) {
+    const achado = await this.consultarCep(cep);
+    return achado.erro ? null : achado;
+  },
+
+  /**
+   * Como porCep, mas diz por que não achou: { erro: 'invalido' } (não tem 8 números),
+   * 'naoExiste' (o ViaCEP não conhece o CEP) ou 'falhou' (o ViaCEP não respondeu).
+   */
+  async consultarCep(cep) {
     const digitos = String(cep || '').replace(/\D/g, '');
-    if (digitos.length !== 8) return null;
+    if (digitos.length !== 8) return { erro: 'invalido' };
     const dados = await buscarJson(`https://viacep.com.br/ws/${digitos}/json/`);
-    if (!dados || dados.erro) return null;
+    if (!dados) return { erro: 'falhou' };
+    if (dados.erro) return { erro: 'naoExiste' };
     const cidade = `${dados.localidade} - ${dados.uf}`;
     const coordenadas =
       (await this.geocodificar(

@@ -32,10 +32,13 @@ const limiteDeCadastro = limitar('cadastro', 5, 60 * MINUTO);
 const limiteDeConsulta = limitar('email', 20, 15 * MINUTO);
 const limiteDeLeads = limitar('leads', 5, 60 * MINUTO);
 const limiteDeNotas = limitar('notas', 30, 60 * MINUTO);
+// Cada CEP novo consulta o ViaCEP, o Nominatim e o mapa: 20 CEPs por IP a cada 15 minutos.
+const limiteDeCep = limitar('cep', 20, 15 * MINUTO);
 
 // Públicas
 r.get('/api/saude', publicoController.saude);
 r.get('/api/planos', publicoController.planos);
+r.get('/api/publico/redes', limiteDeCep, publicoController.redes);
 r.post('/api/leads', limiteDeLeads, publicoController.lead);
 r.get('/api/auth/configuracao', authController.configuracao);
 r.post('/api/auth/cadastrar', limiteDeCadastro, authController.cadastrar);
