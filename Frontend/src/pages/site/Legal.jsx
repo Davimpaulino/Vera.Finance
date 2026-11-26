@@ -1,5 +1,4 @@
 import { SiteLayout } from '../../components/site/SiteLayout.jsx';
-import { SiteFooter } from '../../components/site/SiteFooter.jsx';
 import { Link } from '../../lib/router.jsx';
 import './css/legal.css';
 
@@ -194,7 +193,6 @@ export default function Legal({ tipo }) {
           Veja também: <Link to={outro[0]}>{outro[1]}</Link>.
         </p>
       </section>
-      <SiteFooter />
     </SiteLayout>
   );
 }

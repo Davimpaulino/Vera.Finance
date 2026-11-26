@@ -1,6 +1,5 @@
 import { Badge, Button, Card, Icon } from '../../components/ds/index.js';
 import { SiteLayout } from '../../components/site/SiteLayout.jsx';
-import { SiteFooter } from '../../components/site/SiteFooter.jsx';
 import { PageSkeleton } from '../../components/Loading.jsx';
 import { useApi } from '../../hooks/useApi.js';
 import { useRouter } from '../../lib/router.jsx';
@@ -71,7 +70,6 @@ export default function Precos() {
       <p className="precos-rodape">
         Renovação automática. Cancele em Configurações › Plano, sem multa.
       </p>
-      <SiteFooter />
     </SiteLayout>
   );
 }

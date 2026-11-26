@@ -4,6 +4,7 @@ import { Brand } from '../Brand.jsx';
 import { Link, useRouter } from '../../lib/router.jsx';
 import { useBreakpoint } from '../../hooks/useBreakpoint.js';
 import { useVerPainel } from './useVerPainel.js';
+import { SiteFooter } from './SiteFooter.jsx';
 import './css/site-layout.css';
 
 function NavLink({ to, onClick, children }) {
@@ -23,7 +24,11 @@ function NavLink({ to, onClick, children }) {
   );
 }
 
-/** Topo do site público (landing e preços) com menu de gaveta no celular. */
+/**
+ * Moldura das páginas do site: topo com menu de gaveta no celular, o conteúdo da página e o
+ * rodapé. O rodapé fica fora do <main>: dentro dele o <footer> deixa de ser o marco "contentinfo"
+ * e o leitor de tela perde o atalho para o rodapé.
+ */
 export function SiteLayout({ children }) {
   const [menu, setMenu] = useState(false);
   const bp = useBreakpoint();
@@ -110,6 +115,7 @@ export function SiteLayout({ children }) {
       <main id="conteudo" tabIndex={-1}>
         {children}
       </main>
+      <SiteFooter />
     </div>
   );
 }

@@ -89,6 +89,17 @@ test.describe('acessibilidade (WCAG 2.1 AA)', () => {
     expect(await violacoesWcag(page)).toEqual([]);
   });
 
+  // O axe não pega isto: um <footer> dentro do <main> deixa de ser "contentinfo" e o leitor de
+  // tela perde o atalho para o rodapé.
+  for (const caminho of DO_SITE)
+    test(`${caminho}: marcos de cabeçalho, conteúdo e rodapé`, async ({ page }) => {
+      await page.goto(caminho, { waitUntil: 'networkidle' });
+      await expect(page.getByRole('banner')).toHaveCount(1);
+      await expect(page.getByRole('main')).toHaveCount(1);
+      await expect(page.getByRole('contentinfo')).toHaveCount(1);
+      await expect(page.getByRole('main').locator('footer')).toHaveCount(0);
+    });
+
   test('o primeiro Tab mostra "Pular para o conteúdo" e leva ao conteúdo', async ({ page }) => {
     await page.goto('/precos', { waitUntil: 'networkidle' });
     await page.keyboard.press('Tab');

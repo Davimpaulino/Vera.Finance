@@ -1,5 +1,4 @@
 import { SiteLayout } from '../../components/site/SiteLayout.jsx';
-import { SiteFooter } from '../../components/site/SiteFooter.jsx';
 import { Link } from '../../lib/router.jsx';
 import { REDES_COM_PRECO, urlDoSite } from '../../lib/site.js';
 import './css/perguntas.css';
@@ -115,7 +114,6 @@ export default function Perguntas() {
         // "<" escapado para o texto nunca fechar a tag script.
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c') }}
       />
-      <SiteFooter />
     </SiteLayout>
   );
 }
