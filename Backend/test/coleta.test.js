@@ -57,14 +57,14 @@ globalThis.fetch = async (endereco, opcoes = {}) => {
 };
 
 const { lerRobots, permitido } = await import('../src/utils/robots.js');
-const { ColetaModel, NAVEGADOR, agenteDaColeta } = await import('../src/models/ColetaModel.js');
+const { ColetaModel, NAVEGADOR, NOME_DO_ROBO, agenteDaColeta } = await import('../src/models/ColetaModel.js');
 const { CatalogoModel } = await import('../src/models/CatalogoModel.js');
 const { RedeModel } = await import('../src/models/RedeModel.js');
 
 const tenda = RedeModel.buscar('tenda');
 const pagueMenos = RedeModel.buscar('paguemenos');
 const savegnago = RedeModel.buscar('savegnago');
-const ROBO = 'vera.finance-bot/1.0 (+https://vera.teste/robo)';
+const ROBO = 'vera-finance-bot/1.0 (+https://vera.teste/robo)';
 const pedidosA = host => pedidos.filter(p => new URL(p.url).host === host && !p.url.endsWith('/robots.txt'));
 const robotsPedidos = host => pedidos.filter(p => p.url === `https://${host}/robots.txt`);
 
@@ -84,7 +84,7 @@ Allow: /api/publica/
 Disallow: /*.pdf$
 
 User-agent: OutroRobo
-User-agent: vera.finance-bot/2.0
+User-agent: vera-finance-bot/2.0
 Disallow: /busca
 Allow: /busca/arroz
 
@@ -98,17 +98,28 @@ disallow:
   assert.equal(permitido(grupos, 'robo-qualquer', '/manual.pdf?v=1'), true, '$ prende o fim');
   assert.equal(permitido(grupos, 'robo-qualquer', '/'), true);
   // Com grupo próprio (nome sem diferenciar maiúsculas nem versão), o "*" deixa de valer.
-  assert.equal(permitido(grupos, 'Vera.Finance-Bot', '/api/produtos'), true);
-  assert.equal(permitido(grupos, 'vera.finance-bot', '/busca?q=feijao'), false);
-  assert.equal(permitido(grupos, 'vera.finance-bot', '/busca/arroz'), true);
+  assert.equal(permitido(grupos, 'Vera-Finance-Bot', '/api/produtos'), true);
+  assert.equal(permitido(grupos, 'vera-finance-bot', '/busca?q=feijao'), false);
+  assert.equal(permitido(grupos, 'vera-finance-bot', '/busca/arroz'), true);
   // "Disallow:" vazio não proíbe nada.
   assert.equal(permitido(grupos, 'alguem', '/qualquer'), true);
-  assert.equal(permitido(lerRobots(''), 'vera.finance-bot', '/api'), true, 'arquivo vazio libera');
+  assert.equal(permitido(lerRobots(''), 'vera-finance-bot', '/api'), true, 'arquivo vazio libera');
   assert.equal(
     permitido(lerRobots('User-agent: *\nDisallow: /\nAllow: /'), 'x', '/a'),
     true,
     'empate de tamanho fica com o Allow'
   );
+});
+
+test('robots.txt: o nome do robô segue a RFC (só letras, "_" e "-"), como lê o Google', () => {
+  assert.match(NOME_DO_ROBO, /^[A-Za-z_-]+$/);
+  // "vera.finance-bot" é lido como "vera" (o ponto encerra o nome): esse grupo não é o nosso.
+  const comPonto = lerRobots('User-agent: *\nAllow: /\n\nUser-agent: vera.finance-bot\nDisallow: /');
+  assert.equal(permitido(comPonto, NOME_DO_ROBO, '/busca'), true);
+  assert.equal(permitido(comPonto, 'vera', '/busca'), false);
+  const nosso = lerRobots('User-agent: *\nAllow: /\n\nUser-agent: VERA-FINANCE-BOT/1.0\nDisallow: /busca');
+  assert.equal(permitido(nosso, NOME_DO_ROBO, '/busca'), false);
+  assert.equal(permitido(nosso, `${NOME_DO_ROBO}/1.0 (+https://vera.teste/robo)`, '/busca'), false);
 });
 
 test('robots.txt: acento e percent-encoding são comparados já normalizados (RFC 9309)', () => {
@@ -181,7 +192,7 @@ test('caminho bloqueado para "*": não consulta e a rede fica como falhou', asyn
 test('caminho bloqueado para o nosso robô: não consulta, mesmo com "*" liberado', async () => {
   process.env.COLETA_IDENTIFICADA = '1';
   robots['www.superpaguemenos.com.br'] = {
-    texto: 'User-agent: *\nAllow: /\n\nUser-agent: vera.finance-bot\nDisallow: /busca/'
+    texto: 'User-agent: *\nAllow: /\n\nUser-agent: vera-finance-bot\nDisallow: /busca/'
   };
   const r = await CatalogoModel.buscar(pagueMenos, 'arroz 5kg');
   assert.equal(r.situacao, 'falhou');

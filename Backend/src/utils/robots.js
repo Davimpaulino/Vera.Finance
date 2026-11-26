@@ -32,12 +32,15 @@ export function normalizarCaminho(texto) {
     });
 }
 
-const nomeDoAgente = valor =>
-  String(valor || '')
-    .trim()
-    .split('/')[0]
-    .trim()
-    .toLowerCase();
+// Nome do robô na linha User-agent (RFC 9309, 2.2.1): só letras, "_" e "-". Como no leitor do
+// Google, vale o começo do valor até o primeiro caractere fora disso ("vera-finance-bot/2.0" vira
+// "vera-finance-bot", e "vera.finance-bot" vira "vera"), sem diferenciar maiúsculas. "*" sozinho é
+// o grupo de todos os robôs.
+const nomeDoAgente = valor => {
+  const texto = String(valor || '').trim();
+  if (texto === '*' || /^\*\s/.test(texto)) return '*';
+  return (texto.match(/^[A-Za-z_-]+/) || [''])[0].toLowerCase();
+};
 
 /** Grupos do arquivo: [{ agentes: ['*'], regras: [{ permitir, caminho }] }]. */
 export function lerRobots(texto) {

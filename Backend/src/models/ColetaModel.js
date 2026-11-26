@@ -12,7 +12,9 @@ import { lerRobots, permitido } from '../utils/robots.js';
 // As variáveis são lidas a cada pedido (e não uma vez ao subir) para os testes poderem trocar.
 export const NAVEGADOR =
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126 Safari/537.36';
-export const NOME_DO_ROBO = 'vera.finance-bot';
+// O nome do robô segue a RFC 9309 (2.2.1): só letras, "_" e "-". Com ponto ("vera.finance-bot"),
+// leitores que seguem a RFC, como o do Google, leriam só "vera" na linha User-agent do site.
+export const NOME_DO_ROBO = 'vera-finance-bot';
 
 const DIA_MS = 24 * 60 * 60 * 1000;
 // Sem resposta do robots.txt (erro 5xx, rede fora): a RFC 9309 manda tratar como tudo
