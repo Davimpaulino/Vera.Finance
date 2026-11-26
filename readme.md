@@ -218,8 +218,15 @@ https://vera-finance.onrender.com/
   nunca vão para o cache.
 - Sem internet abre só a casca do app, não os dados: o login e os números vêm da API, então
   quem está logado vê a tela de Entrar até a conexão voltar. O login não se perde.
-- A versão do cache muda a cada build; os caches antigos são apagados quando a versão nova
-  assume.
+- A versão do cache muda a cada build: o plugin `vera-versao-do-sw` do `vite.config.js` troca o
+  marcador `__VERSAO_DO_BUILD__` do `dist/sw.js` em qualquer `vite build` e faz o build falhar
+  se o marcador sumir. Os caches antigos são apagados quando a versão nova assume.
+- Emergência (o service worker atrapalhando em produção): copie `scripts/sw-emergencia.js` por
+  cima de `public/sw.js` e, no mesmo deploy, apague o bloco que registra o service worker em
+  `src/main.jsx`. Publique. A primeira visita de cada pessoa depois do deploy ainda passa pelo
+  service worker antigo, que baixa o novo; a partir daí os caches da vera somem, o registro sai
+  e tudo vem direto da rede. Se o bloco do `src/main.jsx` ficar, o registro continua, mas vazio:
+  não guarda nem intercepta nada. Para voltar ao normal, restaure os dois arquivos pelo git.
 
 ## Avisar os buscadores (IndexNow)
 

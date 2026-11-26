@@ -1,10 +1,13 @@
 import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 import { existsSync, statSync } from 'node:fs';
+import { readFile, writeFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 
 // Mesmo padrão de src/lib/site.js: o endereço público vem de VITE_SITE_URL.
 const SITE_PADRAO = 'https://vera-finance.onrender.com';
+// Marcador de public/sw.js trocado pela versão do cache em todo build do site.
+const MARCADOR_VERSAO = '__VERSAO_DO_BUILD__';
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), 'VITE_');
@@ -16,6 +19,20 @@ export default defineConfig(({ mode }) => {
         // Troca __SITE_URL__ no index.html (canonical, og:url, JSON-LD, imagens de compartilhamento).
         name: 'vera-site-url',
         transformIndexHtml: html => html.replaceAll('__SITE_URL__', site)
+      },
+      {
+        // Versão nova do cache do service worker em todo build do site, com npm run build ou
+        // vite build direto: no próximo acesso os caches antigos saem. Sem o marcador o build
+        // falha, em vez de publicar um sw.js cujo cache nunca gira entre deploys.
+        name: 'vera-versao-do-sw',
+        apply: (_config, { command, isSsrBuild }) => command === 'build' && !isSsrBuild,
+        async writeBundle(saida) {
+          const arquivo = join(saida.dir, 'sw.js');
+          const sw = existsSync(arquivo) ? await readFile(arquivo, 'utf8') : '';
+          if (!sw.includes(MARCADOR_VERSAO))
+            throw new Error(`${arquivo} não tem ${MARCADOR_VERSAO}: a versão do cache não ia mudar.`);
+          await writeFile(arquivo, sw.replaceAll(MARCADOR_VERSAO, Date.now().toString(36)));
+        }
       },
       {
         // npm run preview igual ao Render: /precos abre dist/precos/index.html (pré-renderizado)

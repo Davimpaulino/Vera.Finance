@@ -3,7 +3,8 @@
 // quem está logado vê a tela de Entrar até a conexão voltar (o login não se perde).
 // Nunca guarda chamadas da API nem nada com Authorization: dados financeiros não ficam em cache.
 
-// O build troca a versão a cada deploy (scripts/prerender.mjs); no activate os caches antigos saem.
+// Todo build troca a versão (plugin vera-versao-do-sw no vite.config.js); no activate os caches
+// antigos saem. Para desligar o service worker em produção, veja scripts/sw-emergencia.js.
 const VERSAO = '__VERSAO_DO_BUILD__';
 const CACHE = `vera-${VERSAO}`;
 // Casca do app (gerada por scripts/prerender.mjs), usada quando a navegação falha sem internet e

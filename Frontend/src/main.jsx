@@ -19,6 +19,7 @@ createRoot(document.getElementById('root')).render(
 );
 
 // Service worker só no site publicado: no dev ele guardaria arquivos que mudam a todo momento.
+// Para desligar em produção, veja scripts/sw-emergencia.js (este bloco sai junto).
 if (import.meta.env.PROD && 'serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js').catch(() => {
