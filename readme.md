@@ -162,7 +162,7 @@ Backend (Render → Environment):
 | `CORS_ORIGIN` | Endereço do site (ex.: `https://vera-finance.onrender.com`). Nunca `*`. |
 | `FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL`, `FIREBASE_PRIVATE_KEY` | Conta de serviço do Firebase (Admin SDK). |
 | `FIREBASE_URL_BANCO` | URL do Realtime Database. |
-| `DATABASE_URL` | Opcional. Endereço do PostgreSQL. Com ela, os **dados** vão para o PostgreSQL e o login continua no Firebase Auth. Sem ela, nada muda. Veja "PostgreSQL" abaixo. |
+| `DATABASE_URL` | Opcional. Endereço do PostgreSQL. Com ela, os **dados** vão para o PostgreSQL e o login continua como está hoje (Firebase Auth com a conta de serviço, ou login próprio). Sem ela, nada muda. Veja "PostgreSQL" abaixo. |
 | `PGSSL` | Opcional. Força o SSL do PostgreSQL: `require`, `no-verify` ou `disable`. Sem ela, vale o `sslmode` da `DATABASE_URL`. |
 | `NODE_ENV` | `production` |
 
@@ -175,15 +175,18 @@ ou cole o conteúdo em Firebase Console → Realtime Database → Regras.
 # 🐘 PostgreSQL (dados)
 
 A API funciona com o Firebase Realtime Database (como hoje) ou com PostgreSQL. Quem escolhe é a
-variável `DATABASE_URL`: sem ela, nada muda. O login (Firebase Auth) continua igual nos dois casos;
-só os dados mudam de lugar.
+variável `DATABASE_URL`: sem ela, nada muda. Só os dados mudam de lugar: o login continua como
+está hoje (Firebase Auth com a conta de serviço, ou login próprio).
 
 - O adaptador fica em `Backend/src/config/bancoPostgres.js` e segue a mesma interface dos outros
   bancos (`ler`, `gravar`, `atualizar`, `mesclar`, `remover`, `adicionar`, `listar`,
-  `atualizarVarios`), então os models não mudam.
+  `atualizarVarios`), então os models não mudam. O que ainda difere do banco em memória (poucos
+  detalhes, cada um com teste) está no comentário do início desse arquivo.
 - As tabelas ficam em `Backend/src/config/esquema.sql` e são criadas sozinhas na primeira conexão.
-  Cada coleção tem sua tabela (`usuarios`, `itens_usuario`, `contas`, `precos`...). Apagar uma pessoa
-  apaga tudo dela (cascata). Caminho sem tabela própria vai para `documentos`, sem perder dado.
+  Os dados de cada pessoa ficam em `usuarios` (o perfil) e `itens_usuario` (categorias,
+  lançamentos, lista, metas, notas e fixos, separados pela coluna `colecao`); as demais coleções
+  (`contas`, `precos`, `familias`...) têm tabela própria. Apagar uma pessoa apaga tudo dela
+  (cascata). Caminho sem tabela própria vai para `documentos`, sem perder dado.
 
 ## 1. Criar o banco (grátis, no Neon)
 
@@ -200,7 +203,9 @@ troca do banco.
 
 1. **Pare a API** no Render (Dashboard → serviço → *Suspend*), para não entrar dado novo.
 2. **Exporte o JSON**: Firebase Console → Realtime Database → Dados → menu **⋮** → *Exportar JSON*.
-   Salve **fora** da pasta do projeto (o arquivo tem dados pessoais; nunca vai para o Git).
+   O arquivo vem como `<projeto>-default-rtdb-export.json`. Salve **fora** da pasta do projeto
+   (ele tem dados pessoais; nunca vai para o Git). Os exemplos abaixo usam
+   `~/exportacao-firebase.json`; troque pelo caminho do seu arquivo.
 3. **Simule** a migração, na pasta `Backend` (só lê o arquivo e mostra as contagens):
 
    ```bash
