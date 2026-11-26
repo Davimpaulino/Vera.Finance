@@ -95,8 +95,9 @@ export function raioKm(valor, padrao = 5) {
 
 /** Coordenada de verdade: latitude entre -90 e 90, longitude entre -180 e 180. */
 export function coordenadaValida(lat, lng) {
-  if (lat === null || lat === undefined || lat === '' || lng === null || lng === undefined || lng === '')
-    return false;
+  // Só número ou texto: true e [1] também viram número no Number().
+  const aceito = valor => (typeof valor === 'number' || typeof valor === 'string') && valor !== '';
+  if (!aceito(lat) || !aceito(lng)) return false;
   const [a, b] = [Number(lat), Number(lng)];
   return Number.isFinite(a) && Number.isFinite(b) && Math.abs(a) <= 90 && Math.abs(b) <= 180;
 }
