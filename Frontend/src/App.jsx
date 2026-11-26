@@ -11,6 +11,10 @@ import Landing from './pages/site/Landing.jsx';
 import Precos from './pages/site/Precos.jsx';
 import Legal from './pages/site/Legal.jsx';
 import Perguntas from './pages/site/Perguntas.jsx';
+import OndeFunciona from './pages/site/OndeFunciona.jsx';
+import ListaDeArtigos from './pages/site/ListaDeArtigos.jsx';
+import Artigo from './pages/site/Artigo.jsx';
+import { artigoDoCaminho } from './conteudo/index.js';
 import Login from './pages/auth/Login.jsx';
 import Cadastro from './pages/auth/Cadastro.jsx';
 import AceiteDosTermos from './pages/auth/AceiteDosTermos.jsx';
@@ -85,6 +89,12 @@ export default function App() {
   if (path === '/perguntas') return <Perguntas />;
   if (path === '/termos') return <Legal tipo="termos" />;
   if (path === '/privacidade') return <Legal tipo="privacidade" />;
+  if (path === '/onde-funciona') return <OndeFunciona />;
+  if (path === '/ajuda') return <ListaDeArtigos secao="ajuda" />;
+  if (path === '/blog') return <ListaDeArtigos secao="blog" />;
+  // Artigos da ajuda e do blog (src/conteudo): caminho que não é de artigo segue adiante.
+  const artigo = artigoDoCaminho(path);
+  if (artigo) return <Artigo artigo={artigo} />;
 
   if (status === 'loading') return <Carregando />;
   const logado = status === 'in';

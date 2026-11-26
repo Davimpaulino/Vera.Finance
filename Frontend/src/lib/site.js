@@ -38,3 +38,13 @@ export const REDES_COM_PRECO = [
   'Pão de Açúcar',
   'Pague Menos'
 ];
+
+// Das redes acima, as de atacado (atacarejo), as de `tipo: 'atacado'` no RedeModel.
+// A página Onde funciona separa supermercados e atacados com esta lista; as demais são mercado.
+export const REDES_DE_ATACADO = [
+  'Atacadão',
+  "Sam's Club",
+  'Giga Atacado',
+  'Mercantil Atacado',
+  'Tenda Atacado'
+];

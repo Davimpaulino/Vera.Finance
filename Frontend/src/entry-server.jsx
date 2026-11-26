@@ -9,6 +9,7 @@ import App from './App.jsx';
 import { PLANOS } from '../../Backend/src/models/PlanoModel.js';
 
 export { ROTAS_PUBLICAS, metaDaPagina } from './lib/paginas.js';
+export { problemasDoConteudo } from './conteudo/index.js';
 
 // No build ninguém está logado: as páginas saem como para um visitante.
 // O login de verdade (Firebase) só começa no navegador, pelo AuthProvider de main.jsx.

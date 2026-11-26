@@ -10,9 +10,15 @@ const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..');
 const DIST = join(RAIZ, 'dist');
 const SSR = join(RAIZ, '.ssr');
 
-const { render, ROTAS_PUBLICAS, metaDaPagina } = await import(
+const { render, ROTAS_PUBLICAS, metaDaPagina, problemasDoConteudo } = await import(
   pathToFileURL(join(SSR, 'entry-server.js')).href
 );
+
+// Artigos de src/conteudo (ajuda e blog) com slug repetido, campo faltando ou link para página
+// que não existe param o build aqui, antes de publicar uma página quebrada.
+const problemas = problemasDoConteudo(ROTAS_PUBLICAS);
+if (problemas.length)
+  throw new Error(`Conteúdo com problema:\n- ${problemas.join('\n- ')}`);
 
 const modelo = await readFile(join(DIST, 'index.html'), 'utf8');
 
@@ -24,9 +30,11 @@ const escapar = texto =>
     .replaceAll('>', '&gt;');
 
 // Troca o conteúdo de uma tag do modelo e falha alto se ela sumir do index.html.
+// O novo texto entra por função: assim um "$&" ou "$1" no texto de uma página (preço em R$,
+// por exemplo) não vira padrão especial do replace.
 const trocar = (html, padrao, novo) => {
   if (!padrao.test(html)) throw new Error(`Não achei ${padrao} no dist/index.html.`);
-  return html.replace(padrao, novo);
+  return html.replace(padrao, () => novo);
 };
 
 // <meta name|property="..." content="..." />, numa linha só ou quebrada como no index.html.
@@ -52,7 +60,8 @@ for (const rota of ROTAS_PUBLICAS) {
   const metas = [
     ['name', 'description', meta.descricao],
     ['name', 'robots', meta.robots],
-    ['property', 'og:url', meta.canonical]
+    ['property', 'og:url', meta.canonical],
+    ['property', 'og:type', meta.tipo]
   ];
   // A home fica com os textos de compartilhamento do index.html, escritos para WhatsApp e redes.
   // As outras páginas mostram o próprio título e descrição quando o link é compartilhado.
