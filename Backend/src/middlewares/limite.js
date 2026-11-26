@@ -28,10 +28,6 @@ export function limitar(nome, maximo, janelaMs) {
   };
 }
 
-export function limparLimites() {
-  janelas.clear();
-}
-
 // Limpeza periódica para o mapa não crescer sem fim.
 setInterval(() => {
   const agora = Date.now();

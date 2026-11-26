@@ -7,6 +7,8 @@ delete process.env.GOOGLE_APPLICATION_CREDENTIALS;
 delete process.env.FIREBASE_PRIVATE_KEY;
 const { handle } = await import('../src/app.js');
 const { popularDadosDeTeste } = await import('./apoio/dadosDeTeste.js');
+const { VERSAO_DOS_TERMOS } = await import('../src/config/termos.js');
+const aceite = { versao: VERSAO_DOS_TERMOS };
 
 // Testes não saem para a internet: o mapa e os sites das redes ficam indisponíveis aqui.
 const fetchDeVerdade = globalThis.fetch;
@@ -106,7 +108,7 @@ test('cadastro guiado cria categorias, fixos e a renda do ciclo', async () => {
   const reg = await call(
     'POST',
     '/auth/cadastrar',
-    { nome: 'Bia', email: `bia${Date.now()}@x.com`, senha: '12345678' },
+    { nome: 'Bia', email: `bia${Date.now()}@x.com`, senha: '12345678', aceite },
     null
   );
   assert.equal(reg.status, 201);
@@ -142,7 +144,7 @@ test('plano grátis limita metas a 3', async () => {
   const reg = await call(
     'POST',
     '/auth/cadastrar',
-    { nome: 'Caio', email: `caio${Date.now()}@x.com`, senha: '12345678' },
+    { nome: 'Caio', email: `caio${Date.now()}@x.com`, senha: '12345678', aceite },
     null
   );
   const tk = reg.body.token;

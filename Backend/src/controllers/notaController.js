@@ -49,7 +49,9 @@ export const notaController = {
       })),
       status: 'pendente',
       lidaEm: new Date().toISOString(),
-      compradoEm: lida.compradoEm
+      compradoEm: lida.compradoEm,
+      // No modo família a nota fica no espaço do dono; quemId diz de quem ela é (portabilidade).
+      quemId: user.uid
     });
     return { status: 201, body: nota };
   },

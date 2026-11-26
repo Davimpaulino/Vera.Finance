@@ -5,6 +5,7 @@ import './css/legal.css';
 
 // Textos legais. Cada bloco tem um título e parágrafos ou listas.
 // Atualize ATUALIZADO_EM sempre que o texto mudar (e avise quem usa, se a mudança for relevante).
+// Junto, troque VERSAO_DOS_TERMOS (Frontend/src/lib/termos.js e Backend/src/config/termos.js).
 const ATUALIZADO_EM = '24 de novembro de 2026';
 const CONTATO = 'privacidade@vera.finance';
 

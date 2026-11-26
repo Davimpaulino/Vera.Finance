@@ -3,6 +3,7 @@ import { CredencialModel } from '../../src/models/CredencialModel.js';
 import { normalize } from '../../src/utils/text.js';
 import { cycleFor, addDays, startOfDay } from '../../src/utils/dates.js';
 import { round2 } from '../../src/utils/money.js';
+import { VERSAO_DOS_TERMOS } from '../../src/config/termos.js';
 
 // Cenário fixo para os testes automáticos. Só existe aqui: nunca vai para o banco de verdade.
 const LOCAL_DE_TESTE = { lat: -23.0904, lng: -47.2181 };
@@ -205,6 +206,7 @@ async function popularUsuario(uid) {
     email: CONTA_DE_TESTE.email,
     plano: 'mensal',
     onboardingCompleto: true,
+    termosAceitos: { versao: VERSAO_DOS_TERMOS, em: addDays(hoje, -200).toISOString() },
     assinatura: { plano: 'mensal', desde: addDays(hoje, -120).toISOString(), cancelada: false },
     ciclo: { diaVirada: 5, frequencia: 'Uma vez por mês', rendaFixa: 4200, rendaVariavel: 600 },
     local: {

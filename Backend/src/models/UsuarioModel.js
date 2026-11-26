@@ -32,13 +32,14 @@ export const UsuarioModel = {
     };
   },
 
-  async criarSeNaoExistir(uid, { nome, email }) {
+  async criarSeNaoExistir(uid, { nome, email, termosAceitos }) {
     const atual = await this.buscar(uid);
     if (atual) return atual;
     const perfil = {
       ...structuredClone(PADRAO),
       nome: nome || '',
       email: email || '',
+      ...(termosAceitos ? { termosAceitos } : {}),
       criadoEm: new Date().toISOString()
     };
     await banco.gravar(caminhoDoPerfil(uid), perfil);

@@ -2,8 +2,6 @@ import { randomBytes } from 'node:crypto';
 
 export const partesDoCaminho = caminho => String(caminho).split('/').filter(Boolean);
 
-export const juntarCaminho = (...partes) => partes.flatMap(partesDoCaminho).join('/');
-
 const ALFABETO = '-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz';
 
 export function gerarId() {

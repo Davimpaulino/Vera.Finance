@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { servicoDeLogin } from '../services/servicoDeLogin.js';
-import { api } from '../services/api.js';
+import { api, setAoPedirAceite } from '../services/api.js';
 
 // Exportado para a pré-renderização (src/entry-server.jsx) entregar um valor fixo, sem Firebase.
 export const AuthContext = createContext(null);
@@ -25,6 +25,9 @@ export function AuthProvider({ children }) {
     }
   }, []);
 
+  // Termos novos com o app aberto: o perfil recarregado leva o App para a tela de aceite.
+  useEffect(() => setAoPedirAceite(() => refresh().catch(() => {})), [refresh]);
+
   useEffect(
     () =>
       servicoDeLogin.observar(async logado => {
@@ -34,7 +37,7 @@ export function AuthProvider({ children }) {
           return;
         }
         try {
-          await api.post('/auth/sessao', {});
+          await servicoDeLogin.abrirSessao();
           await refresh();
         } catch {
           setStatus('out');
@@ -53,12 +56,12 @@ export function AuthProvider({ children }) {
         await servicoDeLogin.entrar(email, senha, lembrar);
         return refresh();
       },
-      async register(nome, email, senha) {
-        await servicoDeLogin.cadastrar(nome, email, senha);
+      async register(nome, email, senha, aceite) {
+        await servicoDeLogin.cadastrar(nome, email, senha, aceite);
         return refresh();
       },
-      async social(provider) {
-        await servicoDeLogin.entrarComProvedor(provider);
+      async social(provider, aceite) {
+        await servicoDeLogin.entrarComProvedor(provider, aceite);
         return refresh();
       },
       async logout() {
