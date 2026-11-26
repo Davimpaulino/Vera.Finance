@@ -427,6 +427,12 @@ test('valores e ids: true, listas e caminhos não passam por número nem por id'
     assert.ok(!idValido(id), JSON.stringify(id));
 });
 
+test('a configuração pública não diz qual banco a API usa', async () => {
+  const configuracao = (await pedir('GET', '/auth/configuracao')).json;
+  assert.equal(configuracao.versaoDosTermos, VERSAO_DOS_TERMOS);
+  assert.equal(configuracao.modoBanco, undefined);
+});
+
 test('cache com teto: passou do limite, sai a entrada mais antiga', () => {
   const mapa = new Map();
   for (let i = 0; i < 10; i++) guardarComTeto(mapa, `k${i}`, i, 3);

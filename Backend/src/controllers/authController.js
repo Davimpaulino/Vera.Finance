@@ -1,4 +1,4 @@
-import { loginProprio, modoBanco } from '../config/banco.js';
+import { loginProprio } from '../config/banco.js';
 import { CredencialModel } from '../models/CredencialModel.js';
 import { ContaModel } from '../models/ContaModel.js';
 import { UsuarioModel } from '../models/UsuarioModel.js';
@@ -22,7 +22,8 @@ function senhaDoCorpo(valor, rotulo = 'A senha') {
 const nomeDoCorpo = valor => texto(valor, 'O nome', { max: TAMANHO_MAXIMO_DO_NOME });
 
 export const authController = {
-  configuracao: async () => ({ loginProprio, modoBanco, versaoDosTermos: VERSAO_DOS_TERMOS }),
+  // Rota pública: diz só o que a tela precisa. Qual banco a API usa não é da conta de ninguém.
+  configuracao: async () => ({ loginProprio, versaoDosTermos: VERSAO_DOS_TERMOS }),
 
   async cadastrar({ body }) {
     requireFields(body, ['nome', 'email', 'senha']);
