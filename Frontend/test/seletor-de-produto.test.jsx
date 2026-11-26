@@ -28,6 +28,9 @@ const OPCOES = [
   }
 ];
 
+// Com menos de três opções os filtros nem aparecem.
+const TRES = [...OPCOES, { ...OPCOES[1], chave: 'arroz-camil-5kg', produto: 'Arroz Camil 5kg', tamanho: '5kg' }];
+
 const campo = () => screen.getByRole('textbox', { name: 'Buscar produto para a lista' });
 const digitar = texto => fireEvent.change(campo(), { target: { value: texto } });
 
@@ -104,12 +107,39 @@ describe('SeletorDeProduto', () => {
   });
 
   it('os filtros de marca valem para o que aparece', async () => {
-    const tres = [...OPCOES, { ...OPCOES[1], chave: 'arroz-camil-5kg', produto: 'Arroz Camil 5kg', tamanho: '5kg' }];
-    api.get.mockResolvedValue({ modo: 'real', opcoes: tres });
+    api.get.mockResolvedValue({ modo: 'real', opcoes: TRES });
     render(<SeletorDeProduto onEscolher={() => {}} />);
     digitar('arroz');
     const grupo = await screen.findByRole('group', { name: 'Filtrar por marca' });
     fireEvent.click(within(grupo).getByRole('button', { name: 'Tio João' }));
+    expect(screen.queryByRole('button', { name: /Arroz Camil/ })).toBeNull();
+    expect(screen.getByRole('button', { name: /Arroz Tio João 5kg/ })).toBeInTheDocument();
+  });
+
+  it('o toque na marca logo que as opções aparecem não é desfeito', async () => {
+    api.get.mockResolvedValue({ modo: 'real', opcoes: TRES });
+    render(<SeletorDeProduto onEscolher={() => {}} />);
+    digitar('arroz');
+    // A resposta chega fora do act, como no navegador. O toque vai logo depois de a tela mudar,
+    // antes de os efeitos rodarem: um efeito que zerasse os filtros desfaria o toque.
+    const anterior = globalThis.IS_REACT_ACT_ENVIRONMENT;
+    globalThis.IS_REACT_ACT_ENVIRONMENT = false;
+    try {
+      await new Promise(resolve => {
+        const observador = new MutationObserver(() => {
+          const grupo = screen.queryByRole('group', { name: 'Filtrar por marca' });
+          if (!grupo) return;
+          observador.disconnect();
+          within(grupo).getByRole('button', { name: 'Tio João' }).click();
+          resolve();
+        });
+        observador.observe(document.body, { childList: true, subtree: true });
+      });
+      // Tempo para os efeitos pendentes rodarem.
+      await new Promise(resolve => setTimeout(resolve, 50));
+    } finally {
+      globalThis.IS_REACT_ACT_ENVIRONMENT = anterior;
+    }
     expect(screen.queryByRole('button', { name: /Arroz Camil/ })).toBeNull();
     expect(screen.getByRole('button', { name: /Arroz Tio João 5kg/ })).toBeInTheDocument();
   });

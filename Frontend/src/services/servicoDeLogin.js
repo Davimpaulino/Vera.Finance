@@ -246,6 +246,16 @@ export const servicoDeLogin = {
   observar(aoMudar, aoFalhar = () => {}) {
     let cancelado = false;
     let desligar = () => {};
+    // O onIdTokenChanged dispara também quando o token renova e no reload() da confirmação do
+    // e-mail. Cada aviso reabre a sessão na API, e uma falha dela nessa hora tiraria a pessoa do
+    // app. Por isso só avisa quando a conta muda: uid do Firebase, 'backend' (login próprio) ou
+    // null. O primeiro aviso sempre passa, e cada inscrição nova começa do zero.
+    let ultimaChave;
+    const avisar = chave => {
+      if (chave === ultimaChave) return;
+      ultimaChave = chave;
+      aoMudar(chave !== null);
+    };
     carregarFirebase().then(
       modulo => {
         if (cancelado) return;
@@ -255,7 +265,7 @@ export const servicoDeLogin = {
         }
         modulo.getRedirectResult(modulo.autenticacaoFirebase).catch(() => {});
         desligar = modulo.onIdTokenChanged(modulo.autenticacaoFirebase, usuario =>
-          aoMudar(!!usuario || !!armazenamento.ler())
+          avisar(usuario ? usuario.uid : armazenamento.ler() ? 'backend' : null)
         );
       },
       erro => {

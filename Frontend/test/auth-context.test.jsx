@@ -98,8 +98,11 @@ describe('AuthProvider', () => {
 
   it('deixa a marca de sessão para o "Ver o painel" do site e tira quando a sessão fecha', async () => {
     montar('/app');
-    await waitFor(() => expect(status()).toBe('in'));
-    expect(servicoDeLogin.lembrarSessao).toHaveBeenLastCalledWith(true);
+    // A marca sai num efeito, depois da tela: a espera cobre os dois.
+    await waitFor(() => {
+      expect(status()).toBe('in');
+      expect(servicoDeLogin.lembrarSessao).toHaveBeenLastCalledWith(true);
+    });
     cleanup();
 
     servicoDeLogin.observar.mockImplementation(aoMudar => {
@@ -107,8 +110,10 @@ describe('AuthProvider', () => {
       return () => {};
     });
     montar('/app');
-    await waitFor(() => expect(status()).toBe('out'));
-    expect(servicoDeLogin.lembrarSessao).toHaveBeenLastCalledWith(false);
+    await waitFor(() => {
+      expect(status()).toBe('out');
+      expect(servicoDeLogin.lembrarSessao).toHaveBeenLastCalledWith(false);
+    });
   });
 
   it('sem conexão a marca fica como estava (a sessão não fechou)', async () => {
@@ -182,9 +187,12 @@ describe('AuthProvider', () => {
   });
 
   it('a internet que volta tenta sozinha', async () => {
+    const ouvir = vi.spyOn(window, 'addEventListener');
     servicoDeLogin.abrirSessao.mockRejectedValueOnce(SEM_REDE);
     montar('/app');
     await waitFor(() => expect(status()).toBe('offline'));
+    // A tela "offline" aparece antes do efeito que escuta o 'online': espera ele ligar.
+    await waitFor(() => expect(ouvir).toHaveBeenCalledWith('online', expect.any(Function)));
     act(() => {
       window.dispatchEvent(new Event('online'));
     });
