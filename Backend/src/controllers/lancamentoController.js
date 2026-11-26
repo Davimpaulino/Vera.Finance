@@ -25,18 +25,19 @@ function dataDoCorpo(valor) {
   return data.toISOString();
 }
 
-const csvCell = v => {
-  const s = String(v ?? '');
-  return /[";\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
-};
+// Cada célula vai entre aspas (com as aspas de dentro dobradas): vírgula, ponto e vírgula ou
+// quebra de linha no meio do texto não partem a célula.
+const csvCell = v => `"${String(v ?? '').replace(/"/g, '""')}"`;
+const CABECALHO_DA_PLANILHA = 'data;tipo;descricao;categoria;valor;origem;quem';
 
 // Texto que a pessoa digitou (descrição, categoria, nome de quem lançou) e que começa com = + - @
 // vira fórmula ao abrir a planilha no Excel ou no Google Planilhas. No modo família, um membro
 // poderia pôr uma fórmula na planilha do dono. O apóstrofo na frente deixa o texto como texto.
-const textoDaPlanilha = v => {
-  const s = String(v ?? '');
-  return /^[=+\-@\t\r]/.test(s) ? `'${s}` : s;
-};
+// Vale também logo depois de vírgula, ponto e vírgula, tabulação ou quebra de linha: um programa
+// que separa as colunas por outro caractere (o Excel em inglês usa a vírgula) parte o texto ali,
+// e o pedaço seguinte vira o começo de outra célula.
+const COMECO_DE_FORMULA = /(^|[,;\t\r\n])(\s*)([=+\-@])/g;
+const textoDaPlanilha = v => String(v ?? '').replace(COMECO_DE_FORMULA, "$1$2'$3");
 
 export const lancamentoController = {
   /** Lançamentos do ciclo, agrupados por dia, com filtros de categoria, tipo e busca. */
@@ -151,8 +152,8 @@ export const lancamentoController = {
       CategoriaModel.listar(ctx.ownerUid)
     ]);
     const visiveis = todos.filter(podeVerLancamento(ctx, categorias));
-    const linhas = [['data', 'tipo', 'descricao', 'categoria', 'valor', 'origem', 'quem']].concat(
-      visiveis.map(l => [
+    const linhas = visiveis.map(l =>
+      [
         String(l.data || '').slice(0, 10),
         textoDaPlanilha(l.tipo),
         textoDaPlanilha(l.titulo),
@@ -160,9 +161,12 @@ export const lancamentoController = {
         String(l.valor).replace('.', ','),
         textoDaPlanilha(l.origem),
         textoDaPlanilha(l.quemNome)
-      ])
+      ]
+        .map(csvCell)
+        .join(';')
     );
-    const csv = '﻿' + linhas.map(r => r.map(csvCell).join(';')).join('\n');
+    // O BOM no começo faz o Excel abrir a planilha como UTF-8 (com os acentos certos).
+    const csv = '﻿' + [CABECALHO_DA_PLANILHA, ...linhas].join('\n');
     return {
       raw: csv,
       contentType: 'text/csv; charset=utf-8',

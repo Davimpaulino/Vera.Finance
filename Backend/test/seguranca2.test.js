@@ -205,6 +205,68 @@ test('planilha: descrição que começa com = + - @ não vira fórmula no Excel'
   await banco.remover(`usuarios/ana/lancamentos/${criado.json.id}`);
 });
 
+test('planilha: fórmula depois de vírgula ou tabulação também não vira célula no Excel', async () => {
+  // Um programa que separa por vírgula (o Excel em inglês) ou por tabulação parte o texto ali.
+  const titulos = ['Feira,=1+1', 'a,=1+1,b', 'Feira\t=1+1', 'Pão; @SOMA(1)', 'x,-2+3'];
+  const ids = [];
+  for (const titulo of titulos) {
+    const criado = await pedir('POST', '/lancamentos', {
+      corpo: { titulo, valor: 1, tipo: 'saida', categoriaId: 'comida' },
+      token: tokenDoBeto
+    });
+    assert.equal(criado.status, 201);
+    ids.push(criado.json.id);
+  }
+  try {
+    const csv = (await pedir('GET', '/lancamentos/export', { token: tokenDaAna })).texto;
+    const linhas = csv.split('\n').slice(1);
+    assert.ok(linhas.some(l => l.includes(`"Feira,'=1+1"`)), 'a vírgula fica dentro da célula');
+    for (const linha of linhas) {
+      assert.ok(linha.startsWith('"') && linha.endsWith('"'), `toda célula entre aspas: ${linha}`);
+      for (const pedaco of linha.split(/[,;\t]/))
+        assert.ok(!/^\s*[=+\-@]/.test(pedaco), `pedaço começa como fórmula: ${pedaco}`);
+    }
+  } finally {
+    for (const id of ids) await banco.remover(`usuarios/ana/lancamentos/${id}`);
+  }
+});
+
+test('planilha: lançamentos do mais novo para o mais antigo', async () => {
+  // O id que vem primeiro na ordem alfabética é o mais antigo: sem ordenar por data, ele sairia
+  // na frente.
+  await banco.gravar('usuarios/ana/lancamentos/a-antigo', {
+    titulo: 'Bem antigo',
+    valor: 5,
+    tipo: 'saida',
+    categoriaId: 'comida',
+    categoriaNome: 'Comida',
+    data: '2020-01-05T12:00:00.000Z',
+    quemId: 'ana'
+  });
+  await banco.gravar('usuarios/ana/lancamentos/z-recente', {
+    titulo: 'Bem recente',
+    valor: 5,
+    tipo: 'saida',
+    categoriaId: 'comida',
+    categoriaNome: 'Comida',
+    data: '2099-01-05T12:00:00.000Z',
+    quemId: 'ana'
+  });
+  try {
+    const csv = (await pedir('GET', '/lancamentos/export', { token: tokenDaAna })).texto;
+    const datas = csv
+      .split('\n')
+      .slice(1)
+      .map(l => l.slice(1, 11));
+    assert.deepEqual(datas, [...datas].sort().reverse());
+    assert.equal(datas[0], '2099-01-05');
+    assert.equal(datas.at(-1), '2020-01-05');
+  } finally {
+    await banco.remover('usuarios/ana/lancamentos/a-antigo');
+    await banco.remover('usuarios/ana/lancamentos/z-recente');
+  }
+});
+
 test('família: o relatório do ano do membro não soma os gastos das categorias só do dono', async () => {
   const relatorio = (await pedir('GET', '/relatorios', { token: tokenDoBeto })).json;
   const totalDoMes = relatorio.meses[new Date().getMonth()].total;
