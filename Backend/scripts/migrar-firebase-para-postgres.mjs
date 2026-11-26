@@ -75,8 +75,12 @@ export function prepararMigracao(arvore) {
   return { entradas, contagem, problemas, convertidos, duplicados };
 }
 
+const loteValido = lote => Number.isInteger(lote) && lote > 0;
+
 /** Grava as entradas em lotes, cada lote numa transação (atualizarVarios). */
 export async function gravarEmLotes(banco, entradas, { lote = 500, aoGravar = () => {} } = {}) {
+  // Lote zero, negativo ou quebrado faria o laço nunca terminar.
+  if (!loteValido(lote)) throw new Error(`Lote inválido: ${lote}. Use um inteiro maior que zero.`);
   for (let i = 0; i < entradas.length; i += lote) {
     const pedaco = entradas.slice(i, i + lote);
     await banco.atualizarVarios(Object.fromEntries(pedaco));
@@ -107,9 +111,14 @@ async function principal(argumentos) {
   const arquivo = argumentos.find(argumento => !argumento.startsWith('--'));
   const simular = argumentos.includes('--simular');
   const continuar = argumentos.includes('--continuar');
-  const lote = Number((argumentos.find(a => a.startsWith('--lote=')) || '').split('=')[1]) || 500;
+  const opcaoDoLote = argumentos.find(argumento => argumento.startsWith('--lote='));
+  const lote = opcaoDoLote ? Number(opcaoDoLote.slice('--lote='.length)) : 500;
   if (!arquivo) {
     console.error('Uso: npm run migrar:postgres -- <export.json> [--simular] [--lote=500]');
+    return 2;
+  }
+  if (!loteValido(lote)) {
+    console.error(`--lote precisa ser um número inteiro maior que zero (veio "${opcaoDoLote}").`);
     return 2;
   }
 

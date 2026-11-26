@@ -19,10 +19,12 @@ const exportado = () => JSON.parse(readFileSync(exemplo, 'utf8'));
 const chaveFalsa = '1'.repeat(44);
 const comBanco = { skip: !usandoPostgres && 'só com npm run test:pg' };
 
+// O tempo limite faz um laço sem fim virar falha do teste em vez de travar a suíte.
 const rodarScript = (argumentos, ambiente = {}) =>
   spawnSync(process.execPath, [script, ...argumentos], {
     encoding: 'utf8',
-    env: { ...process.env, ...ambiente }
+    env: { ...process.env, ...ambiente },
+    timeout: 30000
   });
 
 test('id antigo de preço vira o mesmo id que o PrecoModel grava hoje', async () => {
@@ -91,6 +93,17 @@ test('script em modo --simular mostra o relatório e não grava', () => {
   assert.match(saida.stdout, /precos\s+4/);
   assert.match(saida.stdout, /convertidos para o formato novo: 2/);
   assert.match(saida.stdout, /Simulação: nada foi gravado/);
+});
+
+test('--lote só aceita inteiro maior que zero', async () => {
+  for (const lote of ['-1', '0', '1.5', 'abc', '']) {
+    const saida = rodarScript([exemplo, `--lote=${lote}`, '--simular'], { DATABASE_URL: '' });
+    assert.equal(saida.status, 2, `--lote=${lote}`);
+    assert.match(saida.stderr, /--lote precisa ser um número inteiro maior que zero/);
+  }
+  const entradas = prepararMigracao(exportado()).entradas;
+  for (const lote of [-1, 0, 2.5, Number.NaN])
+    await assert.rejects(gravarEmLotes(criarBancoMemoria(), entradas, { lote }), /Lote inválido/);
 });
 
 test('script grava no PostgreSQL, confere e não grava por cima sem --continuar', comBanco, async () => {
