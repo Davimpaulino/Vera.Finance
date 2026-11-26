@@ -5,10 +5,14 @@ import { NotaModel } from './NotaModel.js';
 import { FamiliaModel } from './FamiliaModel.js';
 import { MercadoModel } from './MercadoModel.js';
 import { ComparacaoModel } from './ComparacaoModel.js';
+import { ListaModel } from './ListaModel.js';
+import { AlertaDaListaModel } from './AlertaDaListaModel.js';
 import { sum } from '../utils/money.js';
 
 // As notificações nascem do estado atual (notas pendentes, limites, convites, metas e preços).
 // Cada uma diz para onde leva; "vistas" guarda só os ids que a pessoa já abriu.
+// O alerta de preço da lista vem do que a última comparação da lista guardou (AlertaDaListaModel):
+// montar as notificações não consulta site de rede nem mapa.
 const reais = valor =>
   `R$ ${Number(valor || 0)
     .toFixed(2)
@@ -19,13 +23,14 @@ const caminhoDasVistas = uid => `usuarios/${uid}/perfil/notificacoesVistas`;
 
 export const NotificacaoModel = {
   async montar(ctx) {
-    const [notas, resumo, metas, familias, mercados, vistas] = await Promise.all([
+    const [notas, resumo, metas, familias, mercados, vistas, itensDaLista] = await Promise.all([
       NotaModel.pendentes(ctx.ownerUid),
       CicloModel.resumo(ctx),
       MetaModel.listar(ctx.ownerUid),
       ctx.user.email ? FamiliaModel.listar() : [],
       MercadoModel.dentroDoRaio(ctx.owner.local?.raioKm || 5, ctx.owner.local),
-      banco.ler(caminhoDasVistas(ctx.uid))
+      banco.ler(caminhoDasVistas(ctx.uid)),
+      ListaModel.listar(ctx.ownerUid)
     ]);
     const lista = [];
 
@@ -127,6 +132,7 @@ export const NotificacaoModel = {
           data: null,
           destino: `/app/comparar?produto=${encodeURIComponent(dica.produto)}`
         });
+      lista.push(...AlertaDaListaModel.notificacoes(ctx, itensDaLista));
     }
 
     const jaVistas = new Set(Array.isArray(vistas) ? vistas : Object.values(vistas || {}));
