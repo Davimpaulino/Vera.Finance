@@ -5,7 +5,8 @@ import { createServer } from 'node:http';
 await import('./apoio/ambiente.js');
 
 // A Política de Privacidade diz que dá para apagar a localização em Configurações: o CEP em
-// branco apaga o CEP, o ponto aproximado e a cidade do perfil. Apagar não consulta nenhum mapa.
+// branco apaga o CEP, o ponto aproximado, a cidade, os mercados escolhidos e os alertas da lista
+// do perfil. Apagar não consulta nenhum mapa.
 const externos = [];
 const fetchDeVerdade = globalThis.fetch;
 globalThis.fetch = async (endereco, opcoes = {}) => {
@@ -50,7 +51,7 @@ before(async () => {
 });
 after(() => server.close());
 
-test('PATCH /api/me com o CEP em branco apaga o CEP, o ponto e a cidade do perfil', async () => {
+test('PATCH /api/me com o CEP em branco apaga o CEP, o ponto, a cidade e os mercados do perfil', async () => {
   await banco.gravar(`usuarios/${UID}/perfil`, {
     nome: 'Lia',
     email: 'lia@local.teste',
@@ -65,19 +66,28 @@ test('PATCH /api/me com o CEP em branco apaga o CEP, o ponto e a cidade do perfi
       raioKm: 10,
       mercados: ['osm-n1'],
       mercadoHabitual: 'osm-n1'
+    },
+    alertasDaLista: {
+      em: new Date().toISOString(),
+      habitualId: 'osm-n1',
+      itens: [{ itemId: 'arroz', mercadoId: 'osm-n2', mercado: 'Mercado Dois', distanciaKm: 1.2 }]
     }
   });
 
   const resposta = await chamar('PATCH', '/me', { local: { cep: '' } });
   assert.equal(resposta.status, 200);
   assert.equal(resposta.body.local.cep, '');
-  for (const campo of ['lat', 'lng', 'cidade'])
+  for (const campo of ['lat', 'lng', 'cidade', 'mercadoHabitual'])
     assert.equal(Object.hasOwn(resposta.body.local, campo), false, `${campo} sai da resposta`);
+  assert.deepEqual(resposta.body.local.mercados, [], 'sem mercados escolhidos');
+  assert.equal(Object.hasOwn(resposta.body, 'alertasDaLista'), false, 'alertas da lista saem');
 
   // No banco a chave some (null na mescla), em vez de ficar gravada como nula: lat e lng nulos
-  // virariam o ponto 0,0 para quem lê com Number().
+  // virariam o ponto 0,0 para quem lê com Number(). O id de um mercado no mapa mostra onde ele
+  // fica: os mercados escolhidos e os alertas da lista (nome e distância) também saem. O raio fica.
   const gravado = await banco.ler(`usuarios/${UID}/perfil/local`);
-  assert.deepEqual(gravado, { cep: '', raioKm: 10, mercados: ['osm-n1'], mercadoHabitual: 'osm-n1' });
+  assert.deepEqual(gravado, { cep: '', raioKm: 10 });
+  assert.equal(await banco.ler(`usuarios/${UID}/perfil/alertasDaLista`), null);
   assert.equal(GeoModel.temCoordenadas((await UsuarioModel.buscar(UID)).local), false);
   assert.deepEqual(externos, [], 'apagar não consulta ViaCEP nem Nominatim');
 

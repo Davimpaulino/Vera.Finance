@@ -97,6 +97,10 @@ export const userController = {
         // a cidade. Na mescla, null tira a chave do perfil. Gravar lat e lng nulos não serve:
         // Number(null) é 0, e temCoordenadas leria o ponto 0,0.
         Object.assign(data.local, { cep: '', lat: null, lng: null, cidade: null });
+        // Os mercados escolhidos e os alertas da lista (nome e distância de cada mercado) também
+        // saem: o id do mercado no mapa mostra onde ele fica, e daria a região de casa.
+        Object.assign(data.local, { mercados: null, mercadoHabitual: null });
+        data.alertasDaLista = null;
       } else if (GeoModel.temCoordenadas(data.local)) {
         // Guarda só o ponto aproximado (~100 m), nunca a posição exata do aparelho.
         Object.assign(data.local, GeoModel.aproximar(data.local));
