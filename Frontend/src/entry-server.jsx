@@ -22,6 +22,7 @@ const authDoVisitante = {
   user: null,
   setUser: () => {},
   refresh: async () => null,
+  tentarDeNovo: () => {},
   login: semLogin,
   register: semLogin,
   social: semLogin,

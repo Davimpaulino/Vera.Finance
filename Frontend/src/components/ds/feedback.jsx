@@ -29,8 +29,9 @@ export function Callout({ tone = 'warning', icon, title, action, children, class
   );
 }
 
-/** Estado vazio: diz o que falta e oferece o primeiro passo. */
-export function EmptyState({ icon, title, action, children, className }) {
+/** Estado vazio: diz o que falta e oferece o primeiro passo.
+ * `titleAs="h1"` quando ele é o assunto da página inteira (leitor de tela acha pelo título). */
+export function EmptyState({ icon, title, titleAs: Titulo = 'span', action, children, className }) {
   return (
     <div className={cx('vera-empty', className)}>
       {icon ? (
@@ -38,7 +39,7 @@ export function EmptyState({ icon, title, action, children, className }) {
           <Icon name={icon} size={24} />
         </span>
       ) : null}
-      <span className="vera-empty__title">{title}</span>
+      <Titulo className="vera-empty__title">{title}</Titulo>
       {children ? <p className="vera-empty__text">{children}</p> : null}
       {action ? <span className="vera-empty__action">{action}</span> : null}
     </div>

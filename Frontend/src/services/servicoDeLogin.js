@@ -1,24 +1,25 @@
-import {
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  signInWithPopup,
-  signInWithRedirect,
-  getRedirectResult,
-  GoogleAuthProvider,
-  OAuthProvider,
-  EmailAuthProvider,
-  reauthenticateWithCredential,
-  updatePassword,
-  signOut,
-  updateProfile,
-  sendPasswordResetEmail,
-  setPersistence,
-  browserLocalPersistence,
-  browserSessionPersistence,
-  onIdTokenChanged
-} from 'firebase/auth';
-import { autenticacaoFirebase, firebaseHabilitado } from './firebase.js';
-import { api, setTokenProvider } from './api.js';
+import { firebaseHabilitado } from './configuracaoFirebase.js';
+import { api, ApiError, SEM_CONEXAO, setTokenProvider } from './api.js';
+
+// O SDK do Firebase (services/firebase.js) só é baixado quando alguém precisa do login: na tela
+// Entrar, no cadastro ou no app. As páginas do site não pagam esse peso. Depois de carregado,
+// o módulo fica guardado aqui e as funções o usam sem esperar de novo.
+let firebase = null;
+let carregando = null;
+
+/** Baixa o SDK uma vez só. Sem rede, a falha não fica guardada: "Tentar de novo" baixa de novo. */
+function carregarFirebase() {
+  if (!firebaseHabilitado) return Promise.resolve(null);
+  if (firebase) return Promise.resolve(firebase);
+  carregando ??= import('./firebase.js').then(
+    modulo => (firebase = modulo),
+    () => {
+      carregando = null;
+      throw new ApiError(0, SEM_CONEXAO);
+    }
+  );
+  return carregando;
+}
 
 const CHAVE_DO_TOKEN = 'vera.token';
 
@@ -98,7 +99,9 @@ async function abrirSessao(corpo = {}) {
   }
 }
 
-const usuarioFirebase = () => (firebaseHabilitado ? autenticacaoFirebase.currentUser : null);
+// Sem o SDK carregado ninguém entrou pelo Firebase nesta aba: as rotas que usam o login
+// (e as chamadas com token) só acontecem depois que ele carrega.
+const usuarioFirebase = () => (firebase ? firebase.autenticacaoFirebase.currentUser : null);
 
 // Quem entrou pelo Firebase (e-mail, Google, Apple) manda o token do Firebase;
 // as contas criadas antes do Firebase mandam o token do próprio backend.
@@ -127,6 +130,7 @@ const MENSAGENS_DE_ERRO = {
   'auth/account-exists-with-different-credential':
     'Este e-mail já entra de outro jeito. Use o mesmo método da primeira vez.',
   'auth/invalid-api-key': 'A chave do Firebase (VITE_FIREBASE_API_KEY) está errada.',
+  'auth/network-request-failed': SEM_CONEXAO,
   'auth/configuration-not-found':
     'O login pelo Firebase ainda não foi ativado no projeto (Firebase › Authentication › Começar).'
 };
@@ -151,15 +155,33 @@ export const servicoDeLogin = {
   firebaseHabilitado,
   abrirSessao,
 
-  observar(aoMudar) {
-    if (!firebaseHabilitado) {
-      aoMudar(!!armazenamento.ler());
-      return () => {};
-    }
-    getRedirectResult(autenticacaoFirebase).catch(() => {});
-    return onIdTokenChanged(autenticacaoFirebase, usuario =>
-      aoMudar(!!usuario || !!armazenamento.ler())
+  /**
+   * Avisa `aoMudar(logado)` a cada troca de sessão. Baixa o SDK do Firebase na primeira vez.
+   * Se o SDK não baixar (sem internet), chama `aoFalhar(erro)`; quem chamou decide tentar de novo.
+   */
+  observar(aoMudar, aoFalhar = () => {}) {
+    let cancelado = false;
+    let desligar = () => {};
+    carregarFirebase().then(
+      modulo => {
+        if (cancelado) return;
+        if (!modulo) {
+          aoMudar(!!armazenamento.ler());
+          return;
+        }
+        modulo.getRedirectResult(modulo.autenticacaoFirebase).catch(() => {});
+        desligar = modulo.onIdTokenChanged(modulo.autenticacaoFirebase, usuario =>
+          aoMudar(!!usuario || !!armazenamento.ler())
+        );
+      },
+      erro => {
+        if (!cancelado) aoFalhar(erro);
+      }
     );
+    return () => {
+      cancelado = true;
+      desligar();
+    };
   },
 
   /** Login com e-mail: tenta o Firebase e, se a conta não estiver lá, o login próprio do backend. */
@@ -167,13 +189,14 @@ export const servicoDeLogin = {
     // Login de quem já tem conta: nenhum aceite que sobrou na aba vai junto.
     aceitePendente.apagar();
     try {
-      if (firebaseHabilitado) {
+      const fb = await carregarFirebase();
+      if (fb) {
         try {
-          await setPersistence(
-            autenticacaoFirebase,
-            lembrar ? browserLocalPersistence : browserSessionPersistence
+          await fb.setPersistence(
+            fb.autenticacaoFirebase,
+            lembrar ? fb.browserLocalPersistence : fb.browserSessionPersistence
           );
-          await signInWithEmailAndPassword(autenticacaoFirebase, email, senha);
+          await fb.signInWithEmailAndPassword(fb.autenticacaoFirebase, email, senha);
           armazenamento.apagar();
         } catch (erroDoFirebase) {
           if (
@@ -213,14 +236,15 @@ export const servicoDeLogin = {
         const { token } = await api.post('/auth/cadastrar', { nome, email, senha, aceite });
         armazenamento.guardar(token, true);
       };
-      if (firebaseHabilitado) {
+      const fb = await carregarFirebase();
+      if (fb) {
         try {
-          const credencial = await createUserWithEmailAndPassword(
-            autenticacaoFirebase,
+          const credencial = await fb.createUserWithEmailAndPassword(
+            fb.autenticacaoFirebase,
             email,
             senha
           );
-          await updateProfile(credencial.user, { displayName: nome });
+          await fb.updateProfile(credencial.user, { displayName: nome });
           await credencial.user.getIdToken(true);
           armazenamento.apagar();
         } catch (erroDoFirebase) {
@@ -240,9 +264,17 @@ export const servicoDeLogin = {
   /** Google ou Apple. No cadastro, `aceite` é { versao } dos termos aceitos; na tela Entrar, nada. */
   async entrarComProvedor(provedor, aceite) {
     if (!firebaseHabilitado) throw new Error(SEM_FIREBASE);
+    // Nas telas Entrar e Cadastro o SDK já carregou junto com a página. Usar o módulo direto,
+    // sem esperar, mantém a janela do Google no mesmo clique (senão o navegador bloqueia o pop-up).
+    let fb = firebase;
+    try {
+      fb ??= await carregarFirebase();
+    } catch (erro) {
+      throw traduzirErro(erro);
+    }
     aceitePendente.guardar(aceite);
     const provedorFirebase =
-      provedor === 'apple' ? new OAuthProvider('apple.com') : new GoogleAuthProvider();
+      provedor === 'apple' ? new fb.OAuthProvider('apple.com') : new fb.GoogleAuthProvider();
     if (provedor === 'apple') {
       provedorFirebase.addScope('email');
       provedorFirebase.addScope('name');
@@ -250,10 +282,10 @@ export const servicoDeLogin = {
     provedorFirebase.setCustomParameters({ locale: 'pt_BR', prompt: 'select_account' });
     try {
       try {
-        await signInWithPopup(autenticacaoFirebase, provedorFirebase);
+        await fb.signInWithPopup(fb.autenticacaoFirebase, provedorFirebase);
       } catch (erro) {
         if (erro.code === 'auth/popup-blocked' && ehCelular()) {
-          await signInWithRedirect(autenticacaoFirebase, provedorFirebase);
+          await fb.signInWithRedirect(fb.autenticacaoFirebase, provedorFirebase);
           return null;
         }
         throw erro;
@@ -269,7 +301,8 @@ export const servicoDeLogin = {
   async redefinirSenha(email) {
     if (!firebaseHabilitado) throw new Error(SEM_FIREBASE);
     try {
-      await sendPasswordResetEmail(autenticacaoFirebase, email);
+      const fb = await carregarFirebase();
+      await fb.sendPasswordResetEmail(fb.autenticacaoFirebase, email);
     } catch (erro) {
       throw traduzirErro(erro);
     }
@@ -288,11 +321,11 @@ export const servicoDeLogin = {
     const usuario = usuarioFirebase();
     try {
       if (usuario) {
-        await reauthenticateWithCredential(
+        await firebase.reauthenticateWithCredential(
           usuario,
-          EmailAuthProvider.credential(usuario.email, atual)
+          firebase.EmailAuthProvider.credential(usuario.email, atual)
         );
-        await updatePassword(usuario, nova);
+        await firebase.updatePassword(usuario, nova);
       } else {
         await api.post('/me/senha', { atual, nova });
       }
@@ -304,7 +337,7 @@ export const servicoDeLogin = {
   },
 
   async sair() {
-    if (usuarioFirebase()) await signOut(autenticacaoFirebase);
+    if (usuarioFirebase()) await firebase.signOut(firebase.autenticacaoFirebase);
     armazenamento.apagar();
   }
 };

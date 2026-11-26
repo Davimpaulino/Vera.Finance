@@ -5,15 +5,21 @@ import { useAuth } from './context/AuthContext.jsx';
 import { aceitouTermos } from './lib/termos.js';
 import { useUi } from './context/UiContext.jsx';
 import { metaDaPagina } from './lib/paginas.js';
-import { AppShell } from './components/app/AppShell.jsx';
-import { PageSkeleton } from './components/Loading.jsx';
+import { precisaDeLogin } from './lib/rotas.js';
+import { PageSkeleton, SemConexao } from './components/Loading.jsx';
+// As páginas pré-renderizadas no build (site, entrar e cadastro) entram direto: o
+// renderToString não espera import(). O resto só baixa quando alguém logado precisa.
 import Landing from './pages/site/Landing.jsx';
 import Precos from './pages/site/Precos.jsx';
 import Legal from './pages/site/Legal.jsx';
 import Perguntas from './pages/site/Perguntas.jsx';
 import Login from './pages/auth/Login.jsx';
 import Cadastro from './pages/auth/Cadastro.jsx';
-import AceiteDosTermos from './pages/auth/AceiteDosTermos.jsx';
+// A casca do app (menu, novo gasto, notificações, leitor de nota) vem num pedaço só dela.
+const AppShell = lazy(() =>
+  import('./components/app/AppShell.jsx').then(m => ({ default: m.AppShell }))
+);
+const AceiteDosTermos = lazy(() => import('./pages/auth/AceiteDosTermos.jsx'));
 const Onboarding = lazy(() => import('./pages/auth/Onboarding.jsx'));
 const Painel = lazy(() => import('./pages/app/Painel.jsx'));
 const Lancamentos = lazy(() => import('./pages/app/Lancamentos.jsx'));
@@ -57,7 +63,7 @@ function Carregando() {
 
 export default function App() {
   const { path } = useRouter();
-  const { status, user } = useAuth();
+  const { status, user, tentarDeNovo } = useAuth();
   const { setTheme } = useUi();
 
   // A superfície escolhida em Configurações vem junto com o perfil.
@@ -86,11 +92,19 @@ export default function App() {
   if (path === '/termos') return <Legal tipo="termos" />;
   if (path === '/privacidade') return <Legal tipo="privacidade" />;
 
+  // Endereço que não existe vai para a home sem esperar o login (que nem liga fora destas rotas).
+  if (!precisaDeLogin(path)) return <Redirect to="/" />;
   if (status === 'loading') return <Carregando />;
+  if (status === 'offline') return <SemConexao onTentar={tentarDeNovo} />;
   const logado = status === 'in';
   // Sem o aceite da versão em vigor dos termos nada abre, nem o cadastro guiado: vale para
   // quem entrou pelo Google ou pela Apple na tela Entrar e para quem tem um aceite antigo.
-  if (logado && !aceitouTermos(user)) return <AceiteDosTermos />;
+  if (logado && !aceitouTermos(user))
+    return (
+      <Suspense fallback={<Carregando />}>
+        <AceiteDosTermos />
+      </Suspense>
+    );
   const pronto = logado && user?.onboardingCompleto;
 
   if (path === '/entrar') return pronto ? <Redirect to="/app" /> : <Login />;
@@ -118,11 +132,13 @@ export default function App() {
     if (!logado) return <Redirect to="/entrar" />;
     if (!pronto) return <Redirect to="/cadastro/perguntas" />;
     return (
-      <AppShell>
-        <Suspense fallback={<PageSkeleton />}>
-          <Page key={path} />
-        </Suspense>
-      </AppShell>
+      <Suspense fallback={<Carregando />}>
+        <AppShell>
+          <Suspense fallback={<PageSkeleton />}>
+            <Page key={path} />
+          </Suspense>
+        </AppShell>
+      </Suspense>
     );
   }
   return <Redirect to="/" />;

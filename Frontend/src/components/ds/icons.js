@@ -81,6 +81,7 @@ export const ICONS = {
   wallet: 'wallet2',
   warehouse: 'buildings',
   wifi: 'wifi',
+  'wifi-off': 'wifi-off',
   x: 'x-lg',
   zap: 'lightning-charge'
 };
