@@ -2,7 +2,8 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import { servicoDeLogin } from '../services/servicoDeLogin.js';
 import { api } from '../services/api.js';
 
-const AuthContext = createContext(null);
+// Exportado para a pré-renderização (src/entry-server.jsx) entregar um valor fixo, sem Firebase.
+export const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   const [status, setStatus] = useState('loading'); // loading | out | in

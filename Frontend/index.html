@@ -11,12 +11,16 @@
     />
     <meta name="robots" content="index, follow" />
     <!-- O endereço do site entra no build a partir de VITE_SITE_URL (vite.config.js). -->
-    <!-- Canonical e og:url são definidos por página em src/App.jsx. Sem pré-renderização,
-         um valor fixo aqui marcaria as outras rotas como cópias da home. -->
+    <!-- Canonical e og:url da home; scripts/prerender.mjs troca por página no build. -->
+    <link rel="canonical" href="__SITE_URL__/" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="icon" href="/icons/icon-192.png" type="image/png" sizes="192x192" />
     <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+    <!-- PWA: instalar o app pelo navegador (public/manifest.webmanifest e public/sw.js). -->
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="apple-mobile-web-app-title" content="vera" />
     <meta property="og:type" content="website" />
+    <meta property="og:url" content="__SITE_URL__/" />
     <meta property="og:locale" content="pt_BR" />
     <meta property="og:site_name" content="vera.finance" />
     <meta property="og:title" content="vera.finance · saiba até que dia o dinheiro dura" />
