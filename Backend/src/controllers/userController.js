@@ -71,8 +71,8 @@ export const userController = {
       ]);
       if (data.local.raioKm !== undefined) data.local.raioKm = Number(data.local.raioKm);
       if (GeoModel.temCoordenadas(data.local)) {
-        data.local.lat = Number(data.local.lat);
-        data.local.lng = Number(data.local.lng);
+        // Guarda só o ponto aproximado (~100 m), nunca a posição exata do aparelho.
+        Object.assign(data.local, GeoModel.aproximar(data.local));
         // Localização do aparelho: o CEP passa a ser o da rua onde a pessoa está.
         if (data.local.cep === undefined) {
           const cep = await GeoModel.cepDe(data.local);

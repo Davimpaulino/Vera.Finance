@@ -336,3 +336,11 @@ test('mercado que não vende um item não ganha por isso: total comparável e co
   assert.equal(r.divisao.total, 176.5);
   assert.equal(r.divisao.economia, round2(r.melhor.totalComparavel - 176.5));
 });
+
+test('a localização do aparelho é guardada arredondada (~100 m), nunca exata', async () => {
+  const { GeoModel } = await import('../src/models/GeoModel.js');
+  assert.deepEqual(GeoModel.aproximar({ lat: -23.0904567, lng: -47.2181234 }), {
+    lat: -23.09,
+    lng: -47.218
+  });
+});
