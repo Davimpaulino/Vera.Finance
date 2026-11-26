@@ -8,8 +8,12 @@ afterEach(() => {
 });
 
 describe('endereço do site', () => {
-  it('sem VITE_SITE_URL usa o endereço do Render', () => {
-    expect(SITE_URL).toBe('https://vera-finance.onrender.com');
+  it('sem VITE_SITE_URL usa o endereço do Render', async () => {
+    // Quem tem VITE_SITE_URL no Frontend/.env (domínio próprio) roda este teste do mesmo jeito.
+    vi.stubEnv('VITE_SITE_URL', '');
+    vi.resetModules();
+    const site = await import('../src/lib/site.js');
+    expect(site.SITE_URL).toBe('https://vera-finance.onrender.com');
   });
 
   it('urlDoSite monta o link absoluto com uma barra só', () => {
