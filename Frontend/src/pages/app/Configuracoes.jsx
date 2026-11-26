@@ -159,7 +159,20 @@ export default function Configuracoes() {
     }
   };
   const pref = (k, v) => salvar({ prefs: { [k]: v } });
+  // CEP em branco apaga a localização: o CEP, o ponto aproximado e a cidade (Política de
+  // Privacidade). O raio e os mercados escolhidos ficam.
+  const apagarLocalizacao = async () => {
+    try {
+      setUser(await api.patch('/me', { local: { cep: '' } }));
+      setCep('');
+      toast('Localização apagada.');
+    } catch (e) {
+      toast(e.message, 'danger');
+    }
+  };
+  const temLocalizacao = Boolean(user.local?.cep) || user.local?.lat != null;
   const salvarCep = async () => {
+    if (!cep.replace(/\D/g, '')) return apagarLocalizacao();
     try {
       const u = await api.patch('/me', { local: { cep } });
       setUser(u);
@@ -337,6 +350,13 @@ export default function Configuracoes() {
               }
             />
           </div>
+          {temLocalizacao ? (
+            <div>
+              <Button variant="secondary" size="sm" onClick={apagarLocalizacao}>
+                Apagar localização
+              </Button>
+            </div>
+          ) : null}
           <Switch
             checked={user.prefs.contribuirPrecos}
             onChange={() => pref('contribuirPrecos', !user.prefs.contribuirPrecos)}
@@ -491,8 +511,9 @@ export default function Configuracoes() {
           ]}
         >
           <span className="vera-modal__text">
-            Depois disso a conta volta para o grátis: 5 notas por mês, até 3 metas e sem modo
-            família. Nada é apagado.
+            Depois disso a conta volta para o grátis: 5 notas por mês, até 3 metas e{' '}
+            {user.familia ? 'sem convidar mais pessoas para a família' : 'sem modo família'}. Nada
+            é apagado.
           </span>
         </Modal>
       ) : null}
