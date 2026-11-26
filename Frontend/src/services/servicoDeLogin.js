@@ -1,5 +1,6 @@
 import { firebaseHabilitado } from './configuracaoFirebase.js';
 import { api, ApiError, SEM_CONEXAO, setTokenProvider } from './api.js';
+import { recarregarParaVersaoNova } from '../lib/versaoNova.js';
 
 // O SDK do Firebase (services/firebase.js) só é baixado quando alguém precisa do login: na tela
 // Entrar, no cadastro ou no app. As páginas do site não pagam esse peso. Depois de carregado,
@@ -7,7 +8,13 @@ import { api, ApiError, SEM_CONEXAO, setTokenProvider } from './api.js';
 let firebase = null;
 let carregando = null;
 
-/** Baixa o SDK uma vez só. Sem rede, a falha não fica guardada: "Tentar de novo" baixa de novo. */
+/**
+ * Baixa o SDK uma vez só. Se não vier com a internet ligada, quase sempre é a aba aberta antes
+ * de um deploy (o arquivo antigo sumiu): a página recarrega e a promessa fica esperando, com o
+ * "Carregando" na tela. Sem internet (ou se já recarregou há pouco) vira "Sem conexão", e o
+ * erro leva `recarregar`, para o "Tentar de novo" recarregar a página em vez de pedir o mesmo
+ * arquivo outra vez.
+ */
 function carregarFirebase() {
   if (!firebaseHabilitado) return Promise.resolve(null);
   if (firebase) return Promise.resolve(firebase);
@@ -15,7 +22,10 @@ function carregarFirebase() {
     modulo => (firebase = modulo),
     () => {
       carregando = null;
-      throw new ApiError(0, SEM_CONEXAO);
+      if (recarregarParaVersaoNova()) return new Promise(() => {});
+      const erro = new ApiError(0, SEM_CONEXAO);
+      erro.recarregar = true;
+      throw erro;
     }
   );
   return carregando;

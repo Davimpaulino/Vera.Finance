@@ -6,6 +6,7 @@ import { aceitouTermos } from './lib/termos.js';
 import { useUi } from './context/UiContext.jsx';
 import { metaDaPagina } from './lib/paginas.js';
 import { precisaDeLogin } from './lib/rotas.js';
+import { importarTela } from './lib/versaoNova.js';
 import { PageSkeleton, SemConexao } from './components/Loading.jsx';
 // As páginas pré-renderizadas no build (site, entrar e cadastro) entram direto: o
 // renderToString não espera import(). O resto só baixa quando alguém logado precisa.
@@ -15,21 +16,24 @@ import Legal from './pages/site/Legal.jsx';
 import Perguntas from './pages/site/Perguntas.jsx';
 import Login from './pages/auth/Login.jsx';
 import Cadastro from './pages/auth/Cadastro.jsx';
+// Tela que só baixa quando alguém precisa. Se o pedaço sumiu num deploy, a página recarrega
+// e a tela fica no "Carregando" até a página nova chegar (src/lib/versaoNova.js).
+const sobDemanda = importar => lazy(importarTela(importar));
 // A casca do app (menu, novo gasto, notificações, leitor de nota) vem num pedaço só dela.
-const AppShell = lazy(() =>
+const AppShell = sobDemanda(() =>
   import('./components/app/AppShell.jsx').then(m => ({ default: m.AppShell }))
 );
-const AceiteDosTermos = lazy(() => import('./pages/auth/AceiteDosTermos.jsx'));
-const Onboarding = lazy(() => import('./pages/auth/Onboarding.jsx'));
-const Painel = lazy(() => import('./pages/app/Painel.jsx'));
-const Lancamentos = lazy(() => import('./pages/app/Lancamentos.jsx'));
-const Relatorios = lazy(() => import('./pages/app/Relatorios.jsx'));
-const Metas = lazy(() => import('./pages/app/Metas.jsx'));
-const Categorias = lazy(() => import('./pages/app/Categorias.jsx'));
-const Comparar = lazy(() => import('./pages/app/Comparar.jsx'));
-const Lista = lazy(() => import('./pages/app/Lista.jsx'));
-const Familia = lazy(() => import('./pages/app/Familia.jsx'));
-const Configuracoes = lazy(() => import('./pages/app/Configuracoes.jsx'));
+const AceiteDosTermos = sobDemanda(() => import('./pages/auth/AceiteDosTermos.jsx'));
+const Onboarding = sobDemanda(() => import('./pages/auth/Onboarding.jsx'));
+const Painel = sobDemanda(() => import('./pages/app/Painel.jsx'));
+const Lancamentos = sobDemanda(() => import('./pages/app/Lancamentos.jsx'));
+const Relatorios = sobDemanda(() => import('./pages/app/Relatorios.jsx'));
+const Metas = sobDemanda(() => import('./pages/app/Metas.jsx'));
+const Categorias = sobDemanda(() => import('./pages/app/Categorias.jsx'));
+const Comparar = sobDemanda(() => import('./pages/app/Comparar.jsx'));
+const Lista = sobDemanda(() => import('./pages/app/Lista.jsx'));
+const Familia = sobDemanda(() => import('./pages/app/Familia.jsx'));
+const Configuracoes = sobDemanda(() => import('./pages/app/Configuracoes.jsx'));
 
 const APP_PAGES = {
   '/app': Painel,

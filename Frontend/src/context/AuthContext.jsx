@@ -1,8 +1,9 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { servicoDeLogin } from '../services/servicoDeLogin.js';
 import { api, setAoPedirAceite } from '../services/api.js';
 import { useRouter } from '../lib/router.jsx';
 import { precisaDeLogin } from '../lib/rotas.js';
+import { recarregarAPagina } from '../lib/versaoNova.js';
 
 // Exportado para a pré-renderização (src/entry-server.jsx) entregar um valor fixo, sem Firebase.
 export const AuthContext = createContext(null);
@@ -22,6 +23,9 @@ export function AuthProvider({ children }) {
   if (!ligado && precisaDeLogin(path)) setLigado(true);
   // Cada "Tentar de novo" refaz a inscrição no login, que baixa o Firebase se ele tiver faltado.
   const [tentativa, setTentativa] = useState(0);
+  // O SDK do Firebase não baixou (erro com `recarregar`, veja servicoDeLogin): aí o
+  // "Tentar de novo" recarrega a página em vez de pedir o mesmo arquivo outra vez.
+  const recarregarAoTentar = useRef(false);
 
   const refresh = useCallback(async () => {
     try {
@@ -46,6 +50,7 @@ export function AuthProvider({ children }) {
     if (!ligado) return undefined;
     return servicoDeLogin.observar(
       async logado => {
+        recarregarAoTentar.current = false;
         if (!logado) {
           setUser(null);
           setStatus('out');
@@ -58,11 +63,21 @@ export function AuthProvider({ children }) {
           setStatus(semConexao(erro) ? 'offline' : 'out');
         }
       },
-      erro => setStatus(semConexao(erro) ? 'offline' : 'out')
+      erro => {
+        recarregarAoTentar.current = !!erro?.recarregar;
+        setStatus(semConexao(erro) ? 'offline' : 'out');
+      }
     );
   }, [ligado, tentativa, refresh]);
 
   const tentarDeNovo = useCallback(() => {
+    // Depois de um deploy o arquivo antigo do Firebase não existe mais; a página recarregada pede
+    // o do build atual. Sem internet, recarregar mostraria a página de erro do navegador: aí só
+    // liga o login de novo (e, quando a rede voltar, o evento 'online' chega aqui).
+    if (recarregarAoTentar.current && navigator.onLine !== false) {
+      recarregarAPagina();
+      return;
+    }
     setStatus('loading');
     setTentativa(t => t + 1);
   }, []);

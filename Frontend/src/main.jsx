@@ -5,6 +5,14 @@ import { RouterProvider } from './lib/router.jsx';
 import { AuthProvider } from './context/AuthContext.jsx';
 import { UiProvider } from './context/UiContext.jsx';
 import App from './App.jsx';
+import { recarregarParaVersaoNova } from './lib/versaoNova.js';
+
+// Um pedaço do build que não carregou (o Vite avisa por este evento em todo import() do build):
+// com a aba aberta antes de um deploy, o arquivo antigo sumiu e a página recarrega uma vez para
+// pegar o build novo. Vale para as telas do app e para o Firebase (src/lib/versaoNova.js).
+window.addEventListener('vite:preloadError', () => {
+  recarregarParaVersaoNova();
+});
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

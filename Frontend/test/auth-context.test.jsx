@@ -6,6 +6,7 @@ import { UiProvider } from '../src/context/UiContext.jsx';
 import { AuthContext } from '../src/context/AuthContext.jsx';
 import { ApiError, api } from '../src/services/api.js';
 import { servicoDeLogin } from '../src/services/servicoDeLogin.js';
+import { pagina } from '../src/lib/versaoNova.js';
 import App from '../src/App.jsx';
 import { authDeTeste } from './auxiliares.jsx';
 
@@ -26,6 +27,8 @@ vi.mock('../src/services/servicoDeLogin.js', () => ({
 }));
 
 const SEM_REDE = new ApiError(0, 'Sem conexão com a vera. Confira a internet e tente de novo.');
+// O que servicoDeLogin devolve quando o SDK do Firebase não baixou e a página não recarregou.
+const SEM_SDK = Object.assign(new ApiError(0, SEM_REDE.message), { recarregar: true });
 
 function Estado() {
   const { status, user, tentarDeNovo } = useAuth();
@@ -64,6 +67,7 @@ beforeEach(() => {
   });
   servicoDeLogin.abrirSessao.mockResolvedValue({});
   vi.spyOn(api, 'get').mockResolvedValue({ nome: 'Ana' });
+  vi.spyOn(pagina, 'recarregar').mockImplementation(() => {});
 });
 
 describe('AuthProvider', () => {
@@ -124,6 +128,33 @@ describe('AuthProvider', () => {
     fireEvent.click(screen.getByText('tentar'));
     await waitFor(() => expect(status()).toBe('in'));
     expect(servicoDeLogin.observar).toHaveBeenCalledTimes(2);
+    expect(pagina.recarregar).not.toHaveBeenCalled();
+  });
+
+  it('o Firebase que não baixou: "Tentar de novo" recarrega a página (o arquivo pode ter sumido num deploy)', async () => {
+    servicoDeLogin.observar.mockImplementation((_aoMudar, aoFalhar) => {
+      aoFalhar(SEM_SDK);
+      return () => {};
+    });
+    montar('/entrar');
+    await waitFor(() => expect(status()).toBe('offline'));
+    fireEvent.click(screen.getByText('tentar'));
+    expect(pagina.recarregar).toHaveBeenCalledOnce();
+    expect(servicoDeLogin.observar).toHaveBeenCalledTimes(1);
+  });
+
+  it('o Firebase que não baixou sem internet: "Tentar de novo" não recarrega (daria a página de erro do navegador)', async () => {
+    const online = vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false);
+    servicoDeLogin.observar.mockImplementation((_aoMudar, aoFalhar) => {
+      aoFalhar(SEM_SDK);
+      return () => {};
+    });
+    montar('/entrar');
+    await waitFor(() => expect(status()).toBe('offline'));
+    fireEvent.click(screen.getByText('tentar'));
+    await waitFor(() => expect(servicoDeLogin.observar).toHaveBeenCalledTimes(2));
+    expect(pagina.recarregar).not.toHaveBeenCalled();
+    online.mockRestore();
   });
 
   it('a internet que volta tenta sozinha', async () => {
