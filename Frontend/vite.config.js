@@ -2,7 +2,8 @@ import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 import { existsSync, statSync } from 'node:fs';
 import { readFile, writeFile } from 'node:fs/promises';
-import { join, resolve } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
+import { cssDosIcones } from './scripts/icones.mjs';
 
 // Mesmo padrão de src/lib/site.js: o endereço público vem de VITE_SITE_URL.
 const SITE_PADRAO = 'https://vera-finance.onrender.com';
@@ -32,6 +33,19 @@ export default defineConfig(({ mode }) => {
           if (!sw.includes(MARCADOR_VERSAO))
             throw new Error(`${arquivo} não tem ${MARCADOR_VERSAO}: a versão do cache não ia mudar.`);
           await writeFile(arquivo, sw.replaceAll(MARCADOR_VERSAO, Date.now().toString(36)));
+        }
+      },
+      {
+        // Ícones: no build do site, a fonte e o CSS do Bootstrap Icons saem só com os ícones de
+        // src/components/ds/icons.js (scripts/icones.mjs). No dev (npm run dev) fica o pacote
+        // inteiro. Antes de vite:css, para o CSS novo passar pelo mesmo caminho do original.
+        name: 'vera-icones',
+        enforce: 'pre',
+        apply: (_config, { command, isSsrBuild }) => command === 'build' && !isSsrBuild,
+        async transform(css, id) {
+          const arquivo = id.split('?')[0];
+          if (!arquivo.endsWith('/bootstrap-icons/font/bootstrap-icons.min.css')) return null;
+          return { code: await cssDosIcones(css, dirname(arquivo)), map: null };
         }
       },
       {

@@ -1,5 +1,10 @@
 // Ícones do Bootstrap Icons (https://icons.getbootstrap.com), licença MIT.
 // Os componentes usam nomes próprios do design system; aqui eles viram classes "bi-*".
+// No build do site só os ícones desta lista vão para a fonte e o CSS (scripts/icones.mjs).
+
+/** Ícone de quando o nome pedido não está na lista. */
+export const ICONE_RESERVA = 'question-circle';
+
 export const ICONS = {
   apple: 'apple',
   'arrow-down': 'arrow-down',

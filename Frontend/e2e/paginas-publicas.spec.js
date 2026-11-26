@@ -27,6 +27,21 @@ test.describe('desempenho', () => {
       await expect(page.locator('h1').first()).toBeVisible();
     });
 
+  test('a fonte de ícones vem só com os ícones usados, dentro do CSS', async ({ page }) => {
+    const { pedidos } = await abrir(page, '/');
+    expect(pedidos.filter(url => /bootstrap-icons.*\.woff2?/.test(url))).toEqual([]);
+    // O ícone desenha com a fonte embutida (o "check" da lista de planos, por exemplo).
+    const fonte = await page.locator('.bi').first().evaluate(el => getComputedStyle(el, '::before').fontFamily);
+    expect(fonte).toContain('bootstrap-icons');
+    const carregada = await page.evaluate(async () => {
+      await document.fonts.ready;
+      return [...document.fonts].some(
+        f => f.family.replaceAll('"', '') === 'bootstrap-icons' && f.status === 'loaded'
+      );
+    });
+    expect(carregada).toBe(true);
+  });
+
   test('a tela Entrar baixa o Firebase (o login precisa dele)', async ({ page }) => {
     const { pedidos } = await abrir(page, '/entrar');
     await expect(page.getByRole('heading', { level: 1, name: 'Entrar' })).toBeVisible();
