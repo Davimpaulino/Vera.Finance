@@ -42,10 +42,27 @@ const MESES = [
 ];
 
 /**
+ * A data é AAAA-MM-DD e existe: mês de 01 a 12 e dia que cabe no mês (31 de abril não passa,
+ * 29 de fevereiro só em ano bissexto). As contas são em UTC, então o fuso não muda o dia.
+ */
+export function dataValida(iso) {
+  const achado = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(iso ?? ''));
+  if (!achado) return false;
+  const [ano, mes, dia] = achado.slice(1).map(Number);
+  const data = new Date(Date.UTC(ano, mes - 1, dia));
+  return (
+    data.getUTCFullYear() === ano && data.getUTCMonth() === mes - 1 && data.getUTCDate() === dia
+  );
+}
+
+/**
  * "2026-11-26" → "26 de novembro de 2026". Lê os números direto, sem new Date: a data sem hora
- * vira meia-noite em UTC, e no fuso do Brasil o dia apareceria um antes.
+ * vira meia-noite em UTC, e no fuso do Brasil o dia apareceria um antes. Data que não existe
+ * volta como veio (o build já para antes, em problemasDoConteudo), nunca como "undefined".
  */
 export function dataPorExtenso(iso) {
-  const [ano, mes, dia] = String(iso).slice(0, 10).split('-').map(Number);
+  const texto = String(iso).slice(0, 10);
+  if (!dataValida(texto)) return String(iso);
+  const [ano, mes, dia] = texto.split('-').map(Number);
   return `${dia} de ${MESES[mes - 1]} de ${ano}`;
 }

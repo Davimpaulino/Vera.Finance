@@ -65,7 +65,8 @@ export function artigoEstruturado(artigo, trilha) {
     principal = {
       '@type': 'HowTo',
       ...comum,
-      dateModified: artigo.atualizadoEm,
+      datePublished: artigo.publicadoEm,
+      dateModified: artigo.atualizadoEm || artigo.publicadoEm,
       step: artigo.passos.map((passo, i) => ({
         '@type': 'HowToStep',
         position: i + 1,
@@ -79,8 +80,9 @@ export function artigoEstruturado(artigo, trilha) {
       '@type': 'Article',
       ...comum,
       headline: artigo.titulo,
-      datePublished: artigo.atualizadoEm,
-      dateModified: artigo.atualizadoEm,
+      // A data de publicação é fixa; cada revisão muda só o dateModified.
+      datePublished: artigo.publicadoEm,
+      dateModified: artigo.atualizadoEm || artigo.publicadoEm,
       author: VERA,
       publisher: VERA,
       image: urlDoSite('/og-image.png'),

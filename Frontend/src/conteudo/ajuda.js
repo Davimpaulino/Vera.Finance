@@ -12,7 +12,8 @@
 // - corpo: blocos em ordem. Texto solto é um parágrafo; { titulo } é um subtítulo;
 //   { lista: [...] } é uma lista; { lista: [...], numerada: true } é uma lista numerada.
 // - relacionados: caminhos de outros artigos ou páginas, para o "Leia também".
-// - atualizadoEm: data da última revisão (AAAA-MM-DD).
+// - publicadoEm: data em que o artigo saiu (AAAA-MM-DD). Não muda nas revisões.
+// - atualizadoEm: data da última revisão (AAAA-MM-DD), mostrada na página.
 // Nos textos, [rótulo](/caminho) vira link (veja formato.js).
 //
 // O funcionamento descrito aqui foi conferido no código (rotas da API, models e telas do app).
@@ -78,6 +79,7 @@ export const ARTIGOS_DE_AJUDA = [
       '/ajuda/como-funciona-a-comparacao',
       '/ajuda/senha-do-banco'
     ],
+    publicadoEm: '2026-11-26',
     atualizadoEm: '2026-11-26'
   },
   {
@@ -118,6 +120,7 @@ export const ARTIGOS_DE_AJUDA = [
       '/ajuda/preco-diferente-na-loja',
       '/blog/economizar-comparando-preco-por-quilo-e-por-litro'
     ],
+    publicadoEm: '2026-11-26',
     atualizadoEm: '2026-11-26'
   },
   {
@@ -156,6 +159,7 @@ export const ARTIGOS_DE_AJUDA = [
       '/ajuda/ler-nota-fiscal',
       '/blog/atacarejo-ou-supermercado-quando-compensa'
     ],
+    publicadoEm: '2026-11-26',
     atualizadoEm: '2026-11-26'
   },
   {
@@ -214,6 +218,7 @@ export const ARTIGOS_DE_AJUDA = [
       '/blog/economizar-comparando-preco-por-quilo-e-por-litro',
       '/ajuda/modo-familia'
     ],
+    publicadoEm: '2026-11-26',
     atualizadoEm: '2026-11-26'
   },
   {
@@ -267,6 +272,7 @@ export const ARTIGOS_DE_AJUDA = [
       '/ajuda/baixar-dados-e-apagar-conta',
       '/blog/organizar-renda-por-categorias'
     ],
+    publicadoEm: '2026-11-26',
     atualizadoEm: '2026-11-26'
   },
   {
@@ -306,6 +312,7 @@ export const ARTIGOS_DE_AJUDA = [
       'Dúvidas sobre os seus dados: [privacidade@vera.finance](mailto:privacidade@vera.finance).'
     ],
     relacionados: ['/privacidade', '/ajuda/planos-e-cancelamento', '/ajuda/senha-do-banco'],
+    publicadoEm: '2026-11-26',
     atualizadoEm: '2026-11-26'
   },
   {
@@ -352,6 +359,7 @@ export const ARTIGOS_DE_AJUDA = [
       'Não há multa para cancelar. As regras de cobrança, de renovação e de desistência estão nos [termos de uso](/termos).'
     ],
     relacionados: ['/precos', '/ajuda/modo-familia', '/ajuda/baixar-dados-e-apagar-conta'],
+    publicadoEm: '2026-11-26',
     atualizadoEm: '2026-11-26'
   },
   {
@@ -378,6 +386,7 @@ export const ARTIGOS_DE_AJUDA = [
       'Se alguém pedir a senha do seu banco em nome da vera, não passe: é golpe. A vera nunca faz esse pedido. Na dúvida, escreva para [ajuda@vera.finance](mailto:ajuda@vera.finance).'
     ],
     relacionados: ['/privacidade', '/ajuda/ler-nota-fiscal', '/perguntas'],
+    publicadoEm: '2026-11-26',
     atualizadoEm: '2026-11-26'
   }
 ];
