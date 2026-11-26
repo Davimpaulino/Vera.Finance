@@ -92,7 +92,7 @@ const { handle } = await import('../src/app.js');
 const { banco } = await import('../src/config/banco.js');
 const { CredencialModel } = await import('../src/models/CredencialModel.js');
 const { VERSAO_DOS_TERMOS } = await import('../src/config/termos.js');
-const { itensMaisBaratos } = await import('../src/models/AlertaDaListaModel.js');
+const { itensMaisBaratos, AlertaDaListaModel } = await import('../src/models/AlertaDaListaModel.js');
 
 let server;
 let base;
@@ -227,6 +227,43 @@ test('item genérico só compara a mesma embalagem: 1 kg não é mais barato que
       ['notaDoMesmoTamanho', 'a', 17],
       ['oleo', 'a', 7]
     ]
+  );
+});
+
+test('preço que sobe ou volta ao já avisado não reabre o aviso; só um preço menor', async () => {
+  const mercados = [
+    { id: 'hab', nome: 'Habitual', distanciaKm: 1 },
+    { id: 'a', nome: 'Mercado A', distanciaKm: 2 }
+  ];
+  const ctx = {
+    ownerUid: 'alerta-precos',
+    owner: { prefs: { alertaAltaPreco: true }, local: { mercadoHabitual: 'hab', raioKm: 5 } }
+  };
+  const daLista = [{ id: 'leite', nome: 'Leite', done: false }];
+  const avisoCom = async preco => {
+    const comparacao = {
+      habitual: { mercadoId: 'hab', nome: 'Habitual' },
+      itens: [{ id: 'leite', nome: 'Leite', qtd: 1, done: false, precos: { hab: 12, a: preco } }]
+    };
+    await AlertaDaListaModel.guardar(ctx, comparacao, mercados);
+    return AlertaDaListaModel.notificacoes(ctx, daLista);
+  };
+
+  assert.deepEqual((await avisoCom(10)).map(aviso => aviso.id), ['lista-leite-a-1000']);
+  const [subiu] = await avisoCom(10.05);
+  assert.equal(subiu.id, 'lista-leite-a-1000', 'subir 5 centavos não é aviso novo');
+  assert.match(subiu.texto, /^R\$ 10,05 lá/, 'o texto mostra o preço de agora');
+  assert.deepEqual((await avisoCom(10)).map(aviso => aviso.id), ['lista-leite-a-1000']);
+  assert.deepEqual((await avisoCom(9.5)).map(aviso => aviso.id), ['lista-leite-a-950'], 'preço menor avisa');
+  assert.deepEqual((await avisoCom(9.9)).map(aviso => aviso.id), ['lista-leite-a-950']);
+
+  // O alerta some (preço quase igual ao de sempre) e volta acima do já avisado: não é novo.
+  assert.deepEqual(await avisoCom(11.8), []);
+  assert.deepEqual((await avisoCom(9.9)).map(aviso => aviso.id), ['lista-leite-a-950']);
+  const gravado = await banco.ler('usuarios/alerta-precos/perfil/alertasDaLista');
+  assert.deepEqual(
+    Object.values(gravado.avisados).map(aviso => [aviso.itemId, aviso.mercadoId, aviso.preco]),
+    [['leite', 'a', 9.5]]
   );
 });
 

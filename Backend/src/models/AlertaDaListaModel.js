@@ -14,6 +14,11 @@ const PERCENTUAL_MINIMO = 0.05; // ...e pelo menos 5% a menos
 const MAXIMO_DE_ALERTAS = 3;
 const VALIDADE_MS = 2 * 24 * 60 * 60 * 1000;
 const RENOVAR_MS = 6 * 60 * 60 * 1000;
+// Menor preço já avisado de cada item em cada mercado. Preço de site muda por centavos o tempo
+// todo: o aviso só volta como novo quando o preço fica abaixo do que já foi avisado. A lembrança
+// dura 30 dias depois da última vez que o alerta apareceu, com no máximo 50 pares guardados.
+const LEMBRAR_AVISO_MS = 30 * 24 * 60 * 60 * 1000;
+const MAXIMO_DE_AVISADOS = 50;
 // Situações (de PrecoRegionalModel.lista) em que duas lojas na mesma situação vendem o mesmo
 // produto: 'exato' é o produto escolhido na lista (mesmo código de barras, ou mesma marca,
 // tamanho e variante) e 'nota' é o mesmo produto das notas fiscais. 'aproximado' (item sem
@@ -23,6 +28,9 @@ const SEMPRE_O_MESMO_PRODUTO = new Set(['exato', 'nota']);
 
 const caminho = uid => `usuarios/${uid}/perfil/alertasDaLista`;
 const centavos = valor => Math.round(Number(valor) * 100);
+// O banco pode devolver uma lista gravada como objeto ({ 0: ..., 1: ... }).
+const comoLista = valor => (Array.isArray(valor) ? valor : Object.values(valor || {}));
+const par = alerta => `${alerta.itemId}|${alerta.mercadoId}`;
 const reais = valor =>
   `R$ ${Number(valor || 0)
     .toFixed(2)
@@ -90,6 +98,30 @@ export function itensMaisBaratos(comparacao, mercados) {
 const assinatura = (habitualId, itens) =>
   [habitualId || '', ...itens.map(a => `${a.itemId}:${a.mercadoId}:${centavos(a.preco)}:${centavos(a.precoHabitual)}`)].join('|');
 
+/**
+ * Põe em cada alerta o `precoAvisado` (o menor preço já avisado daquele item naquele mercado,
+ * que entra no id da notificação) e devolve a lembrança atualizada. Preço igual ou maior que o
+ * já avisado mantém o id, e a notificação continua vista; só um preço menor gera um id novo.
+ */
+function lembrarAvisos(itens, avisadosAntes, agora = Date.now()) {
+  const lembrados = new Map(
+    comoLista(avisadosAntes)
+      .filter(aviso => aviso?.itemId && agora - Date.parse(aviso.em) < LEMBRAR_AVISO_MS)
+      .map(aviso => [par(aviso), aviso])
+  );
+  const em = new Date(agora).toISOString();
+  const marcados = itens.map(alerta => {
+    const antes = lembrados.get(par(alerta));
+    const precoAvisado = antes && alerta.preco >= antes.preco ? antes.preco : alerta.preco;
+    lembrados.set(par(alerta), { itemId: alerta.itemId, mercadoId: alerta.mercadoId, preco: precoAvisado, em });
+    return { ...alerta, precoAvisado };
+  });
+  const avisados = [...lembrados.values()]
+    .sort((a, b) => Date.parse(b.em) - Date.parse(a.em))
+    .slice(0, MAXIMO_DE_AVISADOS);
+  return { itens: marcados, avisados };
+}
+
 export const AlertaDaListaModel = {
   itensMaisBaratos,
 
@@ -99,14 +131,15 @@ export const AlertaDaListaModel = {
    */
   async guardar(ctx, comparacao, mercados) {
     if (ctx.owner.prefs?.alertaAltaPreco === false) return;
-    const itens = itensMaisBaratos(comparacao, mercados);
+    const achados = itensMaisBaratos(comparacao, mercados);
     const habitualId = ctx.owner.local?.mercadoHabitual || null;
     const atual = ctx.owner.alertasDaLista;
-    const marca = assinatura(habitualId, itens);
-    if (!itens.length && !atual?.itens?.length) return;
+    const marca = assinatura(habitualId, achados);
+    if (!achados.length && !comoLista(atual?.itens).length) return;
     const recente = atual?.em && Date.now() - Date.parse(atual.em) < RENOVAR_MS;
     if (atual?.assinatura === marca && recente) return;
-    const novo = { em: new Date().toISOString(), habitualId, assinatura: marca, itens };
+    const { itens, avisados } = lembrarAvisos(achados, atual?.avisados);
+    const novo = { em: new Date().toISOString(), habitualId, assinatura: marca, itens, avisados };
     try {
       await banco.gravar(caminho(ctx.ownerUid), novo);
       ctx.owner.alertasDaLista = novo;
@@ -127,7 +160,7 @@ export const AlertaDaListaModel = {
     if ((guardado.habitualId || null) !== (ctx.owner.local?.mercadoHabitual || null)) return [];
     const raioKm = Number(ctx.owner.local?.raioKm) || 5;
     const abertos = new Map(itensDaLista.filter(item => !item.done).map(item => [item.id, item]));
-    return (Array.isArray(guardado.itens) ? guardado.itens : Object.values(guardado.itens || {}))
+    return comoLista(guardado.itens)
       .filter(
         alerta =>
           abertos.get(alerta.itemId)?.nome === alerta.item &&
@@ -137,8 +170,9 @@ export const AlertaDaListaModel = {
         const diferenca = round2(alerta.precoHabitual - alerta.preco);
         const pct = Math.round((diferenca / alerta.precoHabitual) * 100);
         return {
-          // O preço entra no id: o mesmo alerta não volta como novo, mas um preço ainda menor volta.
-          id: `lista-${alerta.itemId}-${alerta.mercadoId}-${centavos(alerta.preco)}`,
+          // O menor preço já avisado entra no id: preço que sobe ou volta ao de antes não reabre o
+          // aviso já visto; só um preço ainda menor chega como novo. O texto mostra o preço de agora.
+          id: `lista-${alerta.itemId}-${alerta.mercadoId}-${centavos(alerta.precoAvisado ?? alerta.preco)}`,
           tipo: 'lista',
           icone: 'trending-down',
           tom: 'success',
