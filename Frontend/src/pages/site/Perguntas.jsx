@@ -32,7 +32,7 @@ export const PERGUNTAS = [
   {
     pergunta: 'De onde vêm os preços?',
     resposta:
-      'De dois lugares: do site público de cada rede, consultado para o seu CEP, e das notas fiscais lidas por quem usa a vera. Cada preço mostra a data e a origem.'
+      'De dois lugares: do site público de cada rede e das notas fiscais lidas por quem usa a vera. Na maioria das redes, o site é consultado para o seu CEP; nas outras, vale o preço da loja online. Cada preço mostra a data e a origem.'
   },
   {
     pergunta: 'O preço da vera é o mesmo da loja?',
