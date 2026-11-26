@@ -43,6 +43,12 @@ export function AuthProvider({ children }) {
     }
   }, []);
 
+  // Marca para o "Ver o painel" das páginas do site, onde o login não liga (veja servicoDeLogin).
+  useEffect(() => {
+    if (status === 'in') servicoDeLogin.lembrarSessao(true);
+    else if (status === 'out') servicoDeLogin.lembrarSessao(false);
+  }, [status]);
+
   // Termos novos com o app aberto: o perfil recarregado leva o App para a tela de aceite.
   useEffect(() => setAoPedirAceite(() => refresh().catch(() => {})), [refresh]);
 

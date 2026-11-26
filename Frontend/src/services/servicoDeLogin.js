@@ -58,6 +58,28 @@ const armazenamento = {
   }
 };
 
+// Marca de "sessão aberta neste aparelho": só um "1", nada da conta. As páginas do site não
+// ligam o login (nem baixam o Firebase), então o "Ver o painel" decide por ela se manda para o
+// app ou para o cadastro. O AuthContext põe a marca quando a sessão abre e tira quando ela fecha.
+const CHAVE_DA_SESSAO = 'vera.sessao';
+const marcaDeSessao = {
+  ler() {
+    try {
+      return localStorage.getItem(CHAVE_DA_SESSAO) === '1';
+    } catch {
+      return false;
+    }
+  },
+  gravar(aberta) {
+    try {
+      if (aberta) localStorage.setItem(CHAVE_DA_SESSAO, '1');
+      else localStorage.removeItem(CHAVE_DA_SESSAO);
+    } catch {
+      return;
+    }
+  }
+};
+
 // Aceite dos termos feito no cadastro. Fica guardado até a sessão abrir, porque no celular
 // o login do Google/Apple sai do site (redirecionamento) e volta sem passar pelo formulário.
 // Vale por 10 minutos e para um login só: um redirecionamento abandonado não pode deixar
@@ -348,6 +370,12 @@ export const servicoDeLogin = {
       throw traduzirErro(erro);
     }
   },
+
+  /** Põe (sessão aberta) ou tira (sessão fechada) a marca usada pelo "Ver o painel". */
+  lembrarSessao: aberta => marcaDeSessao.gravar(aberta),
+
+  /** A sessão estava aberta da última vez que o login ligou neste aparelho? */
+  lembraDeSessao: () => marcaDeSessao.ler(),
 
   /**
    * Tem alguém conectado neste aparelho? Vale o que dá para saber sem a API: a conta do Firebase

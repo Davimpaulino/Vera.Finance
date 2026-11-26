@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { AuthProvider, useAuth } from '../src/context/AuthContext.jsx';
 import { RouterProvider, useRouter } from '../src/lib/router.jsx';
 import { UiProvider } from '../src/context/UiContext.jsx';
@@ -20,6 +20,7 @@ vi.mock('../src/services/servicoDeLogin.js', () => ({
     entrarComProvedor: vi.fn(),
     sair: vi.fn(),
     temSessao: vi.fn(() => false),
+    lembrarSessao: vi.fn(),
     redefinirSenha: vi.fn(),
     trocarSenha: vi.fn(),
     jeitoDeTrocarSenha: () => 'backend',
@@ -93,6 +94,28 @@ describe('AuthProvider', () => {
     });
     montar('/app');
     await waitFor(() => expect(status()).toBe('out'));
+  });
+
+  it('deixa a marca de sessão para o "Ver o painel" do site e tira quando a sessão fecha', async () => {
+    montar('/app');
+    await waitFor(() => expect(status()).toBe('in'));
+    expect(servicoDeLogin.lembrarSessao).toHaveBeenLastCalledWith(true);
+    cleanup();
+
+    servicoDeLogin.observar.mockImplementation(aoMudar => {
+      aoMudar(false);
+      return () => {};
+    });
+    montar('/app');
+    await waitFor(() => expect(status()).toBe('out'));
+    expect(servicoDeLogin.lembrarSessao).toHaveBeenLastCalledWith(false);
+  });
+
+  it('sem conexão a marca fica como estava (a sessão não fechou)', async () => {
+    servicoDeLogin.abrirSessao.mockRejectedValue(SEM_REDE);
+    montar('/app');
+    await waitFor(() => expect(status()).toBe('offline'));
+    expect(servicoDeLogin.lembrarSessao).not.toHaveBeenCalled();
   });
 
   it('sem internet fica "offline", não "out": a pessoa não é mandada para o login', async () => {

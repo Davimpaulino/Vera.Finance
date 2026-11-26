@@ -169,3 +169,21 @@ test('sair da conta funciona sem rede, em Configurações e na tela "Sem conexã
   await page.getByRole('button', { name: 'Sair da conta' }).click();
   await saiu(page);
 });
+
+test('"Ver o painel" na home leva quem já entrou direto para o app, sem passar pelo cadastro', async ({ page }) => {
+  // Visitante: cria a conta.
+  await page.goto('/', { waitUntil: 'networkidle' });
+  await page.getByRole('button', { name: 'Ver o painel' }).click();
+  await expect(page).toHaveURL(/\/cadastro$/);
+
+  await criarConta(page, { email: emailNovo('ver-painel') });
+  // Na home o login não liga; a página abre do zero, como quem volta ao site outro dia.
+  await page.goto('/', { waitUntil: 'networkidle' });
+  const enderecos = [];
+  page.on('framenavigated', frame => {
+    if (frame === page.mainFrame()) enderecos.push(new URL(frame.url()).pathname);
+  });
+  await page.getByRole('button', { name: 'Ver o painel' }).click();
+  await expect(page.getByRole('heading', { level: 1, name: 'Painel' })).toBeVisible();
+  expect(enderecos).toEqual(['/app']);
+});
