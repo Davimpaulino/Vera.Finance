@@ -10,6 +10,7 @@ import { diaDeMes, hojeLabel, iniciais } from '../../lib/format.js';
 import { GastoModal } from './GastoModal.jsx';
 import { Notificacoes } from './Notificacoes.jsx';
 import { LerNota } from './LerNota.jsx';
+import { ConfirmarEmail } from './ConfirmarEmail.jsx';
 import { cx } from '../../lib/cx.js';
 import './css/app-shell.css';
 
@@ -191,7 +192,10 @@ export function AppShell({ children }) {
               />
             </div>
           </header>
-          <main className="vera-shell__body">{children}</main>
+          <main className="vera-shell__body">
+            <ConfirmarEmail />
+            {children}
+          </main>
         </div>
       </div>
       {modal ? (

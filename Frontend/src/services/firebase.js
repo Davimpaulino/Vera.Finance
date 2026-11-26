@@ -20,3 +20,6 @@ export const configuracaoFirebase = {
 export const firebaseHabilitado = Boolean(configuracaoFirebase.apiKey);
 export const aplicativoFirebase = firebaseHabilitado ? initializeApp(configuracaoFirebase) : null;
 export const autenticacaoFirebase = firebaseHabilitado ? getAuth(aplicativoFirebase) : null;
+
+// E-mails do Firebase (confirmação de e-mail, troca de senha) e telas de login em português.
+if (autenticacaoFirebase) autenticacaoFirebase.languageCode = 'pt-BR';

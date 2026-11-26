@@ -12,6 +12,8 @@ import {
   signOut,
   updateProfile,
   sendPasswordResetEmail,
+  sendEmailVerification,
+  reload,
   setPersistence,
   browserLocalPersistence,
   browserSessionPersistence,
@@ -99,6 +101,32 @@ async function abrirSessao(corpo = {}) {
 }
 
 const usuarioFirebase = () => (firebaseHabilitado ? autenticacaoFirebase.currentUser : null);
+
+// O endereço de volta do e-mail precisa estar em Authentication → Settings → Authorized domains.
+// Se não estiver, o e-mail vai sem o botão "Continuar" (o link de confirmação funciona igual).
+const VOLTA_RECUSADA = [
+  'auth/unauthorized-continue-uri',
+  'auth/invalid-continue-uri',
+  'auth/missing-continue-uri'
+];
+
+/** E-mail de confirmação do Firebase, em português, com o botão que volta para o app. */
+async function enviarConfirmacao(usuario) {
+  autenticacaoFirebase.languageCode = 'pt-BR';
+  try {
+    await sendEmailVerification(usuario, { url: `${window.location.origin}/app` });
+  } catch (erro) {
+    if (!VOLTA_RECUSADA.includes(erro.code)) throw erro;
+    await sendEmailVerification(usuario);
+  }
+}
+
+/** E-mail que falta confirmar. Só conta de e-mail e senha: Google e Apple já vêm confirmados. */
+function emailParaConfirmar() {
+  const usuario = usuarioFirebase();
+  if (!usuario || usuario.emailVerified) return null;
+  return usuario.providerData.some(dado => dado.providerId === 'password') ? usuario.email : null;
+}
 
 // Quem entrou pelo Firebase (e-mail, Google, Apple) manda o token do Firebase;
 // as contas criadas antes do Firebase mandam o token do próprio backend.
@@ -221,6 +249,9 @@ export const servicoDeLogin = {
             senha
           );
           await updateProfile(credencial.user, { displayName: nome });
+          // Confirmação do e-mail: não segura o cadastro. Se não sair agora, o aviso do app
+          // tem o botão "Reenviar".
+          await enviarConfirmacao(credencial.user).catch(() => {});
           await credencial.user.getIdToken(true);
           armazenamento.apagar();
         } catch (erroDoFirebase) {
@@ -270,6 +301,33 @@ export const servicoDeLogin = {
     if (!firebaseHabilitado) throw new Error(SEM_FIREBASE);
     try {
       await sendPasswordResetEmail(autenticacaoFirebase, email);
+    } catch (erro) {
+      throw traduzirErro(erro);
+    }
+  },
+
+  emailParaConfirmar,
+
+  /**
+   * Recarrega a conta no Firebase (a pessoa pode ter clicado no link em outra aba) e devolve o
+   * e-mail que ainda falta confirmar, ou null.
+   */
+  async conferirConfirmacao() {
+    const usuario = usuarioFirebase();
+    if (!usuario) return null;
+    try {
+      await reload(usuario);
+    } catch {
+      // Sem internet agora: fica valendo o que já se sabia.
+    }
+    return emailParaConfirmar();
+  },
+
+  async reenviarConfirmacao() {
+    const usuario = usuarioFirebase();
+    if (!usuario) return;
+    try {
+      await enviarConfirmacao(usuario);
     } catch (erro) {
       throw traduzirErro(erro);
     }

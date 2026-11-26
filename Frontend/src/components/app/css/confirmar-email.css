@@ -1,0 +1,56 @@
+.confirmar-email{
+  display:flex;
+  align-items:center;
+  gap:var(--sp-3);
+  padding:8px 8px 8px 14px;
+  border:1px solid var(--border-hairline);
+  border-radius:var(--r-card);
+  background:var(--surface-card);
+  color:var(--text-2);
+  font-size:var(--fs-meta);
+  line-height:var(--lh-relaxed);
+  min-width:0
+}
+.confirmar-email__icone{
+  flex-shrink:0;
+  color:var(--data)
+}
+.confirmar-email__texto{
+  flex:1;
+  min-width:0
+}
+.confirmar-email__texto strong{
+  color:var(--text-1);
+  font-weight:var(--fw-bold)
+}
+.confirmar-email__endereco{
+  color:var(--text-1);
+  overflow-wrap:anywhere
+}
+.confirmar-email__erro{
+  display:block;
+  color:var(--danger)
+}
+.confirmar-email__acoes{
+  display:flex;
+  align-items:center;
+  gap:4px;
+  flex-shrink:0
+}
+@media (max-width:639px){
+  .confirmar-email{
+    flex-wrap:wrap;
+    align-items:flex-start;
+    row-gap:6px;
+    padding:10px 8px 8px 12px
+  }
+  .confirmar-email__icone{
+    margin-top:3px
+  }
+  .confirmar-email__texto{
+    flex-basis:calc(100% - 28px)
+  }
+  .confirmar-email__acoes{
+    margin-left:auto
+  }
+}

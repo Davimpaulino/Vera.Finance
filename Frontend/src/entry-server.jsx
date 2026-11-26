@@ -29,6 +29,9 @@ const authDoVisitante = {
   resetPassword: semLogin,
   trocarSenha: semLogin,
   jeitoDeTrocarSenha: () => 'backend',
+  emailParaConfirmar: () => null,
+  conferirConfirmacao: async () => null,
+  reenviarConfirmacao: semLogin,
   firebaseHabilitado: true
 };
 

@@ -72,6 +72,9 @@ export function AuthProvider({ children }) {
       resetPassword: servicoDeLogin.redefinirSenha,
       trocarSenha: servicoDeLogin.trocarSenha,
       jeitoDeTrocarSenha: servicoDeLogin.jeitoDeTrocarSenha,
+      emailParaConfirmar: servicoDeLogin.emailParaConfirmar,
+      conferirConfirmacao: servicoDeLogin.conferirConfirmacao,
+      reenviarConfirmacao: servicoDeLogin.reenviarConfirmacao,
       firebaseHabilitado: servicoDeLogin.firebaseHabilitado
     }),
     [status, user, refresh]

@@ -347,7 +347,7 @@ export default function Configuracoes() {
           <Switch
             checked={user.prefs.alertaAltaPreco}
             onChange={() => pref('alertaAltaPreco', !user.prefs.alertaAltaPreco)}
-            description="A vera avisa quando um item que você compra sempre sobe mais de 5% no seu mercado."
+            description="A vera avisa quando um item que você compra sempre sobe no seu mercado e quando um item da sua lista está pelo menos 5% mais barato em outro mercado perto."
           >
             Alerta de alta de preço
           </Switch>
