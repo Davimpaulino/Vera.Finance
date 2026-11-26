@@ -55,6 +55,10 @@ vera.finance   marca completa (componente Brand)
   tinta (`#0C0E10`), com o "v" da Syne em contorno no tom claro (`#F5F2EE`) e o ponto âmbar
   (`#D96C2F`).
 - **Carregando**: o logo `xl` pulsando (`vera-logo--pulse`) é a tela de espera do app.
+- **Nos e-mails** (`Backend/src/emails/layout.html`), o logo é texto e pede a Syne. Como os leitores
+  de e-mail não carregam fonte externa, ele só sai em Syne para quem tem a fonte instalada; para os
+  outros, cai para Plus Jakarta Sans, Arial ou Helvetica, com as mesmas cores e o ponto âmbar. É a
+  única exceção aceita à fonte do logo.
 
 ### Usos
 
@@ -156,8 +160,8 @@ tinta e `#FAF8F5` no papel.
 | **Fraunces** | `--font-serif` | 500, 600 | valores em dinheiro em destaque (número grande do painel, preços) |
 | **Plus Jakarta Sans** | `--font-sans` | 400, 500, 600, 700 | todo o resto: textos, botões, campos |
 
-As três vêm do Google Fonts (`fonts.css`). Nos e-mails, que não carregam fontes externas, vale Plus
-Jakarta Sans se a pessoa tiver a fonte e Arial ou Helvetica como reserva.
+As três vêm do Google Fonts (`fonts.css`). Nos e-mails, que não carregam fontes externas, o logo
+pede Syne e o texto pede Plus Jakarta Sans; quem não tem a fonte vê Arial ou Helvetica.
 
 - **Números** sempre com algarismos de largura fixa (`font-variant-numeric: tabular-nums`, token
   `--num`), para colunas de valores alinharem.
