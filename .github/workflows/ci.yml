@@ -1,4 +1,5 @@
-# Confere cada push e pull request: testes do backend e build do frontend.
+# Confere cada push e pull request: testes do backend, testes e build do frontend.
+# Os testes de ponta a ponta (Frontend: npm run test:e2e) rodam só na máquina de quem desenvolve.
 name: CI
 
 on:
@@ -37,4 +38,5 @@ jobs:
           cache: npm
           cache-dependency-path: Frontend/package-lock.json
       - run: npm ci
+      - run: npm test
       - run: npm run build
