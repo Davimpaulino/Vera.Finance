@@ -1,3 +1,19 @@
+import { HttpError } from './http.js';
+import { idValido } from './validacao.js';
+
+// Os parâmetros da URL (:id) viram parte de um caminho do banco. "%2F" decodificado é uma barra:
+// sem esta conferência, DELETE /api/lista/%2F apontaria para a coleção inteira, não para um item.
+function lerParametro(bruto) {
+  let valor;
+  try {
+    valor = decodeURIComponent(bruto);
+  } catch {
+    throw new HttpError(400, 'Endereço inválido.');
+  }
+  if (!idValido(valor)) throw new HttpError(400, 'Identificador inválido.');
+  return valor;
+}
+
 // Roteador mínimo sobre node:http: métodos, parâmetros (:id) e cadeia de middlewares.
 export class Router {
   constructor() {
@@ -42,7 +58,7 @@ export class Router {
       if (r.method !== method) continue;
       const params = {};
       r.keys.forEach((k, i) => {
-        params[k] = decodeURIComponent(m[i + 1]);
+        params[k] = lerParametro(m[i + 1]);
       });
       return { route: r, params };
     }
