@@ -7,6 +7,7 @@ import { GeoModel } from '../models/GeoModel.js';
 import { CicloModel } from '../models/CicloModel.js';
 import { CategoriaModel } from '../models/CategoriaModel.js';
 import { LancamentoModel } from '../models/LancamentoModel.js';
+import { AlertaDaListaModel } from '../models/AlertaDaListaModel.js';
 import { HttpError, requireFields } from '../utils/http.js';
 import {
   TAMANHO_MAXIMO_DO_ID,
@@ -63,6 +64,8 @@ async function montar(ctx) {
           await GeoModel.cepParaPrecos(ctx.owner.local)
         )
       : await ComparacaoModel.lista(itens, regiao.mercados, habitual);
+  // Aproveita a comparação recém-feita para o alerta de preço do sino (sem consulta nova).
+  await AlertaDaListaModel.guardar(ctx, cmp, regiao.mercados);
   const comida = resumo.categorias.find(c => c.nome === 'Comida') || null;
 
   // O que a compra faz com a categoria Comida, no melhor mercado e no de sempre.

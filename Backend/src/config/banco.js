@@ -1,7 +1,8 @@
-import { initializeApp, cert, applicationDefault } from 'firebase-admin/app';
+import { initializeApp } from 'firebase-admin/app';
 import { getDatabase } from 'firebase-admin/database';
 import { getAuth } from 'firebase-admin/auth';
 import { configuracao, temContaDeServico } from './env.js';
+import { credencialFirebase } from './credencialFirebase.js';
 import { criarBancoMemoria } from './bancoMemoria.js';
 import { criarBancoRest } from './bancoRest.js';
 import { criarBancoAdmin } from './bancoAdmin.js';
@@ -12,15 +13,7 @@ let modoBanco;
 let autenticacaoFirebase = null;
 
 function aplicativoFirebase(opcoes = {}) {
-  const { contaDeServico } = configuracao;
-  const credencial = contaDeServico.chavePrivada
-    ? cert({
-        projectId: contaDeServico.idProjeto,
-        clientEmail: contaDeServico.emailCliente,
-        privateKey: contaDeServico.chavePrivada
-      })
-    : applicationDefault();
-  return initializeApp({ credential: credencial, ...opcoes });
+  return initializeApp({ credential: credencialFirebase(configuracao.contaDeServico), ...opcoes });
 }
 
 if (configuracao.banco.forcarMemoria) {

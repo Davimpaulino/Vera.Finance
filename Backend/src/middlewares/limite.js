@@ -6,15 +6,22 @@ const janelas = new Map();
 // Teto de janelas guardadas: muitos endereços diferentes numa hora não podem esgotar a memória.
 const MAXIMO_DE_JANELAS = 50_000;
 
-// IP de quem pediu. No Render o pedido chega pela borda da Cloudflare, que grava o IP de quem
-// conectou em CF-Connecting-IP (e troca o valor que o cliente mandar). O X-Forwarded-For não
-// serve para isso lá: o Render só acrescenta o IP no fim, e o começo da lista vem do cliente.
-// Fora do Render (máquina local, testes), vale o primeiro IP do X-Forwarded-For ou o da conexão.
-export const ipDe = req =>
-  String(req.headers['cf-connecting-ip'] || '').trim() ||
-  String(req.headers['x-forwarded-for'] || '').split(',')[0].trim() ||
-  req.socket?.remoteAddress ||
-  'desconhecido';
+/**
+ * IP de quem fez o pedido, de um jeito que o próprio cliente não consegue trocar.
+ * Atrás do Render, a borda põe o IP de quem conectou em CF-Connecting-IP e True-Client-IP
+ * (escrevendo por cima do que o cliente mandar). No X-Forwarded-For o Render só acrescenta o IP
+ * no fim da lista: o começo vem do cliente e pode ser inventado, então vale o último valor.
+ * Sem nenhum desses cabeçalhos (rodando local, sem proxy), vale o endereço da conexão.
+ */
+export const ipDe = req => {
+  const daBorda = String(req.headers['cf-connecting-ip'] || req.headers['true-client-ip'] || '').trim();
+  if (daBorda) return daBorda;
+  const repassados = String(req.headers['x-forwarded-for'] || '')
+    .split(',')
+    .map(ip => ip.trim())
+    .filter(Boolean);
+  return repassados.at(-1) || req.socket?.remoteAddress || 'desconhecido';
+};
 
 /** Chave por IP (rotas públicas). */
 export const porIp = ctx => `ip:${ipDe(ctx.req)}`;

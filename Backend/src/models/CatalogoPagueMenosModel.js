@@ -1,5 +1,5 @@
 import { round2 } from '../utils/money.js';
-import { NAVEGADOR } from './CatalogoVtexModel.js';
+import { pedirNaRede } from './ColetaModel.js';
 
 // Supermercados Pague Menos (interior de SP): a página de busca já vem com os produtos.
 // Cada produto tem um bloco data-json (nome, marca, preço cheio) e o preço de venda num campo escondido.
@@ -44,8 +44,8 @@ export function lerPaginaPagueMenos(html, site) {
 
 export const CatalogoPagueMenosModel = {
   async buscar(rede, termo) {
-    const resposta = await fetch(`${rede.site}/busca/?q=${encodeURIComponent(termo)}`, {
-      headers: { 'User-Agent': NAVEGADOR, Accept: 'text/html' },
+    const resposta = await pedirNaRede(`${rede.site}/busca/?q=${encodeURIComponent(termo)}`, {
+      headers: { Accept: 'text/html' },
       signal: AbortSignal.timeout(9000)
     });
     if (!resposta.ok) throw new Error(`HTTP ${resposta.status}`);

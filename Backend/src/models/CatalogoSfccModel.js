@@ -1,5 +1,5 @@
 import { round2 } from '../utils/money.js';
-import { NAVEGADOR } from './CatalogoVtexModel.js';
+import { pedirNaRede } from './ColetaModel.js';
 
 // Redes na Salesforce Commerce Cloud (São Vicente). A grade de busca da loja (Search-UpdateGrid)
 // responde em JSON com nome, marca, preço de venda, preço "de" e disponibilidade.
@@ -33,8 +33,8 @@ export function lerGradeSfcc(dados, site) {
 export const CatalogoSfccModel = {
   async buscar(rede, termo) {
     const endereco = `${rede.site}/on/demandware.store/${rede.siteSfcc}/pt_BR/Search-UpdateGrid?q=${encodeURIComponent(termo)}&start=0&sz=40`;
-    const resposta = await fetch(endereco, {
-      headers: { 'User-Agent': NAVEGADOR, Accept: 'application/json' },
+    const resposta = await pedirNaRede(endereco, {
+      headers: { Accept: 'application/json' },
       signal: AbortSignal.timeout(9000)
     });
     if (!resposta.ok) throw new Error(`HTTP ${resposta.status}`);

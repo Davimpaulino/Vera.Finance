@@ -71,6 +71,22 @@ test('login por senha é limitado por IP (força bruta)', async () => {
   );
 });
 
+test('o limite usa o IP que o proxy acrescenta, não o que o cliente inventa', async () => {
+  const { ipDe } = await import('../src/middlewares/limite.js');
+  const req = headers => ({ headers, socket: { remoteAddress: '127.0.0.1' } });
+  assert.equal(ipDe(req({ 'x-forwarded-for': '1.1.1.1, 200.1.2.3' })), '200.1.2.3');
+  assert.equal(ipDe(req({ 'x-forwarded-for': '9.9.9.9,200.1.2.3' })), '200.1.2.3');
+  assert.equal(ipDe(req({ 'cf-connecting-ip': '200.1.2.5', 'x-forwarded-for': '9.9.9.9, 10.0.0.1' })), '200.1.2.5');
+  assert.equal(ipDe(req({ 'true-client-ip': '200.1.2.6' })), '200.1.2.6');
+  assert.equal(ipDe(req({})), '127.0.0.1');
+
+  // Trocar o começo do X-Forwarded-For a cada tentativa não escapa do limite.
+  const tentativa = falso =>
+    pedir('POST', '/auth/entrar', { email: 'y@x.com', senha: 'errada123' }, null, `${falso}, 10.9.9.7`);
+  for (let i = 0; i < 10; i++) assert.equal((await tentativa(`1.2.3.${i}`)).status, 401);
+  assert.equal((await tentativa('5.5.5.5')).status, 429);
+});
+
 test('exclusão de conta: agenda, pode desistir e, vencida, apaga dados, login e família', async () => {
   const cadastro = await pedir('POST', '/auth/cadastrar', { nome: 'Bia', email: 'bia@x.com', senha: '12345678', aceite: { versao: VERSAO_DOS_TERMOS } }, null, '10.1.1.1');
   const { token } = await cadastro.json();

@@ -1,14 +1,14 @@
 import { round2 } from '../utils/money.js';
-import { NAVEGADOR } from './CatalogoVtexModel.js';
+import { pedirNaRede } from './ColetaModel.js';
 
 // Tenda Atacado: API pública de busca da loja online, com código de barras, preço e estoque.
 const API = 'https://api.tendaatacado.com.br/api/public/store/search';
 
 export const CatalogoTendaModel = {
   async buscar(rede, termo) {
-    const resposta = await fetch(
+    const resposta = await pedirNaRede(
       `${API}?query=${encodeURIComponent(termo)}&page=1&order=relevance&save=false&filters=false`,
-      { headers: { 'User-Agent': NAVEGADOR, Accept: 'application/json' }, signal: AbortSignal.timeout(9000) }
+      { headers: { Accept: 'application/json' }, signal: AbortSignal.timeout(9000) }
     );
     if (!resposta.ok) throw new Error(`HTTP ${resposta.status}`);
     const dados = await resposta.json();
