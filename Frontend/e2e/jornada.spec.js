@@ -136,23 +136,41 @@ async function saiu(page) {
   await expect(page.getByRole('heading', { level: 1, name: 'Entrar' })).toBeVisible();
 }
 
+// A API limita cadastros por IP (5 por hora) e todos os testes saem do mesmo IP: os testes de
+// sair voltam a entrar com a senha na mesma conta, em vez de criar outra.
+async function entrarComSenha(page, email) {
+  await page.goto('/entrar');
+  await page.getByLabel('E-mail').fill(email);
+  await page.getByLabel('Senha').fill('senha-de-teste-123');
+  await page.getByRole('button', { name: 'Entrar', exact: true }).click();
+  await expect(page).toHaveURL(/\/app$/);
+  await expect(page.getByRole('heading', { level: 1, name: 'Painel' })).toBeVisible();
+}
+
 test('quem sai da conta em Configurações volta para o site e entra de novo com a senha', async ({ page }) => {
   const email = emailNovo('entrar');
   await criarConta(page, { email });
   await page.goto('/app/configuracoes');
   await page.getByRole('button', { name: 'Sair da conta' }).click();
   await saiu(page);
+  await entrarComSenha(page, email);
 
-  await page.getByLabel('E-mail').fill(email);
-  await page.getByLabel('Senha').fill('senha-de-teste-123');
-  await page.getByRole('button', { name: 'Entrar', exact: true }).click();
-  await expect(page).toHaveURL(/\/app$/);
+  // Na home o login não liga; a página abre do zero, como quem volta ao site outro dia.
+  // "Ver o painel" vai direto para o app, sem passar pelo cadastro.
+  await page.goto('/', { waitUntil: 'networkidle' });
+  const enderecos = [];
+  page.on('framenavigated', frame => {
+    if (frame === page.mainFrame()) enderecos.push(new URL(frame.url()).pathname);
+  });
+  await page.getByRole('button', { name: 'Ver o painel' }).click();
   await expect(page.getByRole('heading', { level: 1, name: 'Painel' })).toBeVisible();
+  expect(enderecos).toEqual(['/app']);
 });
 
 test('sair da conta funciona sem rede, em Configurações e na tela "Sem conexão"', async ({ page }) => {
   // Em Configurações, com a API caindo depois que a tela abriu.
-  await criarConta(page, { email: emailNovo('sair-sem-rede') });
+  const email = emailNovo('sair-sem-rede');
+  await criarConta(page, { email });
   await page.goto('/app/configuracoes');
   const sair = page.getByRole('button', { name: 'Sair da conta' });
   await expect(sair).toBeVisible();
@@ -162,7 +180,7 @@ test('sair da conta funciona sem rede, em Configurações e na tela "Sem conexã
   await page.unroute(API);
 
   // Na tela "Sem conexão", que ocupa o app inteiro quando a API não responde.
-  await criarConta(page, { email: emailNovo('sair-sem-conexao') });
+  await entrarComSenha(page, email);
   await page.route(API, rota => rota.abort('internetdisconnected'));
   await page.reload();
   await expect(page.getByRole('heading', { level: 1, name: 'Sem conexão' })).toBeVisible();
@@ -170,20 +188,9 @@ test('sair da conta funciona sem rede, em Configurações e na tela "Sem conexã
   await saiu(page);
 });
 
-test('"Ver o painel" na home leva quem já entrou direto para o app, sem passar pelo cadastro', async ({ page }) => {
-  // Visitante: cria a conta.
+test('"Ver o painel" na home leva o visitante para criar a conta', async ({ page }) => {
   await page.goto('/', { waitUntil: 'networkidle' });
   await page.getByRole('button', { name: 'Ver o painel' }).click();
   await expect(page).toHaveURL(/\/cadastro$/);
-
-  await criarConta(page, { email: emailNovo('ver-painel') });
-  // Na home o login não liga; a página abre do zero, como quem volta ao site outro dia.
-  await page.goto('/', { waitUntil: 'networkidle' });
-  const enderecos = [];
-  page.on('framenavigated', frame => {
-    if (frame === page.mainFrame()) enderecos.push(new URL(frame.url()).pathname);
-  });
-  await page.getByRole('button', { name: 'Ver o painel' }).click();
-  await expect(page.getByRole('heading', { level: 1, name: 'Painel' })).toBeVisible();
-  expect(enderecos).toEqual(['/app']);
+  await expect(page.getByRole('heading', { level: 1, name: 'Criar conta' })).toBeVisible();
 });
