@@ -114,6 +114,9 @@ test('sem conexão com a API mostra "Sem conexão" e volta com "Tentar de novo"'
   await page.reload();
   await expect(page.getByRole('heading', { level: 1, name: 'Sem conexão' })).toBeVisible();
   await expect(page).toHaveURL(/\/app$/);
+  // A tela tem saída: o logotipo leva ao site e quem tem sessão pode sair da conta.
+  await expect(page.getByRole('link', { name: 'vera.finance — início' })).toHaveAttribute('href', '/');
+  await expect(page.getByRole('button', { name: 'Sair da conta' })).toBeVisible();
   expect(await violacoesWcag(page)).toEqual([]);
 
   // A conexão volta.
@@ -122,19 +125,47 @@ test('sem conexão com a API mostra "Sem conexão" e volta com "Tentar de novo"'
   await expect(page.getByRole('heading', { level: 1, name: 'Painel' })).toBeVisible();
 });
 
-test('quem sai da conta volta para Entrar e entra de novo com a senha', async ({ page }) => {
-  const email = emailNovo('entrar');
-  await criarConta(page, { email });
-  await page.evaluate(() => {
-    localStorage.removeItem('vera.token');
-    sessionStorage.removeItem('vera.token');
-  });
+/** Depois de sair: está na home, sem token guardado, e o app pede para entrar. */
+async function saiu(page) {
+  await expect(page).toHaveURL(/\/$/);
+  expect(
+    await page.evaluate(() => localStorage.getItem('vera.token') || sessionStorage.getItem('vera.token'))
+  ).toBeNull();
   await page.goto('/app');
   await expect(page).toHaveURL(/\/entrar$/);
+  await expect(page.getByRole('heading', { level: 1, name: 'Entrar' })).toBeVisible();
+}
+
+test('quem sai da conta em Configurações volta para o site e entra de novo com a senha', async ({ page }) => {
+  const email = emailNovo('entrar');
+  await criarConta(page, { email });
+  await page.goto('/app/configuracoes');
+  await page.getByRole('button', { name: 'Sair da conta' }).click();
+  await saiu(page);
 
   await page.getByLabel('E-mail').fill(email);
   await page.getByLabel('Senha').fill('senha-de-teste-123');
   await page.getByRole('button', { name: 'Entrar', exact: true }).click();
   await expect(page).toHaveURL(/\/app$/);
   await expect(page.getByRole('heading', { level: 1, name: 'Painel' })).toBeVisible();
+});
+
+test('sair da conta funciona sem rede, em Configurações e na tela "Sem conexão"', async ({ page }) => {
+  // Em Configurações, com a API caindo depois que a tela abriu.
+  await criarConta(page, { email: emailNovo('sair-sem-rede') });
+  await page.goto('/app/configuracoes');
+  const sair = page.getByRole('button', { name: 'Sair da conta' });
+  await expect(sair).toBeVisible();
+  await page.route(API, rota => rota.abort('internetdisconnected'));
+  await sair.click();
+  await saiu(page);
+  await page.unroute(API);
+
+  // Na tela "Sem conexão", que ocupa o app inteiro quando a API não responde.
+  await criarConta(page, { email: emailNovo('sair-sem-conexao') });
+  await page.route(API, rota => rota.abort('internetdisconnected'));
+  await page.reload();
+  await expect(page.getByRole('heading', { level: 1, name: 'Sem conexão' })).toBeVisible();
+  await page.getByRole('button', { name: 'Sair da conta' }).click();
+  await saiu(page);
 });
