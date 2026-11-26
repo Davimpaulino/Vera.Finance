@@ -60,6 +60,14 @@ export default defineConfig(({ mode }) => {
         }
       }
     ],
-    server: { port: 5173 }
+    server: { port: 5173 },
+    // Testes de unidade (npm test, Vitest): componentes no jsdom, sem servidor e sem rede.
+    // Os de ponta a ponta ficam em e2e/ (npm run test:e2e, Playwright).
+    test: {
+      environment: 'jsdom',
+      include: ['test/**/*.test.{js,jsx}'],
+      setupFiles: ['./test/preparar.js'],
+      restoreMocks: true
+    }
   };
 });
