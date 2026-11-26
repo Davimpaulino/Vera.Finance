@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { servicoDeLogin } from '../services/servicoDeLogin.js';
-import { api } from '../services/api.js';
+import { api, setAoPedirAceite } from '../services/api.js';
 
 const AuthContext = createContext(null);
 
@@ -23,6 +23,9 @@ export function AuthProvider({ children }) {
       throw e;
     }
   }, []);
+
+  // Termos novos com o app aberto: o perfil recarregado leva o App para a tela de aceite.
+  useEffect(() => setAoPedirAceite(() => refresh().catch(() => {})), [refresh]);
 
   useEffect(
     () =>

@@ -2,6 +2,7 @@ import { Suspense, lazy, useEffect } from 'react';
 import { Logo } from './components/ds/index.js';
 import { Redirect, useRouter } from './lib/router.jsx';
 import { useAuth } from './context/AuthContext.jsx';
+import { aceitouTermos } from './lib/termos.js';
 import { useUi } from './context/UiContext.jsx';
 import { AppShell } from './components/app/AppShell.jsx';
 import { PageSkeleton } from './components/Loading.jsx';
@@ -10,6 +11,7 @@ import Precos from './pages/site/Precos.jsx';
 import Legal from './pages/site/Legal.jsx';
 import Login from './pages/auth/Login.jsx';
 import Cadastro from './pages/auth/Cadastro.jsx';
+import AceiteDosTermos from './pages/auth/AceiteDosTermos.jsx';
 const Onboarding = lazy(() => import('./pages/auth/Onboarding.jsx'));
 const Painel = lazy(() => import('./pages/app/Painel.jsx'));
 const Lancamentos = lazy(() => import('./pages/app/Lancamentos.jsx'));
@@ -91,6 +93,9 @@ export default function App() {
 
   if (status === 'loading') return <Carregando />;
   const logado = status === 'in';
+  // Sem o aceite da versão em vigor dos termos nada abre, nem o cadastro guiado: vale para
+  // quem entrou pelo Google ou pela Apple na tela Entrar e para quem tem um aceite antigo.
+  if (logado && !aceitouTermos(user)) return <AceiteDosTermos />;
   const pronto = logado && user?.onboardingCompleto;
 
   if (path === '/entrar') return pronto ? <Redirect to="/app" /> : <Login />;

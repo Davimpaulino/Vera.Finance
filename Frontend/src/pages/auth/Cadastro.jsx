@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { Button, Checkbox, Icon, Input } from '../../components/ds/index.js';
+import { Button, Icon, Input } from '../../components/ds/index.js';
 import { Brand } from '../../components/Brand.jsx';
 import { Link, useRouter } from '../../lib/router.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { VERSAO_DOS_TERMOS } from '../../lib/termos.js';
-import { Divisor, FormError, SocialButtons } from './AuthShared.jsx';
+import { CaixaDeAceite, Divisor, FormError, SocialButtons } from './AuthShared.jsx';
 
 const GARANTIAS = [
   'Sem conectar banco',
@@ -105,23 +105,13 @@ export default function Cadastro() {
           value={senha}
           onChange={e => setSenha(e.target.value)}
         />
-        <Checkbox
+        <CaixaDeAceite
           checked={aceito}
           onChange={e => {
             setAceito(e.target.checked);
             if (e.target.checked && erro === FALTA_ACEITE) setErro('');
           }}
-          className="auth__aceite"
-        >
-          Tenho 18 anos ou mais e li os{' '}
-          <a href="/termos" target="_blank" rel="noopener" className="vera-link-strong">
-            Termos de uso
-          </a>{' '}
-          e a{' '}
-          <a href="/privacidade" target="_blank" rel="noopener" className="vera-link-strong">
-            Política de privacidade
-          </a>
-        </Checkbox>
+        />
         <FormError>{erro}</FormError>
         <Button
           block

@@ -56,6 +56,13 @@
   font-size:var(--fs-meta);
   color:var(--text-muted)
 }
+.auth__texto{
+  margin:0;
+  font-size:var(--fs-body);
+  line-height:1.5;
+  color:var(--text-2);
+  text-wrap:pretty
+}
 .auth__note--top{
   margin-top:8px
 }

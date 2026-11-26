@@ -1,4 +1,4 @@
-import { Button } from '../../components/ds/index.js';
+import { Button, Checkbox } from '../../components/ds/index.js';
 import './css/auth.css';
 
 export function Divisor() {
@@ -39,6 +39,22 @@ export function SocialButtons({ onSocial, carregando }) {
         Continuar com Google
       </Button>
     </>
+  );
+}
+
+/** Caixa do aceite dos termos e da idade mínima: a mesma no cadastro e na tela de aceite. */
+export function CaixaDeAceite({ checked, onChange }) {
+  return (
+    <Checkbox checked={checked} onChange={onChange} className="auth__aceite">
+      Tenho 18 anos ou mais e li os{' '}
+      <a href="/termos" target="_blank" rel="noopener" className="vera-link-strong">
+        Termos de uso
+      </a>{' '}
+      e a{' '}
+      <a href="/privacidade" target="_blank" rel="noopener" className="vera-link-strong">
+        Política de privacidade
+      </a>
+    </Checkbox>
   );
 }
 
