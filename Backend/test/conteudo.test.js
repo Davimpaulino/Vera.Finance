@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
+import { REDES } from '../src/models/RedeModel.js';
 import { ARTIGOS, problemasDoConteudo } from '../../Frontend/src/conteudo/index.js';
 import { BLOG_NO_RODAPE } from '../../Frontend/src/conteudo/rodape.js';
 import {
@@ -35,6 +36,22 @@ test('cada artigo tem caminho próprio, na ajuda ou no blog', () => {
   assert.equal(new Set(caminhos).size, caminhos.length, 'caminho repetido');
   for (const caminho of caminhos) assert.match(caminho, /^\/(ajuda|blog)\/[a-z0-9]+(-[a-z0-9]+)*$/);
   assert.ok(ARTIGOS.filter(artigo => artigo.secao === 'blog').every(post => post.publicadoEm));
+});
+
+test('artigo que cita uma rede traz o aviso de que a vera não tem vínculo com ela', () => {
+  // Regra de docs/marca.md: rede citada vem junto de "A vera não tem vínculo com as redes citadas."
+  const escapar = nome => nome.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const cita = (texto, nome) => new RegExp(`(?<!\\p{L})${escapar(nome)}(?!\\p{L})`, 'u').test(texto);
+  for (const artigo of ARTIGOS) {
+    const texto = JSON.stringify(artigo).replace(/’/g, "'");
+    const citadas = REDES.filter(rede => cita(texto, rede.nome)).map(rede => rede.nome);
+    if (citadas.length)
+      assert.match(
+        texto,
+        /(Sem|não tem) vínculo com as redes citadas/,
+        `${artigo.caminho} cita ${citadas.join(', ')} sem o aviso de vínculo`
+      );
+  }
 });
 
 test('formato dos textos: links, texto puro e data por extenso', () => {

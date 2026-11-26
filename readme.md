@@ -935,7 +935,8 @@ São páginas públicas, pré-renderizadas no build para os buscadores e as IAs:
      `dateModified` e para o "Atualizado em".
 2. Para pôr um link no texto, escreva `[rótulo](/caminho)`.
 3. Ponha a URL nova em `Frontend/public/sitemap.xml` e em `Frontend/public/llms.txt`. O teste
-   `Backend/test/conteudo.test.js` falha se faltar.
+   `Backend/test/conteudo.test.js` falha se faltar. O mesmo teste falha se o artigo citar uma rede
+   sem o aviso "A vera não tem vínculo com as redes citadas." ([docs/marca.md](docs/marca.md)).
 4. Post do blog que deve aparecer no rodapé: ponha `[nome curto, caminho]` em
    `Frontend/src/conteudo/rodape.js`.
 5. Rode `cd Frontend && npm run build`. A rota, o título, o canonical, o `og:type` (article) e o

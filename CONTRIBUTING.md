@@ -81,7 +81,8 @@ cd Frontend && npm run build    # se mexeu no frontend
 - Mexeu no banco ou no adaptador do PostgreSQL? Rode também `npm run test:pg` (veja o readme).
 - Mudou a lista de redes? `test/redesSite.test.js` confere que site, `llms.txt` e `RedeModel` batem.
 - Escreveu artigo na ajuda ou no blog? `Backend/test/conteudo.test.js` confere que ele está no
-  `sitemap.xml` e no `llms.txt`.
+  `sitemap.xml` e no `llms.txt` e que, se citar uma rede, traz o aviso de que a vera não tem vínculo
+  com ela.
 - Ícone novo vai em `Frontend/src/components/ds/icons.js`. Nome que não existe no Bootstrap Icons
   faz o `npm test` e o build falharem.
 
