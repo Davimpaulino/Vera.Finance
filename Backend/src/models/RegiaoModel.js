@@ -148,9 +148,5 @@ export const RegiaoModel = {
     }
     if (guardar) lembrar(chave, mercados);
     return mercados;
-  },
-
-  limparCache() {
-    emCache.clear();
   }
 };
