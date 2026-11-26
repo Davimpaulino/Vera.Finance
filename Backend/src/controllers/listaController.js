@@ -1,4 +1,4 @@
-import { contexto } from '../models/ContextoModel.js';
+import { contexto, podeVerCategoria } from '../models/ContextoModel.js';
 import { ListaModel } from '../models/ListaModel.js';
 import { MercadoModel } from '../models/MercadoModel.js';
 import { ComparacaoModel } from '../models/ComparacaoModel.js';
@@ -8,7 +8,12 @@ import { CicloModel } from '../models/CicloModel.js';
 import { CategoriaModel } from '../models/CategoriaModel.js';
 import { LancamentoModel } from '../models/LancamentoModel.js';
 import { HttpError, requireFields } from '../utils/http.js';
-import { lista as listaDoCorpo, texto } from '../utils/validacao.js';
+import {
+  TAMANHO_MAXIMO_DO_ID,
+  inteiroEntre,
+  lista as listaDoCorpo,
+  texto
+} from '../utils/validacao.js';
 import { round2 } from '../utils/money.js';
 
 // Cada item da lista é buscado no site de cada rede da região a cada resposta: o teto de itens e
@@ -21,14 +26,21 @@ const MAXIMO_DO_TERMO = 80;
 
 // O produto escolhido na lista (marca, tamanho, código de barras). Sem ele, o item é genérico.
 function produtoEscolhido(produto) {
-  if (!produto || typeof produto !== 'object') return null;
-  const texto = (valor, max) => String(valor || '').trim().slice(0, max);
+  if (!produto || typeof produto !== 'object' || Array.isArray(produto)) return null;
+  // Os campos vêm do site da rede e às vezes passam do tamanho: corta em vez de recusar. Mas só
+  // texto ou número: um objeto no lugar do texto quebraria o String() (erro 500).
+  const campo = (valor, max) => {
+    if (valor === undefined || valor === null || valor === '') return '';
+    if (typeof valor !== 'string' && typeof valor !== 'number')
+      throw new HttpError(400, 'O produto escolhido está num formato inválido.');
+    return String(valor).trim().slice(0, max);
+  };
   return {
-    chave: texto(produto.chave, 120),
-    ean: texto(produto.ean, 20).replace(/\D/g, ''),
-    marca: texto(produto.marca, 60),
-    tamanho: texto(produto.tamanho, 20),
-    termo: texto(produto.termo, 80)
+    chave: campo(produto.chave, 120),
+    ean: campo(produto.ean, 20).replace(/\D/g, ''),
+    marca: campo(produto.marca, 60),
+    tamanho: campo(produto.tamanho, 20),
+    termo: campo(produto.termo, 80)
   };
 }
 
@@ -133,7 +145,9 @@ export const listaController = {
     const item = await ListaModel.buscar(ctx.ownerUid, params.id);
     if (!item) throw new HttpError(404, 'Item não encontrado.');
     const data = {};
-    if (body.qtd !== undefined) data.qtd = Math.max(1, Math.min(99, parseInt(body.qtd, 10) || 1));
+    // A tela só manda de 1 a 99 (os botões param aí).
+    if (body.qtd !== undefined)
+      data.qtd = inteiroEntre(body.qtd, 1, 99, 'A quantidade vai de 1 a 99.');
     if (body.done !== undefined) data.done = !!body.done;
     if (body.nome !== undefined) data.nome = nomeDoItem(body.nome);
     if (body.produto !== undefined) data.produto = produtoEscolhido(body.produto);
@@ -153,7 +167,6 @@ export const listaController = {
     return montar(ctx);
   },
 
-  /** Lança a compra no mercado escolhido, uma linha por categoria, e marca os itens. */
   /**
    * Lança a compra no mercado escolhido, uma linha por categoria, e marca os itens comprados.
    * Com `itemIds` (compra dividida), lança só aqueles itens naquele mercado.
@@ -167,7 +180,11 @@ export const listaController = {
     const escolhidos =
       body.itemIds === undefined || body.itemIds === null
         ? null
-        : new Set(listaDoCorpo(body.itemIds, 'itens', MAXIMO_DE_ITENS_NA_LISTA).map(String));
+        : new Set(
+            listaDoCorpo(body.itemIds, 'itens', MAXIMO_DE_ITENS_NA_LISTA).map(id =>
+              texto(id, 'O item', { max: TAMANHO_MAXIMO_DO_ID })
+            )
+          );
     const comprados = atual.itens.filter(
       i => !i.done && i.precos[alvo.mercadoId] != null && (!escolhidos || escolhidos.has(i.id))
     );
@@ -177,7 +194,12 @@ export const listaController = {
       acc[categoria] = round2((acc[categoria] || 0) + i.precos[alvo.mercadoId] * (Number(i.qtd) || 1));
       return acc;
     }, {});
-    const cats = await CategoriaModel.listar(ctx.ownerUid);
+    // No modo família, quem não é dono só lança nas categorias que o dono compartilhou, como num
+    // gasto à mão. Sem nenhuma que sirva, o gasto entra sem categoria (como quando a conta não
+    // tem a categoria Comida): a compra fica registrada sem gastar o limite de quem não enxerga.
+    const cats = (await CategoriaModel.listar(ctx.ownerUid)).filter(c =>
+      podeVerCategoria(ctx, c)
+    );
     const economia =
       !escolhidos && atual.habitual && atual.habitual.mercadoId !== alvo.mercadoId
         ? round2(comparavel(atual.habitual) - comparavel(alvo))

@@ -15,6 +15,8 @@ const { guardarComTeto } = await import('../src/utils/cache.js');
 const { toNumber } = await import('../src/utils/http.js');
 const { idValido } = await import('../src/utils/validacao.js');
 const { GeoModel } = await import('../src/models/GeoModel.js');
+const { MercadoModel } = await import('../src/models/MercadoModel.js');
+const { PrecoRegionalModel } = await import('../src/models/PrecoRegionalModel.js');
 
 // Nada sai para a internet: mapa, CEP e sites das redes ficam indisponíveis aqui.
 const fetchDeVerdade = globalThis.fetch;
@@ -533,4 +535,112 @@ test('mensagens de erro em português correto (aparecem no aviso do app)', async
   assert.equal(prefs.json.erro, 'O grupo de preferências está num formato inválido.');
   const mercados = await mudar({ local: { mercados: 'x' } });
   assert.equal(mercados.json.erro, 'Mercados precisam vir numa lista.');
+});
+
+// Região e preços de mentira: um mercado só, e cada item custa R$ 10 na categoria pedida.
+async function comPrecosFalsos(categoriaDosItens, executar) {
+  const originais = {
+    daRegiao: MercadoModel.daRegiao,
+    lista: PrecoRegionalModel.lista,
+    cepParaPrecos: GeoModel.cepParaPrecos
+  };
+  MercadoModel.daRegiao = async () => ({
+    modo: 'real',
+    mercados: [{ id: 'm-teste', nome: 'Mercado Teste' }]
+  });
+  GeoModel.cepParaPrecos = async () => '';
+  PrecoRegionalModel.lista = async itens => {
+    const comPreco = itens.map(item => ({
+      ...item,
+      categoria: categoriaDosItens,
+      precos: { 'm-teste': 10 }
+    }));
+    const total = {
+      mercadoId: 'm-teste',
+      nome: 'Mercado Teste',
+      total: 10 * comPreco.length,
+      porCategoria: { [categoriaDosItens]: 10 * comPreco.length }
+    };
+    return { itens: comPreco, totais: [total], melhor: total, habitual: null, semPreco: [] };
+  };
+  try {
+    return await executar();
+  } finally {
+    Object.assign(MercadoModel, { daRegiao: originais.daRegiao });
+    Object.assign(PrecoRegionalModel, { lista: originais.lista });
+    Object.assign(GeoModel, { cepParaPrecos: originais.cepParaPrecos });
+  }
+}
+
+test('família: finalizar a lista não lança o gasto numa categoria que o dono não compartilhou', async () => {
+  const criados = [];
+  const finalizarComo = async (token, nome) => {
+    assert.equal((await pedir('POST', '/lista', { corpo: { nome }, token })).status, 201);
+    const resposta = await pedir('POST', '/lista/finalizar', { corpo: {}, token });
+    assert.equal(resposta.status, 200, resposta.texto);
+    criados.push(...resposta.json.lancamentos.map(l => l.id));
+    return resposta.json.lancamentos;
+  };
+  try {
+    await comPrecosFalsos('Presentes', async () => {
+      // Os itens são da categoria Presentes, que só a Ana enxerga: o Beto lança na Comida.
+      const [doBeto] = await finalizarComo(tokenDoBeto, 'vela');
+      assert.equal(doBeto.categoriaId, 'comida');
+      assert.equal(doBeto.quemId, 'beto');
+      // A dona enxerga todas: o gasto dela vai para Presentes.
+      const [daAna] = await finalizarComo(tokenDaAna, 'laço');
+      assert.equal(daAna.categoriaId, 'presentes');
+
+      // Sem nenhuma categoria compartilhada, o gasto do Beto entra sem categoria.
+      await banco.atualizar('usuarios/ana/categorias/comida', { compartilhada: false });
+      const [semCategoria] = await finalizarComo(tokenDoBeto, 'papel');
+      assert.equal(semCategoria.categoriaId, null);
+      const usados = Object.values(await banco.ler('usuarios/ana/lancamentos')).filter(
+        l => l.quemId === 'beto' && l.origem === 'lista'
+      );
+      assert.ok(!usados.some(l => l.categoriaId === 'presentes'), 'nada do Beto em Presentes');
+    });
+  } finally {
+    await banco.atualizar('usuarios/ana/categorias/comida', { compartilhada: true });
+    for (const id of criados) await banco.remover(`usuarios/ana/lancamentos/${id}`);
+    await banco.remover('usuarios/ana/lista');
+  }
+});
+
+test('lista: produto, quantidade e itens de outro tipo dão 400, não 500', async () => {
+  const estranho = { toString: 1 };
+  for (const campo of ['chave', 'ean', 'marca', 'tamanho', 'termo'])
+    assert.equal(
+      (
+        await pedir('POST', '/lista', {
+          corpo: { nome: 'arroz', produto: { [campo]: estranho } },
+          token: tokenDaAna
+        })
+      ).status,
+      400,
+      campo
+    );
+  const criado = await pedir('POST', '/lista', {
+    corpo: { nome: 'arroz', produto: { marca: 'Tio João', ean: '789-100' } },
+    token: tokenDaAna
+  });
+  assert.equal(criado.status, 201);
+  const item = Object.entries(await banco.ler('usuarios/ana/lista')).find(
+    ([, valor]) => valor.nome === 'arroz'
+  );
+  assert.equal(item[1].produto.ean, '789100');
+  const mudar = corpo => pedir('PATCH', `/lista/${item[0]}`, { corpo, token: tokenDaAna });
+  for (const qtd of [estranho, 0, 100, 2.5, 'muitos'])
+    assert.equal((await mudar({ qtd })).status, 400, JSON.stringify(qtd));
+  assert.equal((await mudar({ qtd: 3 })).status, 200);
+  assert.equal((await banco.ler(`usuarios/ana/lista/${item[0]}`)).qtd, 3);
+  await comPrecosFalsos('Comida', async () => {
+    const finalizar = await pedir('POST', '/lista/finalizar', {
+      corpo: { itemIds: [estranho] },
+      token: tokenDaAna
+    });
+    assert.equal(finalizar.status, 400);
+    assert.equal(finalizar.json.erro, 'O item precisa ser um texto.');
+  });
+  await banco.remover('usuarios/ana/lista');
 });
