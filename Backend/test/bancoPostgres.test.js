@@ -316,6 +316,28 @@ test('escritas parciais ao mesmo tempo no mesmo documento não se perdem', comBa
   assert.deepEqual(await postgres.ler('mercados'), { a: esperado, b: esperado });
 });
 
+test('texto com caractere nulo ou metade de emoji é limpo; id assim é recusado', comBanco, async () => {
+  await nosDois(async banco => {
+    await banco.gravar('usuarios/ana/lista/a', { produto: 'arr\u0000oz', ['obs\u0000']: 'x' });
+    await banco.atualizar('usuarios/ana/lista/b', { produto: 'caf\ud83d' });
+    // Um item ruim da nota não derruba o lote inteiro.
+    await banco.atualizarVarios({
+      'precos/p1': { produto: 'Leite\u0000', preco: 5 },
+      'precos/p2': { produto: 'Pão', preco: 1 }
+    });
+  });
+  await iguais('usuarios/ana/lista', 'precos');
+  assert.deepEqual(await postgres.ler('usuarios/ana/lista/a'), { produto: 'arroz', obs: 'x' });
+  assert.equal(await postgres.ler('usuarios/ana/lista/b/produto'), 'caf�');
+  assert.equal(await postgres.ler('precos/p1/produto'), 'Leite');
+  for (const banco of [memoria, postgres]) {
+    await assert.rejects(banco.gravar('usuarios/ana/lista/a\u0000b', { x: 1 }), { status: 400 });
+    await assert.rejects(banco.ler('usuarios/a\u0000b/perfil'), { status: 400 });
+    await assert.rejects(banco.atualizar('usuarios/ana/lista/a', { 'x\ud800': 1 }), { status: 400 });
+  }
+  await iguais('usuarios/ana/lista');
+});
+
 test('caminho sem tabela própria vai para a reserva sem perder dado', comBanco, async () => {
   await nosDois(async banco => {
     await banco.gravar('configuracoes/geral', { versao: 3, ligado: true });

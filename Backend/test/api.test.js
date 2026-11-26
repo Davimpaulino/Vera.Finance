@@ -100,6 +100,14 @@ test('lista: adicionar, quantidade e totais por mercado', async () => {
   assert.ok(body.totais[0].total <= body.totais[body.totais.length - 1].total);
 });
 
+test('texto com caractere nulo é limpo e id com nulo dá 400, não 500', async () => {
+  const { status, body } = await call('POST', '/lista', { nome: 'pão\u0000 francês' });
+  assert.equal(status, 201);
+  assert.ok(body.itens.some(i => i.nome === 'pão francês'));
+  assert.equal((await call('PATCH', '/lista/a%00b', { qtd: 2 })).status, 400);
+  assert.equal((await call('DELETE', '/categorias/a%00b')).status, 400);
+});
+
 test('cadastro guiado cria categorias, fixos e a renda do ciclo', async () => {
   const reg = await call(
     'POST',
