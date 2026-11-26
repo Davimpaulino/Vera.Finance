@@ -110,6 +110,27 @@ const VOLTA_RECUSADA = [
   'auth/missing-continue-uri'
 ];
 
+// Conta para a qual o e-mail de confirmação já saiu deste aparelho (no cadastro ou pelo botão do
+// aviso). Quem criou a conta antes da confirmação existir nunca recebeu esse e-mail, e o aviso do
+// app não pode dizer "clique no link que enviamos". Guarda só o uid, não o endereço.
+const CHAVE_DO_ENVIO = 'vera.confirmacaoEnviada';
+const envioDaConfirmacao = {
+  feitoPara(uid) {
+    try {
+      return Boolean(uid) && localStorage.getItem(CHAVE_DO_ENVIO) === uid;
+    } catch {
+      return false;
+    }
+  },
+  marcar(uid) {
+    try {
+      localStorage.setItem(CHAVE_DO_ENVIO, uid);
+    } catch {
+      return;
+    }
+  }
+};
+
 /** E-mail de confirmação do Firebase, em português, com o botão que volta para o app. */
 async function enviarConfirmacao(usuario) {
   autenticacaoFirebase.languageCode = 'pt-BR';
@@ -119,6 +140,7 @@ async function enviarConfirmacao(usuario) {
     if (!VOLTA_RECUSADA.includes(erro.code)) throw erro;
     await sendEmailVerification(usuario);
   }
+  envioDaConfirmacao.marcar(usuario.uid);
 }
 
 /** E-mail que falta confirmar. Só conta de e-mail e senha: Google e Apple já vêm confirmados. */
@@ -250,7 +272,7 @@ export const servicoDeLogin = {
           );
           await updateProfile(credencial.user, { displayName: nome });
           // Confirmação do e-mail: não segura o cadastro. Se não sair agora, o aviso do app
-          // tem o botão "Reenviar".
+          // tem o botão "Enviar link".
           await enviarConfirmacao(credencial.user).catch(() => {});
           await credencial.user.getIdToken(true);
           armazenamento.apagar();
@@ -307,6 +329,11 @@ export const servicoDeLogin = {
   },
 
   emailParaConfirmar,
+
+  /** O e-mail de confirmação desta conta já foi enviado deste aparelho? */
+  confirmacaoJaEnviada() {
+    return envioDaConfirmacao.feitoPara(usuarioFirebase()?.uid);
+  },
 
   /**
    * Recarrega a conta no Firebase (a pessoa pode ter clicado no link em outra aba) e devolve o
