@@ -760,3 +760,25 @@ test('cadastro guiado: o total de categorias, contando as dos gastos fixos, fica
   assert.equal((await concluir({ fixos: comRepetido })).status, 201);
   assert.equal(Object.keys(await banco.ler('usuarios/hugo/categorias')).length, 40);
 });
+
+test('sessão: nome longo é cortado em 100 caracteres, não recusa o login nem perde o aceite', async () => {
+  // Nome longo no token (como o do Google).
+  const doToken = assinarToken({ uid: 'iris', email: 'iris@x.com', nome: `Íris ${'a'.repeat(150)}` });
+  const sessao = await pedir('POST', '/auth/sessao', { corpo: {}, token: doToken });
+  assert.equal(sessao.status, 200);
+  assert.equal(sessao.json.nome.length, 100);
+
+  // Nome longo digitado no cadastro pelo Firebase, que já criou a conta lá antes da sessão.
+  const token = assinarToken({ uid: 'joao', email: 'joao@x.com' });
+  const resposta = await pedir('POST', '/auth/sessao', {
+    corpo: { nome: `João ${'b'.repeat(150)}`, aceite: { versao: VERSAO_DOS_TERMOS } },
+    token
+  });
+  assert.equal(resposta.status, 200);
+  const perfil = await UsuarioModel.buscar('joao');
+  assert.equal(perfil.nome.length, 100);
+  assert.ok(perfil.nome.startsWith('João b'));
+  assert.equal(perfil.termosAceitos.versao, VERSAO_DOS_TERMOS, 'o aceite ficou gravado');
+  const estranho = await pedir('POST', '/auth/sessao', { corpo: { nome: { a: 1 } }, token });
+  assert.equal(estranho.status, 400);
+});

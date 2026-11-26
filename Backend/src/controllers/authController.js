@@ -21,6 +21,12 @@ function senhaDoCorpo(valor, rotulo = 'A senha') {
 
 const nomeDoCorpo = valor => texto(valor, 'O nome', { max: TAMANHO_MAXIMO_DO_NOME });
 
+// Na sessão, o nome longo é cortado em vez de recusado. No cadastro pelo Firebase a conta já foi
+// criada lá quando a sessão abre: um 400 aqui deixaria a conta sem perfil e perderia o aceite
+// dos termos feito na tela. O nome do Google também pode passar do tamanho do formulário.
+const nomeCortado = valor =>
+  texto(valor, 'O nome', { max: Infinity }).slice(0, TAMANHO_MAXIMO_DO_NOME).trim();
+
 export const authController = {
   // Rota pública: diz só o que a tela precisa. Qual banco a API usa não é da conta de ninguém.
   configuracao: async () => ({ loginProprio, versaoDosTermos: VERSAO_DOS_TERMOS }),
@@ -92,9 +98,7 @@ export const authController = {
 
   async sessao({ user, body }) {
     const termosAceitos = aceiteOpcional(body);
-    // O nome do Google pode passar do tamanho do formulário: corta em vez de recusar o login.
-    const nome =
-      nomeDoCorpo(body.nome) || String(user.name || '').trim().slice(0, TAMANHO_MAXIMO_DO_NOME);
+    const nome = nomeCortado(body.nome) || nomeCortado(String(user.name || ''));
     const perfil = await UsuarioModel.criarSeNaoExistir(user.uid, {
       nome,
       email: user.email,
