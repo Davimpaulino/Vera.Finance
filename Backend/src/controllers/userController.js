@@ -5,11 +5,51 @@ import { FamiliaModel } from '../models/FamiliaModel.js';
 import { GeoModel } from '../models/GeoModel.js';
 import { PortabilidadeModel } from '../models/PortabilidadeModel.js';
 import { HttpError, toNumber } from '../utils/http.js';
+import { booleano, inteiroEntre, localDoCorpo, objeto, texto } from '../utils/validacao.js';
 import { cycleFor } from '../utils/dates.js';
 import { VERSAO_DOS_TERMOS } from '../config/termos.js';
 
-const pick = (obj, keys) =>
-  Object.fromEntries(keys.filter(k => obj && obj[k] !== undefined).map(k => [k, obj[k]]));
+// Cada campo do perfil que a pessoa muda tem tipo e tamanho conferidos: o que chega no corpo vai
+// direto para o banco, e um objeto qualquer ali ficaria guardado no perfil para sempre.
+const TEMAS = ['tinta', 'papel'];
+const PREFERENCIAS_SIM_OU_NAO = [
+  'ocultarValores',
+  'zerarNaVirada',
+  'resumoAntesDeFechar',
+  'contribuirPrecos',
+  'alertaAltaPreco'
+];
+
+// Campo vazio (null vem de um NaN no JSON, '' de um campo em branco) conta como não enviado.
+const enviado = valor => valor !== undefined && valor !== null && valor !== '';
+
+export function cicloDoCorpo(corpo) {
+  const ciclo = objeto(corpo, 'O ciclo');
+  const limpo = {};
+  if (enviado(ciclo.diaVirada))
+    limpo.diaVirada = inteiroEntre(ciclo.diaVirada, 1, 31, 'Dia de virada entre 1 e 31.');
+  if (enviado(ciclo.frequencia))
+    limpo.frequencia = texto(ciclo.frequencia, 'A frequência', { max: 60 });
+  ['rendaFixa', 'rendaVariavel'].forEach(campo => {
+    if (!enviado(ciclo[campo])) return;
+    limpo[campo] = toNumber(ciclo[campo], campo);
+    if (limpo[campo] < 0) throw new HttpError(400, 'A renda não pode ser negativa.');
+  });
+  return limpo;
+}
+
+function prefsDoCorpo(corpo) {
+  const prefs = objeto(corpo, 'As preferências');
+  const limpo = {};
+  if (prefs.tema !== undefined) {
+    if (!TEMAS.includes(prefs.tema)) throw new HttpError(400, 'Tema desconhecido.');
+    limpo.tema = prefs.tema;
+  }
+  PREFERENCIAS_SIM_OU_NAO.forEach(campo => {
+    if (prefs[campo] !== undefined) limpo[campo] = booleano(prefs[campo], 'A preferência');
+  });
+  return limpo;
+}
 
 function proximaCobranca(assinatura) {
   if (!assinatura || !assinatura.desde) return null;
@@ -47,29 +87,10 @@ export const userController = {
 
   async update({ user, body }) {
     const data = {};
-    if (body.nome !== undefined) data.nome = String(body.nome).trim();
-    if (body.ciclo) {
-      data.ciclo = pick(body.ciclo, ['diaVirada', 'frequencia', 'rendaFixa', 'rendaVariavel']);
-      if (data.ciclo.diaVirada !== undefined) {
-        const d = Number(data.ciclo.diaVirada);
-        if (!(d >= 1 && d <= 31)) throw new HttpError(400, 'Dia de virada entre 1 e 31.');
-        data.ciclo.diaVirada = d;
-      }
-      ['rendaFixa', 'rendaVariavel'].forEach(k => {
-        if (data.ciclo[k] !== undefined) data.ciclo[k] = toNumber(data.ciclo[k], k);
-      });
-    }
-    if (body.local) {
-      data.local = pick(body.local, [
-        'cep',
-        'cidade',
-        'raioKm',
-        'mercados',
-        'mercadoHabitual',
-        'lat',
-        'lng'
-      ]);
-      if (data.local.raioKm !== undefined) data.local.raioKm = Number(data.local.raioKm);
+    if (body.nome !== undefined) data.nome = texto(body.nome, 'O nome', { max: 100 });
+    if (body.ciclo !== undefined) data.ciclo = cicloDoCorpo(body.ciclo);
+    if (body.local !== undefined) {
+      data.local = localDoCorpo(body.local);
       if (GeoModel.temCoordenadas(data.local)) {
         // Guarda só o ponto aproximado (~100 m), nunca a posição exata do aparelho.
         Object.assign(data.local, GeoModel.aproximar(data.local));
@@ -84,16 +105,10 @@ export const userController = {
         if (achado?.cidade && !data.local.cidade) data.local.cidade = achado.cidade;
       }
     }
-    if (body.prefs) {
-      data.prefs = pick(body.prefs, [
-        'tema',
-        'ocultarValores',
-        'zerarNaVirada',
-        'resumoAntesDeFechar',
-        'contribuirPrecos',
-        'alertaAltaPreco'
-      ]);
-    }
+    if (body.prefs !== undefined) data.prefs = prefsDoCorpo(body.prefs);
+    // Um grupo vazio ({}) na mescla apagaria o grupo inteiro do perfil: fica de fora.
+    for (const grupo of ['ciclo', 'local', 'prefs'])
+      if (data[grupo] && !Object.keys(data[grupo]).length) delete data[grupo];
     const u = await UsuarioModel.atualizar(user.uid, data);
     return apresentarUsuario(u, await FamiliaModel.buscar(u.familiaId));
   },
@@ -111,6 +126,7 @@ export const userController = {
 
   async cancelarAssinatura({ user }) {
     const u = await UsuarioModel.buscar(user.uid);
+    if (!u) throw new HttpError(404, 'Perfil não encontrado.');
     if (!u.assinatura) throw new HttpError(400, 'Você já está no plano grátis.');
     const atual = apresentarUsuario(u);
     const upd = await UsuarioModel.atualizar(user.uid, {

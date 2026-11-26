@@ -8,7 +8,16 @@ import { CicloModel } from '../models/CicloModel.js';
 import { CategoriaModel } from '../models/CategoriaModel.js';
 import { LancamentoModel } from '../models/LancamentoModel.js';
 import { HttpError, requireFields } from '../utils/http.js';
+import { lista as listaDoCorpo, texto } from '../utils/validacao.js';
 import { round2 } from '../utils/money.js';
+
+// Cada item da lista é buscado no site de cada rede da região a cada resposta: o teto de itens e
+// o do tamanho do nome seguram quantas buscas uma lista sozinha pode pedir.
+export const MAXIMO_DE_ITENS_NA_LISTA = 150;
+// O nome pode vir do site da rede ("Arroz Branco Tipo 1 ... Pacote 5kg"), que às vezes é longo.
+const nomeDoItem = valor => texto(valor, 'O nome do item', { max: 150, obrigatorio: true });
+// Termo de busca nos sites das redes: mais do que isto não é nome de produto.
+const MAXIMO_DO_TERMO = 80;
 
 // O produto escolhido na lista (marca, tamanho, código de barras). Sem ele, o item é genérico.
 function produtoEscolhido(produto) {
@@ -89,7 +98,7 @@ export const listaController = {
 
   /** Produtos para escolher ao adicionar: marca, tamanho e preço a partir de, na região. */
   async opcoes({ user, query }) {
-    const termo = String(query.get('q') || '').trim();
+    const termo = String(query.get('q') || '').trim().slice(0, MAXIMO_DO_TERMO);
     if (termo.length < 2) return { opcoes: [] };
     const ctx = await contexto(user.uid);
     const regiao = await MercadoModel.daRegiao(ctx.owner.local?.raioKm || 5, ctx.owner.local);
@@ -102,9 +111,15 @@ export const listaController = {
 
   async add({ user, body }) {
     requireFields(body, ['nome']);
+    const nome = nomeDoItem(body.nome);
     const ctx = await contexto(user.uid);
+    if ((await ListaModel.listar(ctx.ownerUid)).length >= MAXIMO_DE_ITENS_NA_LISTA)
+      throw new HttpError(
+        409,
+        `A lista chegou a ${MAXIMO_DE_ITENS_NA_LISTA} itens. Tire os comprados antes de adicionar mais.`
+      );
     await ListaModel.criar(ctx.ownerUid, {
-      nome: String(body.nome).trim(),
+      nome,
       produto: produtoEscolhido(body.produto),
       qtd: 1,
       done: false,
@@ -120,7 +135,7 @@ export const listaController = {
     const data = {};
     if (body.qtd !== undefined) data.qtd = Math.max(1, Math.min(99, parseInt(body.qtd, 10) || 1));
     if (body.done !== undefined) data.done = !!body.done;
-    if (body.nome !== undefined) data.nome = String(body.nome).trim();
+    if (body.nome !== undefined) data.nome = nomeDoItem(body.nome);
     if (body.produto !== undefined) data.produto = produtoEscolhido(body.produto);
     await ListaModel.atualizar(ctx.ownerUid, params.id, data);
     return montar(ctx);
@@ -149,7 +164,10 @@ export const listaController = {
     const mercadoId = body.mercadoId || (atual.melhor || {}).mercadoId;
     const alvo = (atual.todosTotais || atual.totais).find(t => t.mercadoId === mercadoId);
     if (!alvo) throw new HttpError(400, 'Nenhum mercado com preço para essa lista.');
-    const escolhidos = Array.isArray(body.itemIds) ? new Set(body.itemIds.map(String)) : null;
+    const escolhidos =
+      body.itemIds === undefined || body.itemIds === null
+        ? null
+        : new Set(listaDoCorpo(body.itemIds, 'Os itens', MAXIMO_DE_ITENS_NA_LISTA).map(String));
     const comprados = atual.itens.filter(
       i => !i.done && i.precos[alvo.mercadoId] != null && (!escolhidos || escolhidos.has(i.id))
     );

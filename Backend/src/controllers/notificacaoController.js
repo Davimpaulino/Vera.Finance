@@ -1,5 +1,9 @@
 import { contexto } from '../models/ContextoModel.js';
 import { NotificacaoModel } from '../models/NotificacaoModel.js';
+import { lista, texto } from '../utils/validacao.js';
+
+// As vistas ficam no perfil: no máximo 200 ids, cada um do tamanho dos ids que a vera gera.
+const MAXIMO_DE_IDS = 200;
 
 export const notificacaoController = {
   async listar({ user }) {
@@ -7,7 +11,9 @@ export const notificacaoController = {
   },
 
   async marcarVistas({ user, body }) {
-    const ids = Array.isArray(body.ids) ? body.ids.map(String).filter(Boolean) : [];
+    const ids = lista(body.ids, 'A lista de notificações', MAXIMO_DE_IDS)
+      .map(id => texto(id, 'A notificação', { max: 200 }))
+      .filter(Boolean);
     await NotificacaoModel.marcarVistas(user.uid, ids);
     return NotificacaoModel.montar(await contexto(user.uid));
   }
