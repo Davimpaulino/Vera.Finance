@@ -13,7 +13,7 @@ import {
 
 // Páginas de conteúdo do site (Frontend/src/conteudo): o build gera uma página por artigo, mas o
 // sitemap.xml e o llms.txt são escritos à mão. Artigo novo precisa entrar nos dois, senão o Google
-// e as IAs demoram a achar. O Frontend não tem testes próprios (veja serviceWorker.test.js).
+// e as IAs demoram a achar. Os testes do próprio Frontend ficam em Frontend/test (Vitest) e Frontend/e2e.
 const raiz = new URL('../../Frontend/', import.meta.url);
 const SITE = 'https://vera-finance.onrender.com';
 const FIXAS = ['/onde-funciona', '/ajuda', '/blog'];

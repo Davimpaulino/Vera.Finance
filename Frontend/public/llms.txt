@@ -6,7 +6,7 @@
 
 - Controle de gastos por categoria: a renda do mês é reservada em categorias (como Comida e Rolê) e a vera mostra quanto ainda dá para gastar e até que dia o dinheiro dura.
 - Leitura de nota fiscal: a pessoa aponta a câmera para o QR Code da NFC-e (cupom fiscal eletrônico); a vera busca a nota no portal da Secretaria da Fazenda, prepara um gasto com o valor e a loja para a pessoa escolher a categoria e guarda os preços para comparar.
-- Comparação de preços: o mesmo produto nos mercados num raio de 2 a 15 km do CEP, com preços do site de cada rede (consultado para o CEP) e de notas fiscais lidas por quem usa a vera. Histórico de preço de 90 dias por produto.
+- Comparação de preços: o mesmo produto nos mercados num raio de 2 a 15 km do CEP, com preços do site de cada rede (consultado para o CEP quando a rede permite; nas outras, o preço da loja online) e de notas fiscais lidas por quem usa a vera. Histórico de preço de 90 dias por produto.
 - Lista de compras: soma a lista em cada mercado do raio e mostra onde ela sai mais barata.
 - Redes com preço online hoje: Atacadão, Sam's Club, Savegnago, Covabra, Giassi, Angeloni, Zona Sul, Prezunic, Mambo, Bistek, Hortifruti, Super Nosso, GBarbosa, Amigão, Giga Atacado, Mercantil Atacado, Zaffari, Super Muffato, Hiperideal, Rissul, Oba Hortifruti, Coop, São Vicente, Tenda Atacado, Confiança, Pão de Açúcar e Pague Menos. A vera não tem vínculo com essas redes.
 - Modo família (vera+): o dono do ciclo convida pessoas e escolhe quais categorias são compartilhadas.
