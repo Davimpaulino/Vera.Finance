@@ -102,7 +102,8 @@ Tudo abaixo existe no código deste repositório.
 - **LGPD**: aceite dos Termos e da Política de privacidade com versão (`VERSAO_DOS_TERMOS`), baixar
   todos os dados em JSON, planilha dos lançamentos e exclusão da conta em 30 dias (com opção de
   desistir). A localização do aparelho é guardada arredondada (~100 m). O botão "Apagar
-  localização" (ou o CEP salvo em branco), em Configurações, apaga o CEP, o ponto e a cidade.
+  localização" (ou o CEP salvo em branco), em Configurações › Mercado e localização, apaga o CEP, o
+  ponto aproximado, a cidade, os mercados escolhidos e os alertas da lista; o raio de busca fica.
 - **Aparência**: superfície escura (tinta) ou clara (papel) e opção de esconder os valores.
 
 **Site**
@@ -904,7 +905,8 @@ notificação usa esse preço, então um preço que sobe ou volta ao de antes n�
 já visto. Só um preço ainda menor chega como novo, e o texto mostra o preço de agora.
 
 O alerta respeita a preferência "Alerta de alta de preço". Ele some quando o item é comprado,
-quando o mercado de sempre muda ou depois de 2 dias sem a lista ser comparada de novo.
+quando o mercado de sempre muda, quando a pessoa apaga a localização ou depois de 2 dias sem a lista
+ser comparada de novo.
 
 ---
 

@@ -387,7 +387,7 @@ Política: resposta em até **15 dias**. Encarregado de dados: [PREENCHER].
 | Ver ou levar os dados (acesso e portabilidade) | Configurações › Dados › *Baixar todos os meus dados* (JSON) e *Exportar lançamentos em planilha* (CSV) | [Exportar pelo time](#exportar-os-dados-pelo-time) |
 | Corrigir dados | Configurações (nome, ciclo, CEP, raio) | Depois de confirmar a identidade, corrija no banco e registre |
 | Apagar a conta | Configurações › Dados › *Apagar a conta* (apaga em 30 dias; até lá dá para desistir) | [Agendar a exclusão pelo time](#agendar-a-exclusão-pelo-time) |
-| Retirar consentimento | *Contribuir com preços anônimos* e *Apagar localização* (ou o CEP salvo em branco), os dois em Configurações › Mercado e localização. Apagar a localização tira o CEP, o ponto aproximado e a cidade | [Apagar a localização salva](#apagar-a-localização-salva) |
+| Retirar consentimento | *Contribuir com preços anônimos* e *Apagar localização* (ou o CEP salvo em branco), os dois em Configurações › Mercado e localização. Apagar a localização tira o CEP, o ponto aproximado, a cidade, os mercados escolhidos (com o mercado de sempre) e os alertas da lista | [Apagar a localização salva](#apagar-a-localização-salva) |
 | Saber com quem os dados são compartilhados | Política de privacidade, seção de compartilhamento | Responda com a lista da Política |
 
 A base anônima de preços continua depois da exclusão, porque não identifica ninguém (está na
@@ -459,9 +459,12 @@ se um backup for restaurado, siga o passo 4 de
 ### Apagar a localização salva
 
 Primeiro, o app: em Configurações › Mercado e localização, o botão *Apagar localização* (ou salvar
-o CEP em branco) apaga o CEP, o ponto aproximado e a cidade. O raio de busca e os mercados
-escolhidos ficam. Quando a localização veio do aparelho (*Usar minha localização*, em Comparar), o
-CEP salvo também veio dele, é o da rua onde a pessoa estava, e sai junto.
+o CEP em branco) apaga o CEP, o ponto aproximado, a cidade, os mercados escolhidos (com o mercado de
+sempre) e os alertas da lista. Só o raio de busca fica. Os mercados e os alertas saem porque o id de
+um mercado no mapa mostra onde ele fica, e os alertas guardam o nome e a distância de cada mercado:
+com eles dá para saber a região de casa. Quando a localização veio do aparelho (*Usar minha
+localização*, em Comparar), o CEP salvo também veio dele, é o da rua onde a pessoa estava, e sai
+junto.
 
 Se a pessoa não consegue, o trecho abaixo faz o mesmo. Depois de confirmar a identidade:
 
@@ -476,8 +479,12 @@ if (!conta || !(await UsuarioModel.buscar(conta.uid))) {
   console.error('Nenhuma conta com esse e-mail.');
   process.exit(1);
 }
-// O mesmo que o app faz: null tira a chave do perfil; o raio e os mercados ficam.
-await banco.atualizar('usuarios/' + conta.uid + '/perfil/local', { cep: '', lat: null, lng: null, cidade: null });
+// O mesmo que o app faz: null tira a chave do perfil. Saem o CEP, o ponto, a cidade, os mercados
+// escolhidos e os alertas da lista (nome e distância de cada mercado). Só o raio fica.
+await banco.atualizar('usuarios/' + conta.uid + '/perfil/local', {
+  cep: '', lat: null, lng: null, cidade: null, mercados: null, mercadoHabitual: null
+});
+await banco.remover('usuarios/' + conta.uid + '/perfil/alertasDaLista');
 console.log('Localização apagada:', conta.uid);
 process.exit(0);
 " pessoa@exemplo.com
