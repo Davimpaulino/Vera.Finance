@@ -221,9 +221,10 @@ process.exit(0);
 - **O site bloqueou a vera**: não contorne (nada de trocar de identificação, usar proxy ou tentar
   em massa). Tire a rede da lista até haver um caminho combinado ou público.
 - **Sem conserto rápido**: tire a rede de `REDES` (`Backend/src/models/RedeModel.js`), de
-  `REDES_COM_PRECO` (`Frontend/src/lib/site.js`) e de `Frontend/public/llms.txt`, para o site não
-  prometer uma rede que não funciona. O teste `test/redesSite.test.js` confere que as três listas
-  batem. Atualize a tabela de redes do readme e, depois do deploy, rode `npm run indexnow`.
+  `REDES_COM_PRECO` e, se for atacado, de `REDES_DE_ATACADO` (as duas em `Frontend/src/lib/site.js`)
+  e de `Frontend/public/llms.txt`, para o site não prometer uma rede que não funciona. O teste
+  `test/redesSite.test.js` confere que essas listas batem com o `RedeModel`. Atualize a tabela de
+  redes do readme e, depois do deploy, rode `npm run indexnow`.
 
 Os preços que a rede já tinha gravado continuam na base (com a data), e as notas fiscais de lojas
 dela continuam entrando normalmente.

@@ -1,7 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
-import { REDES } from '../src/models/RedeModel.js';
 import { ARTIGOS, problemasDoConteudo } from '../../Frontend/src/conteudo/index.js';
 import { BLOG_NO_RODAPE } from '../../Frontend/src/conteudo/rodape.js';
 import {
@@ -36,18 +35,6 @@ test('cada artigo tem caminho próprio, na ajuda ou no blog', () => {
   assert.equal(new Set(caminhos).size, caminhos.length, 'caminho repetido');
   for (const caminho of caminhos) assert.match(caminho, /^\/(ajuda|blog)\/[a-z0-9]+(-[a-z0-9]+)*$/);
   assert.ok(ARTIGOS.filter(artigo => artigo.secao === 'blog').every(post => post.publicadoEm));
-});
-
-test('a lista de atacados do site é a das redes de atacado do RedeModel', async () => {
-  const site = await readFile(new URL('src/lib/site.js', raiz), 'utf8');
-  const bloco = site.slice(site.indexOf('REDES_DE_ATACADO'));
-  const nomes = [...bloco.slice(0, bloco.indexOf('];')).matchAll(/'([^']+)'|"([^"]+)"/g)].map(
-    ([, a, b]) => a || b
-  );
-  assert.deepEqual(
-    nomes,
-    REDES.filter(rede => rede.tipo === 'atacado').map(rede => rede.nome)
-  );
 });
 
 test('formato dos textos: links, texto puro e data por extenso', () => {

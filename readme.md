@@ -1180,12 +1180,13 @@ avisa.
    reconhecimento do nome (`RedeModel.identificar`) e a leitura de nome, preço, código de barras e
    disponibilidade.
 5. **Atualize o site**, na mesma ordem do `RedeModel`: `REDES_COM_PRECO` em
-   `Frontend/src/lib/site.js` (a landing e as perguntas usam essa lista) e a lista de redes de
-   `Frontend/public/llms.txt`. O teste `Backend/test/redesSite.test.js` falha se as listas não
-   baterem. Se quiser a rede entre os destaques da landing, ela vai em `MARCAS`
-   (`Frontend/src/pages/site/Landing.jsx`).
+   `Frontend/src/lib/site.js` (a landing e as perguntas usam essa lista), `REDES_DE_ATACADO` no
+   mesmo arquivo se a rede for de `tipo: 'atacado'` (a página Onde funciona separa supermercados e
+   atacados com ela) e a lista de redes de `Frontend/public/llms.txt`. O teste
+   `Backend/test/redesSite.test.js` falha se as listas não baterem. Se quiser a rede entre os
+   destaques da landing, ela vai em `MARCAS` (`Frontend/src/pages/site/Landing.jsx`).
 6. **Atualize este readme** (tabela de redes) e rode `cd Backend && npm test` e
-   `cd Frontend && npm run build`.
+   `cd Frontend && npm test && npm run build`.
 7. **Confira a rede de verdade** com `cd Backend && npm run saude:redes -- --redes=<id> --cep=<cep>`,
    usando um CEP perto de uma loja da rede ([monitor](#monitor-de-saúde-das-redes)).
 8. **Depois do deploy**, procure um produto em `/app/comparar` com um CEP perto de uma loja da rede
