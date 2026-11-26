@@ -83,7 +83,9 @@ export const GeoModel = {
     );
     const cep = String(dados?.address?.postcode || '').replace(/\D/g, '');
     const valido = cep.length === 8 ? cep : '';
-    cepsAchados.set(chave, valido);
+    // Só guarda a resposta de verdade: com o Nominatim fora do ar (ou a fila cheia), tenta de novo
+    // na próxima vez em vez de ficar sem CEP para essas coordenadas até reiniciar.
+    if (dados) cepsAchados.set(chave, valido);
     return valido;
   },
 
