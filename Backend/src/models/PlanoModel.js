@@ -1,4 +1,6 @@
 // Planos são estáticos: vivem no código, não no banco.
+// Comparação e histórico de preço valem para todos os planos (mercadoController.comparar
+// não olha o plano). Se isso mudar, mude também o texto aqui, em Perguntas.jsx e no llms.txt.
 export const PLANOS = [
   {
     id: 'gratis',
@@ -11,9 +13,9 @@ export const PLANOS = [
     itens: [
       ['Categorias e projeção do ciclo', true],
       ['Lista de compras com total', true],
+      ['Comparação e histórico de preço', true],
       ['Até 3 metas', true],
       ['5 notas lidas por mês', false],
-      ['Sem histórico de preço', false],
       ['Sem modo família', false]
     ]
   },
@@ -24,12 +26,11 @@ export const PLANOS = [
     periodo: 'mes',
     nota: 'por mês, cancele quando quiser',
     destaque: true,
-    resumo: 'notas ilimitadas · histórico de preço · família',
+    resumo: 'notas ilimitadas · metas ilimitadas · família',
     limites: { notasPorMes: null, metas: null, familia: 2 },
     itens: [
       ['Tudo do grátis', true],
       ['Notas ilimitadas', true],
-      ['Histórico e comparação de preços', true],
       ['Metas ilimitadas com simulador', true],
       ['Modo família com 2 pessoas', true],
       ['Alerta de preço por produto', true]

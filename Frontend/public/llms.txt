@@ -14,8 +14,8 @@
 
 ## Planos
 
-- Grátis: categorias, projeção do ciclo, lista de compras, até 3 metas e 5 notas fiscais lidas por mês. Sem cartão.
-- vera+ mensal: R$ 12,90 por mês. Notas ilimitadas, histórico e comparação de preços, metas ilimitadas, modo família com 2 pessoas.
+- Grátis: categorias, projeção do ciclo, lista de compras, comparação e histórico de preço, até 3 metas e 5 notas fiscais lidas por mês. Sem cartão.
+- vera+ mensal: R$ 12,90 por mês. Notas ilimitadas, metas ilimitadas e modo família com 2 pessoas.
 - vera+ anual: R$ 99,90 por ano. Tudo do vera+, exportar o ano em planilha e modo família com 5 pessoas.
 
 ## Páginas

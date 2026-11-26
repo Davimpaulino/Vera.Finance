@@ -276,8 +276,8 @@ export default function Landing() {
               <span className="landing-eyebrow landing-eyebrow--accent">planos</span>
               <h2 className="landing-h2 landing-h2--42 landing-h2--tight">Comece de graça</h2>
               <p className="landing-lead landing-max-520">
-                Categorias, projeção e metas não custam nada. O vera+ é para quem vive de nota
-                fiscal e quer o histórico de preço.
+                Categorias, projeção, metas e comparação de preços não custam nada. O vera+ é para
+                quem vive de nota fiscal ou divide as contas com a família.
               </p>
             </div>
             <div className="vera-grid vera-grid--3 vera-grid--stretch">
@@ -289,6 +289,7 @@ export default function Landing() {
                 <div className="landing-checks">
                   <Check>Categorias e projeção do ciclo</Check>
                   <Check>Lista de compras com total</Check>
+                  <Check>Comparação e histórico de preço</Check>
                   <Check>Até 3 metas</Check>
                   <Check muted>5 notas lidas por mês</Check>
                 </div>
@@ -304,7 +305,6 @@ export default function Landing() {
                 <div className="landing-checks">
                   {[
                     'Notas fiscais ilimitadas',
-                    'Histórico e comparação de preços',
                     'Metas ilimitadas com simulador',
                     'Modo família com 2 pessoas'
                   ].map(t => (

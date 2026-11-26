@@ -18,12 +18,12 @@ export const PERGUNTAS = [
   {
     pergunta: 'A vera é grátis?',
     resposta:
-      'Sim. O plano grátis não expira e não pede cartão. Ele inclui categorias, projeção do ciclo, lista de compras com total, até 3 metas e 5 notas fiscais lidas por mês. Histórico de preço e modo família ficam no vera+.'
+      'Sim. O plano grátis não expira e não pede cartão. Ele inclui categorias, projeção do ciclo, lista de compras com total, comparação e histórico de preço, até 3 metas e 5 notas fiscais lidas por mês. Notas e metas sem limite e o modo família ficam no vera+.'
   },
   {
     pergunta: 'Quanto custa o vera+?',
     resposta:
-      'R$ 12,90 por mês ou R$ 99,90 por ano (equivale a R$ 8,33 por mês). Os dois têm notas ilimitadas, histórico e comparação de preços e metas ilimitadas. O modo família vai até 2 pessoas no mensal e até 5 no anual. Dá para cancelar quando quiser, sem multa.'
+      'R$ 12,90 por mês ou R$ 99,90 por ano (equivale a R$ 8,33 por mês). Os dois têm notas fiscais e metas ilimitadas. O modo família vai até 2 pessoas no mensal e até 5 no anual. Dá para cancelar quando quiser, sem multa.'
   },
   {
     pergunta: 'Quais redes de supermercado têm preço online na vera?',
