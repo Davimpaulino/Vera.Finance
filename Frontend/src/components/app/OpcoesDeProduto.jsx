@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Badge, Chip, Icon, SegmentedControl } from '../ds/index.js';
 import { brlCents, precoUnitario } from '../../lib/format.js';
 import { cx } from '../../lib/cx.js';
@@ -38,11 +38,15 @@ export function useOpcoesDeProduto(opcoes = []) {
   const [marca, setMarca] = useState('');
   const [tamanho, setTamanho] = useState('');
   // Nova busca, filtros zerados: a marca escolhida antes pode nem existir na busca nova.
+  // Zera ainda no render (não num efeito, que roda depois da tela e desfaria um toque feito
+  // logo que as opções aparecem), como a documentação do React recomenda.
   const assinatura = opcoes.map(o => o.chave).join('|');
-  useEffect(() => {
+  const [assinaturaVista, setAssinaturaVista] = useState(assinatura);
+  if (assinatura !== assinaturaVista) {
+    setAssinaturaVista(assinatura);
     setMarca('');
     setTamanho('');
-  }, [assinatura]);
+  }
   const marcas = useMemo(() => maisComuns(opcoes, 'marca'), [opcoes]);
   const tamanhos = useMemo(() => maisComuns(opcoes, 'tamanho'), [opcoes]);
   const filtradas = useMemo(
