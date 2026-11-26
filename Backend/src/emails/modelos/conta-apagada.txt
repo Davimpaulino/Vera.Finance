@@ -1,0 +1,9 @@
+Sua conta foi apagada
+
+Oi, {{nome}}. Como você pediu, apagamos a sua conta na vera: perfil, lançamentos, metas, lista, notas, login e participação em família.
+
+Isso não dá para desfazer. Os preços da base anônima continuam, porque não identificam ninguém.
+
+Se um dia quiser voltar, é só criar uma conta nova: {{linkCadastro}}
+
+Obrigado por ter usado a vera.

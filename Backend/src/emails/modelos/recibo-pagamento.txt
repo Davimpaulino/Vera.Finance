@@ -1,0 +1,16 @@
+Pagamento confirmado
+
+Oi, {{nome}}. Recebemos o pagamento do {{plano}}. Guarde este e-mail como comprovante.
+
+Plano: {{plano}}
+Valor: {{valor}}
+Pago em: {{dataDoPagamento}}
+Período: {{periodo}}
+Forma de pagamento: {{formaDePagamento}}
+Código: {{codigo}}
+
+A próxima cobrança é em {{proximaCobranca}}. Para cancelar, vá em Configurações › Plano, sem multa. Quem cancela mantém o vera+ até o fim do período pago.
+{{#primeiraCompra}}
+Contratou agora e mudou de ideia? Você pode desistir em até 7 dias e receber o valor de volta.
+{{/primeiraCompra}}
+Ver o meu plano: {{linkConfiguracoes}}

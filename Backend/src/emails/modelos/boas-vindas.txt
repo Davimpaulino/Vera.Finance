@@ -1,0 +1,11 @@
+Oi, {{nome}}. Sua conta está pronta.
+
+A vera ajuda você a saber quanto ainda dá para gastar e até que dia o dinheiro dura. Para começar:
+
+1. Reserve a renda do mês nas categorias, como Comida e Rolê.
+2. Lance um gasto ou leia a nota do mercado pelo QR Code.
+3. Monte a lista de compras e veja onde ela sai mais barata perto do seu CEP.
+
+Abrir a vera: {{linkApp}}
+
+A vera não pede a senha do seu banco. Você lança os gastos, ou deixa a nota fiscal lançar por você.

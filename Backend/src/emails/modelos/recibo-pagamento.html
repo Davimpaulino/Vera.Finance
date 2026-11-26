@@ -1,0 +1,37 @@
+<h1 style="margin:0 0 16px 0;font-family:'Plus Jakarta Sans',Arial,Helvetica,sans-serif;font-size:22px;line-height:1.3;font-weight:700;color:#17191C;">Pagamento confirmado</h1>
+<p style="margin:0 0 20px 0;">Oi, {{nome}}. Recebemos o pagamento do {{plano}}. Guarde este e-mail como comprovante.</p>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 24px 0;border-top:1px solid #F0EDE8;font-size:15px;">
+  <tr>
+    <td style="padding:10px 0;border-bottom:1px solid #F0EDE8;color:#6B7075;">Plano</td>
+    <td align="right" style="padding:10px 0;border-bottom:1px solid #F0EDE8;font-weight:700;">{{plano}}</td>
+  </tr>
+  <tr>
+    <td style="padding:10px 0;border-bottom:1px solid #F0EDE8;color:#6B7075;">Valor</td>
+    <td align="right" style="padding:10px 0;border-bottom:1px solid #F0EDE8;font-weight:700;">{{valor}}</td>
+  </tr>
+  <tr>
+    <td style="padding:10px 0;border-bottom:1px solid #F0EDE8;color:#6B7075;">Pago em</td>
+    <td align="right" style="padding:10px 0;border-bottom:1px solid #F0EDE8;">{{dataDoPagamento}}</td>
+  </tr>
+  <tr>
+    <td style="padding:10px 0;border-bottom:1px solid #F0EDE8;color:#6B7075;">Período</td>
+    <td align="right" style="padding:10px 0;border-bottom:1px solid #F0EDE8;">{{periodo}}</td>
+  </tr>
+  <tr>
+    <td style="padding:10px 0;border-bottom:1px solid #F0EDE8;color:#6B7075;">Forma de pagamento</td>
+    <td align="right" style="padding:10px 0;border-bottom:1px solid #F0EDE8;">{{formaDePagamento}}</td>
+  </tr>
+  <tr>
+    <td style="padding:10px 0;border-bottom:1px solid #F0EDE8;color:#6B7075;">Código</td>
+    <td align="right" style="padding:10px 0;border-bottom:1px solid #F0EDE8;">{{codigo}}</td>
+  </tr>
+</table>
+<p style="margin:0 0 16px 0;">A próxima cobrança é em {{proximaCobranca}}. Para cancelar, vá em Configurações › Plano, sem multa. Quem cancela mantém o vera+ até o fim do período pago.</p>
+{{#primeiraCompra}}<p style="margin:0 0 16px 0;">Contratou agora e mudou de ideia? Você pode desistir em até 7 dias e receber o valor de volta.</p>
+{{/primeiraCompra}}<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:8px 0 0 0;">
+  <tr>
+    <td style="border-radius:12px;background-color:#A84D14;">
+      <a href="{{linkConfiguracoes}}" style="display:inline-block;padding:14px 24px;font-family:'Plus Jakarta Sans',Arial,Helvetica,sans-serif;font-size:16px;font-weight:700;line-height:1;color:#FFFFFF;text-decoration:none;border-radius:12px;">Ver o meu plano</a>
+    </td>
+  </tr>
+</table>
