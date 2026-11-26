@@ -47,7 +47,7 @@ export const PERGUNTAS = [
   {
     pergunta: 'Como leio uma nota fiscal?',
     resposta:
-      'Aponte a câmera para o QR Code do cupom fiscal eletrônico (NFC-e). A vera busca os itens no portal da Secretaria da Fazenda, separa cada item na categoria certa e guarda os preços para comparar.'
+      'Aponte a câmera para o QR Code do cupom fiscal eletrônico (NFC-e). A vera busca a nota no portal da Secretaria da Fazenda, prepara um gasto com o valor e a loja para você escolher a categoria e guarda os preços para comparar.'
   },
   {
     pergunta: 'Como funciona o modo família?',

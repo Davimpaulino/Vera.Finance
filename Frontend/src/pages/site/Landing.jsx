@@ -13,7 +13,7 @@ const FEATURES = [
   [
     'scan-line',
     'Leitura da NF-e',
-    'Aponte para o QR Code do cupom: item por item na categoria certa, com aviso do que você pagou caro.'
+    'Aponte para o QR Code do cupom: a vera prepara o gasto com o valor e a loja, você escolhe a categoria e os preços entram na comparação.'
   ],
   [
     'arrow-left-right',
@@ -53,7 +53,7 @@ const PROTECOES = [
   [
     'file-down',
     'Saída a qualquer hora',
-    'Lançamentos, notas e metas saem em planilha. Apagar a conta apaga tudo em 30 dias.'
+    'Os lançamentos saem em planilha e todos os dados num arquivo só. Apagar a conta apaga tudo em 30 dias.'
   ]
 ];
 const PERGUNTAS = [
@@ -255,8 +255,8 @@ export default function Landing() {
             <div className="landing-split__copy">
               <h2 className="landing-h2">“Dá para gastar sem susto”</h2>
               <p className="landing-lead landing-max-480">
-                É o que a vera devolve todo dia: um número com data. Ela lê a nota, separa item por
-                item na categoria certa e compara com o preço dos mercados perto de você.
+                É o que a vera devolve todo dia: um número com data. Ela lê a nota, lança o gasto na
+                categoria que você escolher e usa os preços para comparar os mercados perto de você.
               </p>
               <Button variant="secondary" size="lg" onClick={() => navigate('/precos')}>
                 Ver planos
@@ -294,7 +294,7 @@ export default function Landing() {
                   <Check>Categorias e projeção do ciclo</Check>
                   <Check>Lista de compras com total</Check>
                   <Check>Comparação e histórico de preço</Check>
-                  <Check>Até 3 metas</Check>
+                  <Check>Até 3 metas, com simulador</Check>
                   <Check muted>5 notas lidas por mês</Check>
                 </div>
                 <Button block variant="secondary" onClick={cadastro} className="landing-plan__cta">
@@ -309,7 +309,7 @@ export default function Landing() {
                 <div className="landing-checks">
                   {[
                     'Notas fiscais ilimitadas',
-                    'Metas ilimitadas com simulador',
+                    'Metas ilimitadas',
                     'Modo família com 2 pessoas'
                   ].map(t => (
                     <Check key={t}>{t}</Check>
@@ -326,9 +326,8 @@ export default function Landing() {
                 <div className="landing-plan__rule" />
                 <div className="landing-checks">
                   {[
-                    'Tudo do vera+',
+                    'Tudo do vera+ mensal',
                     'Dois meses grátis',
-                    'Exportar o ano em planilha',
                     'Modo família com 5 pessoas'
                   ].map(t => (
                     <Check key={t}>{t}</Check>

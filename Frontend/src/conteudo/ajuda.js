@@ -15,8 +15,9 @@
 // - atualizadoEm: data da última revisão (AAAA-MM-DD).
 // Nos textos, [rótulo](/caminho) vira link (veja formato.js).
 //
-// Cada fato aqui foi conferido no código (rotas da API, models e telas do app). Se o produto
-// mudar, mude o artigo junto: o mesmo texto vai para os buscadores e para as IAs.
+// O funcionamento descrito aqui foi conferido no código (rotas da API, models e telas do app).
+// Preços e promessas de atendimento vêm de Backend/src/models/PlanoModel.js. Se o produto mudar,
+// mude o artigo junto: o mesmo texto vai para os buscadores e para as IAs.
 
 export const ARTIGOS_DE_AJUDA = [
   {
@@ -193,7 +194,7 @@ export const ARTIGOS_DE_AJUDA = [
       {
         nome: 'Veja onde sai mais barato e finalize',
         texto:
-          'Ao lado da lista aparece o total em cada mercado. Depois da compra, toque em “Finalizar lista no…”: a vera lança o gasto, uma linha por categoria, e marca os itens como comprados.'
+          'Ao lado da lista aparece o total em cada mercado. Depois da compra, toque em “Finalizar lista no…”: a vera lança o gasto, uma linha por categoria, e marca como comprados os itens que têm preço nesse mercado. Os que não têm preço lá continuam na lista.'
       }
     ],
     corpo: [
@@ -227,12 +228,12 @@ export const ARTIGOS_DE_AJUDA = [
       {
         nome: 'Crie o modo família',
         texto:
-          'Quem tem o vera+ abre Modo família e toca em “Criar modo família”. Essa pessoa passa a ser a dona do ciclo.'
+          'Quem tem o vera+ abre Modo família e toca em “Criar modo família”. Quem cria passa a ser o dono do ciclo.'
       },
       {
         nome: 'Convide pelo e-mail',
         texto:
-          'A dona do ciclo toca em “Convidar pessoa” e digita o e-mail de quem vai entrar. Só ela pode convidar.'
+          'O dono do ciclo toca em “Convidar pessoa” e digita o e-mail de quem vai entrar. Só o dono do ciclo pode convidar.'
       },
       {
         nome: 'Aceite o convite',
@@ -242,24 +243,24 @@ export const ARTIGOS_DE_AJUDA = [
       {
         nome: 'Escolha o que a casa vê',
         texto:
-          'Na tela do modo família, a dona do ciclo liga ou desliga cada categoria. As ligadas ficam visíveis para todos; as outras, só ela vê.'
+          'Na tela do modo família, o dono do ciclo liga ou desliga cada categoria. As ligadas ficam visíveis para todos; as outras, só o dono do ciclo vê.'
       }
     ],
     corpo: [
       { titulo: 'O que cada pessoa vê' },
       {
         lista: [
-          'A dona do ciclo vê todas as categorias e todos os lançamentos.',
+          'O dono do ciclo vê todas as categorias e todos os lançamentos.',
           'Quem entra vê as categorias compartilhadas, os lançamentos delas e os próprios lançamentos.',
-          'Ao aceitar o convite, os lançamentos de quem entrou passam a cair no ciclo da dona.',
+          'Ao aceitar o convite, os lançamentos de quem entrou passam a cair no ciclo do dono.',
           'A tela do modo família mostra quanto cada pessoa gastou no ciclo.'
         ]
       },
       'Só convide quem concordar em participar.',
       { titulo: 'Quantas pessoas' },
-      'No vera+ mensal, o modo família vai até 2 pessoas; no anual, até 5. A conta inclui a dona do ciclo e os convites ainda não aceitos. Veja os [planos e preços](/precos).',
-      { titulo: 'Se a dona do ciclo apagar a conta' },
-      'O modo família acaba e cada pessoa volta a ter a própria conta, separada. Os lançamentos feitos no ciclo da dona são apagados junto com a conta dela; antes disso, cada pessoa pode baixar o que lançou em Configurações › Dados. Veja [como baixar os dados e apagar a conta](/ajuda/baixar-dados-e-apagar-conta).'
+      'No vera+ mensal, o modo família vai até 2 pessoas; no anual, até 5. A conta inclui o dono do ciclo e os convites ainda não aceitos. Veja os [planos e preços](/precos).',
+      { titulo: 'Se o dono do ciclo apagar a conta' },
+      'O modo família acaba e cada pessoa volta a ter a própria conta, separada. Os lançamentos feitos no ciclo do dono são apagados junto com a conta dele; antes disso, cada pessoa pode baixar o que lançou em Configurações › Dados. Veja [como baixar os dados e apagar a conta](/ajuda/baixar-dados-e-apagar-conta).'
     ],
     relacionados: [
       '/ajuda/planos-e-cancelamento',
@@ -300,7 +301,7 @@ export const ARTIGOS_DE_AJUDA = [
     ],
     corpo: [
       { titulo: 'O que é apagado' },
-      'O perfil, os lançamentos, as metas, a lista, as notas, o login e a participação em família. Se você é a dona de um [modo família](/ajuda/modo-familia), ele acaba e cada pessoa volta a ter a própria conta.',
+      'O perfil, os lançamentos, as metas, a lista, as notas, o login e a participação em família. Se você é o dono do ciclo num [modo família](/ajuda/modo-familia), ele acaba e cada pessoa volta a ter a própria conta.',
       'Ficam só os preços da base anônima, porque não identificam ninguém, e os registros de acesso, guardados por 6 meses como exige o Marco Civil da Internet. Os detalhes estão na [política de privacidade](/privacidade).',
       'Dúvidas sobre os seus dados: [privacidade@vera.finance](mailto:privacidade@vera.finance).'
     ],
@@ -315,30 +316,40 @@ export const ARTIGOS_DE_AJUDA = [
     resumo:
       'A vera tem um plano grátis que não expira e o vera+, mensal ou anual. Dá para cancelar quando quiser, sem multa.',
     tipo: 'Article',
-    // Planos e preços de Backend/src/models/PlanoModel.js. Se mudarem lá, mude aqui.
+    // Planos e preços de Backend/src/models/PlanoModel.js; limites conferidos em notaController,
+    // metaController e familiaController; a volta para o grátis, em PlanoModel.emVigor.
+    // Se mudarem lá, mude aqui. As regras de cobrança e de desistência ficam nos termos de uso.
     corpo: [
       { titulo: 'O que tem em cada plano' },
       {
         lista: [
-          'Grátis (R$ 0, sem cartão): categorias e projeção do ciclo, lista de compras com total, comparação e histórico de preço, até 3 metas e 5 notas fiscais lidas por mês.',
-          'vera+ mensal (R$ 12,90 por mês): tudo do grátis, notas ilimitadas, metas ilimitadas com simulador, modo família com 2 pessoas e alerta de preço por produto.',
-          'vera+ anual (R$ 99,90 por ano, o equivalente a R$ 8,33 por mês): tudo do vera+, cobrança uma vez por ano, exportar o ano em planilha, modo família com 5 pessoas e suporte por e-mail em 24 horas.'
+          'Grátis (R$ 0, sem cartão): categorias e projeção do ciclo, lista de compras com total, comparação e histórico de preço, alerta de alta de preço, até 3 metas com simulador e 5 notas fiscais lidas por mês.',
+          'vera+ mensal (R$ 12,90 por mês): tudo do grátis, com notas e metas ilimitadas e modo família com 2 pessoas.',
+          'vera+ anual (R$ 99,90 por ano, o equivalente a R$ 8,33 por mês): tudo do vera+ mensal, modo família com 5 pessoas e suporte por e-mail em 24 horas.'
         ]
       },
-      'A tabela completa está em [planos e preços](/precos).',
+      'Em todos os planos, dá para baixar os lançamentos em planilha e todos os seus dados num arquivo só: veja [como baixar os dados](/ajuda/baixar-dados-e-apagar-conta). A tabela completa está em [planos e preços](/precos).',
       { titulo: 'Como assinar' },
-      'Em Configurações › Plano, toque em “Assinar mensal” ou em “Trocar para anual”. O plano também pode ser escolhido no cadastro.',
+      'Em Configurações › Plano, toque em “Assinar mensal” ou em “Trocar para anual”. O plano muda na hora. Também dá para escolher o plano no cadastro.',
       { titulo: 'Como cancelar' },
       {
         numerada: true,
         lista: [
           'Abra Configurações › Plano.',
           'Toque em “Cancelar assinatura” e confirme.',
-          'O vera+ continua até a data da próxima cobrança. Depois, a conta volta para o grátis: 5 notas por mês, até 3 metas e sem modo família. Nada é apagado.'
+          'O vera+ continua até o fim do período que já começou. A data aparece logo abaixo do nome do plano. Depois dela, a conta volta para o grátis.'
         ]
       },
-      'Mudou de ideia antes do fim do período? Toque em “Reativar assinatura”, no mesmo lugar.',
-      'Não há multa para cancelar. Quem contrata pelo site pode desistir em até 7 dias e receber o valor de volta (Código de Defesa do Consumidor, art. 49). Veja os [termos de uso](/termos).'
+      'Mudou de ideia antes dessa data? Toque em “Reativar assinatura”, no mesmo lugar.',
+      { titulo: 'O que muda quando a conta volta para o grátis' },
+      {
+        lista: [
+          'A leitura de notas fiscais volta ao limite de 5 por mês.',
+          'Nada é apagado. As metas que você já tem continuam, mas só dá para criar outra quando houver menos de 3.',
+          'O modo família que já existe continua, mas não dá para criar outro nem convidar mais pessoas.'
+        ]
+      },
+      'Não há multa para cancelar. As regras de cobrança, de renovação e de desistência estão nos [termos de uso](/termos).'
     ],
     relacionados: ['/precos', '/ajuda/modo-familia', '/ajuda/baixar-dados-e-apagar-conta'],
     atualizadoEm: '2026-11-26'
@@ -362,7 +373,7 @@ export const ARTIGOS_DE_AJUDA = [
         ]
       },
       { titulo: 'O que a vera pede' },
-      'Para criar a conta: nome, e-mail e uma senha só da vera, ou o login do Google ou da Apple. Para comparar preços: o CEP e o raio de busca. Nada de senha de banco, nem acesso ao internet banking ou ao app do banco.',
+      'Para criar a conta: nome, e-mail e uma senha só da vera, ou o login do Google. Para comparar preços: o CEP e o raio de busca. Nada de senha de banco, nem acesso ao internet banking ou ao app do banco.',
       { titulo: 'Cuidado com golpes' },
       'Se alguém pedir a senha do seu banco em nome da vera, não passe: é golpe. A vera nunca faz esse pedido. Na dúvida, escreva para [ajuda@vera.finance](mailto:ajuda@vera.finance).'
     ],

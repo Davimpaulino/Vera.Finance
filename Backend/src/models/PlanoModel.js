@@ -1,7 +1,10 @@
 // Planos são estáticos: vivem no código, não no banco.
-// Comparação e histórico de preço valem para todos os planos (mercadoController.comparar
-// não olha o plano). Se isso mudar, mude também o texto aqui, em Perguntas.jsx, no llms.txt e no
-// artigo de ajuda "planos-e-cancelamento" (Frontend/src/conteudo/ajuda.js).
+// Os itens de cada plano só mostram como diferença o que o código confere: notas por mês, metas e
+// pessoas no modo família (os `limites`, usados por notaController, metaController e
+// familiaController). Comparação e histórico de preço, o simulador das metas, o alerta de alta de
+// preço e a planilha dos lançamentos valem para todos os planos: nenhum deles olha o plano.
+// Se isso mudar, mude também o texto aqui, na landing (Landing.jsx), em Perguntas.jsx, no llms.txt
+// e no artigo de ajuda "planos-e-cancelamento" (Frontend/src/conteudo/ajuda.js).
 export const PLANOS = [
   {
     id: 'gratis',
@@ -15,7 +18,8 @@ export const PLANOS = [
       ['Categorias e projeção do ciclo', true],
       ['Lista de compras com total', true],
       ['Comparação e histórico de preço', true],
-      ['Até 3 metas', true],
+      ['Alerta de alta de preço', true],
+      ['Até 3 metas, com simulador', true],
       ['5 notas lidas por mês', false],
       ['Sem modo família', false]
     ]
@@ -32,9 +36,8 @@ export const PLANOS = [
     itens: [
       ['Tudo do grátis', true],
       ['Notas ilimitadas', true],
-      ['Metas ilimitadas com simulador', true],
-      ['Modo família com 2 pessoas', true],
-      ['Alerta de preço por produto', true]
+      ['Metas ilimitadas', true],
+      ['Modo família com 2 pessoas', true]
     ]
   },
   {
@@ -43,12 +46,10 @@ export const PLANOS = [
     preco: 99.9,
     periodo: 'ano',
     nota: 'por ano · equivale a R$ 8,33/mês',
-    resumo: 'dois meses grátis · exportar o ano',
+    resumo: 'dois meses grátis · família com 5 pessoas',
     limites: { notasPorMes: null, metas: null, familia: 5 },
     itens: [
-      ['Tudo do vera+', true],
-      ['Cobrança uma vez por ano', true],
-      ['Exportar o ano em planilha', true],
+      ['Tudo do vera+ mensal', true],
       ['Modo família com 5 pessoas', true],
       ['Suporte por e-mail em 24h', true]
     ]
