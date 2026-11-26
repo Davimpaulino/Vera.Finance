@@ -17,8 +17,11 @@ export const ExclusaoModel = {
     await UsuarioModel.atualizar(uid, { exclusaoAgendadaPara: null });
   },
 
-  /** Apaga tudo de uma pessoa. */
-  async apagar(uid) {
+  /**
+   * Apaga tudo de uma pessoa. Com apagarLogin: false, o login do Firebase com o e-mail dela fica:
+   * serve para a restauração de um backup, quando esse e-mail já pode ser de uma conta nova.
+   */
+  async apagar(uid, { apagarLogin = true } = {}) {
     const perfil = await UsuarioModel.buscar(uid);
     const familia = perfil?.familiaId ? await FamiliaModel.buscar(perfil.familiaId) : null;
     if (familia) {
@@ -38,7 +41,7 @@ export const ExclusaoModel = {
       if (!conta || conta.uid === uid) await banco.remover(`contas/${chave}`);
       const credencial = await banco.ler(`credenciais/${chave}`);
       if (!credencial || credencial.uid === uid) await banco.remover(`credenciais/${chave}`);
-      if (autenticacaoFirebase)
+      if (apagarLogin && autenticacaoFirebase)
         await autenticacaoFirebase
           .getUserByEmail(perfil.email)
           .then(usuario => autenticacaoFirebase.deleteUser(usuario.uid))
