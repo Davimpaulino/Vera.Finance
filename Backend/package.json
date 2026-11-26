@@ -7,12 +7,15 @@
   "scripts": {
     "start": "node --env-file-if-exists=.env src/server.js",
     "dev": "node --env-file-if-exists=.env --watch src/server.js",
-    "test": "node --test \"test/**/*.test.js\""
+    "test": "node --test \"test/**/*.test.js\"",
+    "test:pg": "BANCO_TESTE=postgres node --test --test-concurrency=1 \"test/**/*.test.js\"",
+    "migrar:postgres": "node --env-file-if-exists=.env scripts/migrar-firebase-para-postgres.mjs"
   },
   "engines": {
     "node": ">=22.9"
   },
   "dependencies": {
-    "firebase-admin": "^14.5.0"
+    "firebase-admin": "^14.5.0",
+    "pg": "^8.23.1"
   }
 }

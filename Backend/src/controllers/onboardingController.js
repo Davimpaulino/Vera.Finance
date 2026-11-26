@@ -28,7 +28,7 @@ const ICONE_FIXO = {
 // Coordenadas vindas do navegador ou, na falta delas, do CEP.
 async function localizarCep(local) {
   if (GeoModel.temCoordenadas(local))
-    return { lat: Number(local.lat), lng: Number(local.lng), cidade: local.cidade || '' };
+    return { ...GeoModel.aproximar(local), cidade: local.cidade || '' };
   const achado = await GeoModel.porCep(local.cep);
   return { cidade: local.cidade || achado?.cidade || '', ...(achado?.lat ? { lat: achado.lat, lng: achado.lng } : {}) };
 }

@@ -56,13 +56,26 @@
   font-size:var(--fs-meta);
   color:var(--text-muted)
 }
+.auth__texto{
+  margin:0;
+  font-size:var(--fs-body);
+  line-height:1.5;
+  color:var(--text-2);
+  text-wrap:pretty
+}
 .auth__note--top{
   margin-top:8px
 }
 .auth__note--top4{
   margin-top:4px
 }
-.auth__legal{
+.auth__aceite{
+  align-items:flex-start
+}
+.auth__aceite .vera-check__box{
+  margin-top:2px
+}
+.auth__aceite .vera-check__label{
   font-size:var(--fs-caption);
   line-height:1.5;
   color:var(--text-muted)

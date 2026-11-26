@@ -10,9 +10,17 @@
       content="Organize a renda por categorias, saiba até que dia o dinheiro dura e compare o preço da sua lista de compras nos supermercados perto de você. Grátis."
     />
     <meta name="robots" content="index, follow" />
-    <link rel="canonical" href="https://vera-finance.onrender.com/" />
+    <!-- O endereço do site entra no build a partir de VITE_SITE_URL (vite.config.js). -->
+    <!-- Canonical e og:url da home; scripts/prerender.mjs troca por página no build. -->
+    <link rel="canonical" href="__SITE_URL__/" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/icons/icon-192.png" type="image/png" sizes="192x192" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+    <!-- PWA: instalar o app pelo navegador (public/manifest.webmanifest e public/sw.js). -->
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="apple-mobile-web-app-title" content="vera" />
     <meta property="og:type" content="website" />
+    <meta property="og:url" content="__SITE_URL__/" />
     <meta property="og:locale" content="pt_BR" />
     <meta property="og:site_name" content="vera.finance" />
     <meta property="og:title" content="vera.finance · saiba até que dia o dinheiro dura" />
@@ -20,19 +28,42 @@
       property="og:description"
       content="Controle de gastos por categoria e comparador de preços de supermercado pelo seu CEP."
     />
-    <meta property="og:url" content="https://vera-finance.onrender.com/" />
-    <meta name="twitter:card" content="summary" />
+    <meta property="og:image" content="__SITE_URL__/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="vera.finance: descubra onde a sua lista de compras sai mais barata"
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="vera.finance · saiba até que dia o dinheiro dura" />
+    <meta
+      name="twitter:description"
+      content="Controle de gastos por categoria e comparador de preços de supermercado pelo seu CEP."
+    />
+    <meta name="twitter:image" content="__SITE_URL__/og-image.png" />
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
         "@type": "WebApplication",
         "name": "vera.finance",
-        "url": "https://vera-finance.onrender.com/",
+        "url": "__SITE_URL__/",
         "applicationCategory": "FinanceApplication",
         "operatingSystem": "Web",
         "inLanguage": "pt-BR",
         "description": "Controle de gastos por categoria, metas e comparador de preços de supermercado pelo CEP.",
         "offers": { "@type": "Offer", "price": "0", "priceCurrency": "BRL" }
+      }
+    </script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "vera.finance",
+        "url": "__SITE_URL__/",
+        "logo": "__SITE_URL__/icons/icon-512.png",
+        "description": "App brasileiro de finanças pessoais: controle de gastos por categoria, metas e comparação de preços de supermercado pelo CEP, com preços dos sites das redes e de notas fiscais.",
+        "email": "oi@vera.finance"
       }
     </script>
   </head>

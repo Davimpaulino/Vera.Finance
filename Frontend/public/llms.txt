@@ -1,0 +1,32 @@
+# vera.finance
+
+> vera.finance é um app brasileiro de finanças pessoais, em português, que funciona no navegador. Ele separa a renda em categorias, projeta até que dia o dinheiro dura, guarda metas e compara o preço da lista de compras nos supermercados perto do CEP da pessoa. Tem plano grátis que não expira e não pede senha de banco.
+
+## Produto
+
+- Controle de gastos por categoria: a renda do mês é reservada em categorias (como Comida e Rolê) e a vera mostra quanto ainda dá para gastar e até que dia o dinheiro dura.
+- Leitura de nota fiscal: a pessoa aponta a câmera para o QR Code da NFC-e (cupom fiscal eletrônico); a vera busca os itens no portal da Secretaria da Fazenda e separa cada item na categoria.
+- Comparação de preços: o mesmo produto nos mercados num raio de 2 a 15 km do CEP, com preços do site de cada rede (consultado para o CEP) e de notas fiscais lidas por quem usa a vera. Histórico de preço de 90 dias por produto.
+- Lista de compras: soma a lista em cada mercado do raio e mostra onde ela sai mais barata.
+- Redes com preço online hoje: Atacadão, Sam's Club, Savegnago, Covabra, Giassi, Angeloni, Zona Sul, Prezunic, Mambo, Bistek, Hortifruti, Super Nosso, GBarbosa, Amigão, Giga Atacado, Mercantil Atacado, Zaffari, Super Muffato, Hiperideal, Rissul, Oba Hortifruti, Coop, São Vicente, Tenda Atacado, Confiança, Pão de Açúcar e Pague Menos. A vera não tem vínculo com essas redes.
+- Modo família (vera+): o dono do ciclo convida pessoas e escolhe quais categorias são compartilhadas.
+- A vera não vende produtos, não recebe de mercados para mostrar preços e não vende dados pessoais. A nota fiscal entra na base de preços sem nome e sem CPF.
+
+## Planos
+
+- Grátis: categorias, projeção do ciclo, lista de compras, comparação e histórico de preço, até 3 metas e 5 notas fiscais lidas por mês. Sem cartão.
+- vera+ mensal: R$ 12,90 por mês. Notas ilimitadas, metas ilimitadas e modo família com 2 pessoas.
+- vera+ anual: R$ 99,90 por ano. Tudo do vera+, exportar o ano em planilha e modo família com 5 pessoas.
+
+## Páginas
+
+- [Início](https://vera-finance.onrender.com/): o que a vera faz e como funciona.
+- [Planos e preços](https://vera-finance.onrender.com/precos): o plano grátis e o vera+.
+- [Perguntas frequentes](https://vera-finance.onrender.com/perguntas): respostas curtas sobre preço, redes, nota fiscal, família, dados e conta.
+- [Política de privacidade](https://vera-finance.onrender.com/privacidade): como a vera trata os dados pessoais, conforme a LGPD.
+- [Termos de uso](https://vera-finance.onrender.com/termos): regras de uso do serviço.
+
+## Contato
+
+- Dúvidas: ajuda@vera.finance
+- Privacidade: privacidade@vera.finance

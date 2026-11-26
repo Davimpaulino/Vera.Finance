@@ -155,31 +155,57 @@ function decodificar(buffer, tipo) {
   }
 }
 
-export const NfceModel = {
-  async ler(texto) {
-    const url = validarEndereco(texto);
-    const chave = chaveDoEndereco(url);
-    if (!chave) throw new HttpError(400, 'Não achei a chave de acesso de 44 números neste QR Code.');
+const CABECALHOS = {
+  'User-Agent':
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126 Safari/537.36',
+  Accept: 'text/html,application/xhtml+xml',
+  'Accept-Language': 'pt-BR,pt;q=0.9'
+};
+const MAXIMO_DE_REDIRECIONAMENTOS = 5;
 
+const ehDaSefaz = url =>
+  ['http:', 'https:'].includes(url.protocol) && url.hostname.toLowerCase().endsWith('.gov.br');
+
+/**
+ * Busca a página seguindo os redirecionamentos à mão: cada salto é conferido antes de ser
+ * feito, para o servidor nunca ser levado a buscar um endereço fora da Sefaz.
+ */
+export async function buscarNaSefaz(url) {
+  const sinal = AbortSignal.timeout(15000);
+  let atual = url;
+  for (let saltos = 0; ; saltos++) {
     let resposta;
     try {
-      resposta = await fetch(url.href, {
-        headers: {
-          'User-Agent':
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126 Safari/537.36',
-          Accept: 'text/html,application/xhtml+xml',
-          'Accept-Language': 'pt-BR,pt;q=0.9'
-        },
-        signal: AbortSignal.timeout(15000)
-      });
+      resposta = await fetch(atual.href, { headers: CABECALHOS, redirect: 'manual', signal: sinal });
     } catch {
       throw new HttpError(
         502,
         'O site da Sefaz não respondeu. Tente de novo em alguns minutos ou lance o gasto à mão.'
       );
     }
-    if (!new URL(resposta.url || url.href).hostname.endsWith('.gov.br'))
+    const destino = resposta.headers.get('location');
+    if (resposta.status < 300 || resposta.status >= 400 || !destino) return resposta;
+    if (saltos >= MAXIMO_DE_REDIRECIONAMENTOS)
+      throw new HttpError(502, 'A Sefaz redirecionou vezes demais. Tente de novo mais tarde.');
+    let proximo;
+    try {
+      proximo = new URL(destino, atual);
+    } catch {
+      proximo = null;
+    }
+    if (!proximo || !ehDaSefaz(proximo))
       throw new HttpError(502, 'A Sefaz redirecionou para um endereço desconhecido.');
+    atual = proximo;
+  }
+}
+
+export const NfceModel = {
+  async ler(texto) {
+    const url = validarEndereco(texto);
+    const chave = chaveDoEndereco(url);
+    if (!chave) throw new HttpError(400, 'Não achei a chave de acesso de 44 números neste QR Code.');
+
+    const resposta = await buscarNaSefaz(url);
     if (!resposta.ok)
       throw new HttpError(502, `A Sefaz respondeu com erro (${resposta.status}). Tente de novo.`);
 

@@ -1,3 +1,8 @@
 node_modules
 .env
 service-account*.json
+# Export do Firebase tem dados pessoais: nunca vai para o Git.
+# O console baixa como "<projeto>-default-rtdb-export.json"; "*-export*.json" cobre esse
+# nome e as cópias "(1)", "(2)"...
+exportacao-firebase*.json
+*-export*.json

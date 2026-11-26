@@ -157,46 +157,13 @@
 .landing-proof{
   display:flex;
   align-items:center;
-  gap:16px;
+  gap:32px;
   flex-wrap:wrap
-}
-.landing-avatars{
-  display:flex;
-  align-items:center
-}
-.landing-avatar{
-  width:38px;
-  height:38px;
-  margin-right:-10px;
-  border-radius:999px;
-  border:2px solid var(--surface-sunken);
-  color:var(--on-accent);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:var(--fs-caption);
-  font-weight:700
-}
-.landing-avatar--1{
-  background:var(--accent)
-}
-.landing-avatar--2{
-  background:var(--data)
-}
-.landing-avatar--3{
-  background:var(--success)
-}
-.landing-avatar--4{
-  background:var(--warning)
-}
-.landing-avatar--5{
-  background:var(--accent-text)
 }
 .landing-proof__num{
   display:flex;
   flex-direction:column;
-  gap:2px;
-  padding-left:12px
+  gap:2px
 }
 .landing-proof__value{
   font-family:var(--font-serif);
@@ -330,6 +297,31 @@
   align-items:center;
   padding-top:28px;
   border-top:1px solid var(--border-hairline)
+}
+.landing-aviso{
+  font-size:var(--fs-caption);
+  color:var(--text-muted)
+}
+.landing-ilustrativa{
+  font-size:var(--fs-caption);
+  color:var(--text-muted)
+}
+.landing-hero__art .landing-ilustrativa{
+  position:absolute;
+  right:0;
+  bottom:0
+}
+.landing-lista-art{
+  flex:1 1 400px;
+  min-width:300px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:6px
+}
+.landing-lista-art .phones-lista{
+  flex:none;
+  width:100%
 }
 .landing-pills{
   display:flex;
@@ -596,47 +588,6 @@
   justify-content:space-between;
   gap:24px;
   flex-wrap:wrap
-}
-.landing-stars{
-  display:flex;
-  gap:3px;
-  color:var(--accent-text);
-  font-size:14px;
-  letter-spacing:2px
-}
-.landing-quote{
-  font-size:var(--fs-body);
-  line-height:var(--lh-relaxed);
-  color:var(--text-2);
-  margin:0;
-  text-wrap:pretty
-}
-.landing-person{
-  display:flex;
-  align-items:center;
-  gap:12px;
-  margin-top:auto
-}
-.landing-person__ini{
-  width:38px;
-  height:38px;
-  border-radius:999px;
-  background:var(--surface-key);
-  color:var(--text-1);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:var(--fs-caption);
-  font-weight:700;
-  flex-shrink:0
-}
-.landing-person__name{
-  font-size:var(--fs-meta);
-  font-weight:700
-}
-.landing-person__meta{
-  font-size:var(--fs-caption);
-  color:var(--text-muted)
 }
 .landing-final{
   position:relative;

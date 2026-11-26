@@ -10,6 +10,12 @@ const radianos = graus => (graus * Math.PI) / 180;
 const temCoordenadas = ponto =>
   !!ponto && Number.isFinite(Number(ponto.lat)) && Number.isFinite(Number(ponto.lng));
 
+// A vera não precisa da casa exata de ninguém: 3 casas decimais (~100 m) bastam para achar os
+// mercados do raio. Arredondar antes de guardar ou de mandar para fora (Nominatim) é minimização
+// de dados (LGPD, art. 6º, III).
+const CASAS = 3;
+const arredondar = valor => Number(Number(valor).toFixed(CASAS));
+
 async function buscarJson(endereco) {
   try {
     const resposta = await fetch(endereco, {
@@ -24,6 +30,9 @@ async function buscarJson(endereco) {
 
 export const GeoModel = {
   temCoordenadas,
+
+  /** Ponto arredondado a ~100 m, para guardar no perfil. */
+  aproximar: ponto => ({ lat: arredondar(ponto.lat), lng: arredondar(ponto.lng) }),
 
   distanciaKm(a, b) {
     if (!temCoordenadas(a) || !temCoordenadas(b)) return null;
@@ -48,10 +57,11 @@ export const GeoModel = {
   /** CEP do endereço mais próximo das coordenadas (Nominatim reverso). */
   async cepDe(ponto) {
     if (!temCoordenadas(ponto)) return '';
-    const chave = `${Number(ponto.lat).toFixed(3)},${Number(ponto.lng).toFixed(3)}`;
+    const [lat, lng] = [arredondar(ponto.lat), arredondar(ponto.lng)];
+    const chave = `${lat},${lng}`;
     if (cepsAchados.has(chave)) return cepsAchados.get(chave);
     const dados = await buscarJson(
-      `https://nominatim.openstreetmap.org/reverse?format=json&zoom=18&addressdetails=1&lat=${ponto.lat}&lon=${ponto.lng}`
+      `https://nominatim.openstreetmap.org/reverse?format=json&zoom=18&addressdetails=1&lat=${lat}&lon=${lng}`
     );
     const cep = String(dados?.address?.postcode || '').replace(/\D/g, '');
     const valido = cep.length === 8 ? cep : '';

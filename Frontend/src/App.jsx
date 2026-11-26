@@ -2,14 +2,18 @@ import { Suspense, lazy, useEffect } from 'react';
 import { Logo } from './components/ds/index.js';
 import { Redirect, useRouter } from './lib/router.jsx';
 import { useAuth } from './context/AuthContext.jsx';
+import { aceitouTermos } from './lib/termos.js';
 import { useUi } from './context/UiContext.jsx';
+import { metaDaPagina } from './lib/paginas.js';
 import { AppShell } from './components/app/AppShell.jsx';
 import { PageSkeleton } from './components/Loading.jsx';
 import Landing from './pages/site/Landing.jsx';
 import Precos from './pages/site/Precos.jsx';
 import Legal from './pages/site/Legal.jsx';
+import Perguntas from './pages/site/Perguntas.jsx';
 import Login from './pages/auth/Login.jsx';
 import Cadastro from './pages/auth/Cadastro.jsx';
+import AceiteDosTermos from './pages/auth/AceiteDosTermos.jsx';
 const Onboarding = lazy(() => import('./pages/auth/Onboarding.jsx'));
 const Painel = lazy(() => import('./pages/app/Painel.jsx'));
 const Lancamentos = lazy(() => import('./pages/app/Lancamentos.jsx'));
@@ -33,6 +37,16 @@ const APP_PAGES = {
   '/app/configuracoes': Configuracoes
 };
 
+/** Acha a tag no <head> ou cria uma. */
+function tagNoHead(seletor, tag, atributos) {
+  let el = document.head.querySelector(seletor);
+  if (!el) {
+    el = document.createElement(tag);
+    document.head.appendChild(el);
+  }
+  for (const [nome, valor] of Object.entries(atributos)) el.setAttribute(nome, valor);
+}
+
 function Carregando() {
   return (
     <div className="vera-center" aria-busy="true">
@@ -53,44 +67,30 @@ export default function App() {
   }, [user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    // Título e descrição por página (o Google usa os dois no resultado da busca).
-    const paginas = {
-      '/': [
-        'vera.finance · controle de gastos e comparador de preços de supermercado',
-        'Organize a renda por categorias, saiba até que dia o dinheiro dura e compare o preço da sua lista de compras nos supermercados perto de você. Grátis.'
-      ],
-      '/precos': [
-        'Planos e preços · vera.finance',
-        'Comece grátis. Compare o plano grátis e o vera+ para controle de gastos, metas, modo família e leitura de notas fiscais.'
-      ],
-      '/entrar': ['Entrar · vera.finance', 'Entre na sua conta da vera.finance.'],
-      '/cadastro': [
-        'Criar conta grátis · vera.finance',
-        'Crie a sua conta grátis e descubra até que dia o seu dinheiro dura.'
-      ],
-      '/termos': ['Termos de uso · vera.finance', 'Termos de uso da vera.finance.'],
-      '/privacidade': [
-        'Política de privacidade · vera.finance',
-        'Como a vera.finance trata os seus dados pessoais, conforme a LGPD.'
-      ]
-    };
-    const [titulo, descricao] = paginas[path] || ['vera.finance', paginas['/'][1]];
-    document.title = titulo;
-    document.querySelector('meta[name="description"]')?.setAttribute('content', descricao);
-    document.querySelector('link[rel="canonical"]')?.setAttribute('href', `${window.location.origin}${path}`);
-    // Área logada não entra no Google.
-    document
-      .querySelector('meta[name="robots"]')
-      ?.setAttribute('content', path.startsWith('/app') || path.startsWith('/onboarding') ? 'noindex, nofollow' : 'index, follow');
+    // Título, descrição, canonical e robots por página. As páginas públicas já chegam com eles no
+    // HTML pré-renderizado; aqui eles acompanham a navegação dentro do site.
+    const meta = metaDaPagina(path);
+    document.title = meta.titulo;
+    document.querySelector('meta[name="description"]')?.setAttribute('content', meta.descricao);
+    document.querySelector('meta[name="robots"]')?.setAttribute('content', meta.robots);
+    // A casca do app (dist/app.html) vem sem canonical; ele só é criado nas páginas públicas.
+    if (meta.robots.startsWith('index')) {
+      tagNoHead('link[rel="canonical"]', 'link', { rel: 'canonical', href: meta.canonical });
+      tagNoHead('meta[property="og:url"]', 'meta', { property: 'og:url', content: meta.canonical });
+    } else document.head.querySelector('link[rel="canonical"]')?.remove();
   }, [path]);
 
   if (path === '/') return <Landing />;
   if (path === '/precos') return <Precos />;
+  if (path === '/perguntas') return <Perguntas />;
   if (path === '/termos') return <Legal tipo="termos" />;
   if (path === '/privacidade') return <Legal tipo="privacidade" />;
 
   if (status === 'loading') return <Carregando />;
   const logado = status === 'in';
+  // Sem o aceite da versão em vigor dos termos nada abre, nem o cadastro guiado: vale para
+  // quem entrou pelo Google ou pela Apple na tela Entrar e para quem tem um aceite antigo.
+  if (logado && !aceitouTermos(user)) return <AceiteDosTermos />;
   const pronto = logado && user?.onboardingCompleto;
 
   if (path === '/entrar') return pronto ? <Redirect to="/app" /> : <Login />;

@@ -1,0 +1,68 @@
+{
+  "usuarios": {
+    "uid-ana": {
+      "perfil": {
+        "nome": "Ana Teste",
+        "email": "ana@exemplo.com",
+        "plano": "free",
+        "notificacoesVistas": ["boas-vindas"]
+      },
+      "categorias": {
+        "c1": { "nome": "Comida", "limite": 800 },
+        "c2": { "nome": "Casa", "limite": 1200 }
+      },
+      "lancamentos": {
+        "l1": { "descricao": "Mercado", "valor": 150.4, "categoriaId": "c1", "data": "2026-01-05" }
+      },
+      "lista": {
+        "i1": { "produto": "Arroz 5kg", "quantidade": 1, "done": false }
+      },
+      "metas": { "m1": { "nome": "Reserva", "alvo": 1000 } },
+      "notas": { "n1": { "mercado": "Mercado Exemplo", "total": 150.4 } },
+      "fixos": { "f1": { "nome": "Aluguel", "valor": 1200 } }
+    },
+    "uid-bia": {
+      "perfil": { "nome": "Bia Teste", "email": "bia@exemplo.com" },
+      "lista": { "i1": { "produto": "Café", "done": true } }
+    }
+  },
+  "contas": {
+    "ana@exemplo,com": { "uid": "uid-ana", "email": "ana@exemplo.com" }
+  },
+  "credenciais": {
+    "ana@exemplo,com": { "uid": "uid-ana", "sal": "sal-de-teste", "hash": "hash-de-teste" }
+  },
+  "familias": {
+    "fam1": { "nome": "Casa Teste", "membros": { "uid-ana": true, "uid-bia": true } }
+  },
+  "mercados": {
+    "m1": { "nome": "Mercado Exemplo", "cidade": "Cidade Teste" }
+  },
+  "precos": {
+    "11111111111111111111111111111111111111111111-1": {
+      "produto": "Arroz 5kg", "produtoKey": "arroz 5kg", "mercadoId": "m1", "preco": 25.9, "data": "2026-01-05", "origem": "nfce"
+    },
+    "11111111111111111111111111111111111111111111-2": {
+      "produto": "Feijão 1kg", "produtoKey": "feijao 1kg", "mercadoId": "m1", "preco": 8.5, "data": "2026-01-05", "origem": "nfce"
+    },
+    "22222222222222222222222222222222222222222222-1": {
+      "produto": "Café 500g", "produtoKey": "cafe 500g", "mercadoId": "m1", "preco": 19, "data": "2026-01-06", "origem": "nfce"
+    },
+    "n1fea4bf47385fc7d28753a58-1": {
+      "produto": "Café 500g", "produtoKey": "cafe 500g", "mercadoId": "m1", "preco": 19, "data": "2026-01-06", "origem": "nfce"
+    },
+    "site-exemplo-cafe-20260107": {
+      "produto": "Café 500g", "produtoKey": "cafe 500g", "ean": "7890000000001", "mercadoId": "rede-exemplo", "preco": 18.5, "data": "2026-01-07", "origem": "site"
+    }
+  },
+  "regioes": {
+    "sp-teste": { "em": "2026-01-01T00:00:00.000Z", "lista": [{ "id": "m1", "nome": "Mercado Exemplo" }] }
+  },
+  "interessados": {
+    "int1": { "email": "interessado@exemplo.com", "em": "2026-01-02" }
+  },
+  "exclusoes": {
+    "uid-bia": { "quando": "2026-03-01T00:00:00.000Z" }
+  },
+  "algoSemTabela": { "chave": { "valor": 1 } }
+}

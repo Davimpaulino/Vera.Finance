@@ -3,8 +3,10 @@ import { PlanoModel } from '../models/PlanoModel.js';
 import { ExclusaoModel } from '../models/ExclusaoModel.js';
 import { FamiliaModel } from '../models/FamiliaModel.js';
 import { GeoModel } from '../models/GeoModel.js';
+import { PortabilidadeModel } from '../models/PortabilidadeModel.js';
 import { HttpError, toNumber } from '../utils/http.js';
 import { cycleFor } from '../utils/dates.js';
+import { VERSAO_DOS_TERMOS } from '../config/termos.js';
 
 const pick = (obj, keys) =>
   Object.fromEntries(keys.filter(k => obj && obj[k] !== undefined).map(k => [k, obj[k]]));
@@ -28,6 +30,8 @@ export function apresentarUsuario(u, familia) {
       ? { ...u.assinatura, proximaCobranca: proximaCobranca(u.assinatura) }
       : null,
     cicloAtual: cycleFor(u.ciclo?.diaVirada || 5),
+    termosAceitos: u.termosAceitos || null,
+    versaoDosTermos: VERSAO_DOS_TERMOS,
     familia: familia
       ? { id: familia.id, nome: familia.nome, membros: familia.membros?.length || 1 }
       : null
@@ -67,8 +71,8 @@ export const userController = {
       ]);
       if (data.local.raioKm !== undefined) data.local.raioKm = Number(data.local.raioKm);
       if (GeoModel.temCoordenadas(data.local)) {
-        data.local.lat = Number(data.local.lat);
-        data.local.lng = Number(data.local.lng);
+        // Guarda só o ponto aproximado (~100 m), nunca a posição exata do aparelho.
+        Object.assign(data.local, GeoModel.aproximar(data.local));
         // Localização do aparelho: o CEP passa a ser o da rua onde a pessoa está.
         if (data.local.cep === undefined) {
           const cep = await GeoModel.cepDe(data.local);
@@ -119,6 +123,17 @@ export const userController = {
     const quando = new Date(Date.now() + 30 * 86400000).toISOString();
     await ExclusaoModel.agendar(user.uid, quando);
     return { exclusaoAgendadaPara: quando };
+  },
+
+  /** Baixa todos os dados da pessoa em JSON (portabilidade, LGPD art. 18, V). */
+  async exportar({ user }) {
+    const dados = await PortabilidadeModel.exportar(user.uid);
+    if (!dados) throw new HttpError(404, 'Perfil não encontrado.');
+    return {
+      raw: JSON.stringify(dados, null, 2),
+      contentType: 'application/json; charset=utf-8',
+      headers: { 'Content-Disposition': 'attachment; filename="vera-meus-dados.json"' }
+    };
   },
 
   /** Desiste da exclusão marcada (dentro dos 30 dias). */

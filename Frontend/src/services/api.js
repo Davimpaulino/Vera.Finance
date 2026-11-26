@@ -5,6 +5,13 @@ export const setTokenProvider = fn => {
   tokenProvider = fn;
 };
 
+// A API recusa o app sem o aceite dos termos em vigor (403, motivo "termos"), por exemplo
+// quando os termos mudam com o app aberto. O AuthContext recarrega o perfil e o App pede o aceite.
+let aoPedirAceite = () => {};
+export const setAoPedirAceite = fn => {
+  aoPedirAceite = fn;
+};
+
 export class ApiError extends Error {
   constructor(status, message) {
     super(message);
@@ -30,8 +37,10 @@ async function request(method, path, body) {
   if (res.status === 204) return null;
   const type = res.headers.get('content-type') || '';
   const data = type.includes('application/json') ? await res.json() : await res.text();
-  if (!res.ok)
+  if (!res.ok) {
+    if (res.status === 403 && data?.detalhes?.motivo === 'termos') aoPedirAceite();
     throw new ApiError(res.status, (data && data.erro) || 'Algo deu errado. Tente de novo.');
+  }
   return data;
 }
 
@@ -41,13 +50,13 @@ export const api = {
   patch: (p, b = {}) => request('PATCH', p, b),
   del: p => request('DELETE', p),
 
-  /** Baixa um arquivo autenticado (CSV de exportação). */
-  async download(path, filename) {
+  /** Baixa um arquivo autenticado (CSV dos lançamentos, JSON com todos os dados). */
+  async download(path, filename, erro = 'Não deu para gerar a planilha.') {
     const token = await tokenProvider();
     const res = await fetch(BASE + '/api' + path, {
       headers: token ? { Authorization: `Bearer ${token}` } : {}
     });
-    if (!res.ok) throw new ApiError(res.status, 'Não deu para gerar a planilha.');
+    if (!res.ok) throw new ApiError(res.status, erro);
     const url = URL.createObjectURL(await res.blob());
     const a = document.createElement('a');
     a.href = url;

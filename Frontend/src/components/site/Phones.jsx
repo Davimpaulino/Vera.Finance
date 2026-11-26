@@ -9,6 +9,9 @@ import impactoPapel from '../../assets/landing/celular-impacto-papel.png';
 import { cx } from '../../lib/cx.js';
 import './css/phones.css';
 
+// As telas usam "Mercado A/B/C": preço de exemplo não pode aparecer ao lado de marca real.
+// O alt descreve a tela sem repetir os valores, que são só ilustrativos.
+
 /** Celular da landing: duas imagens (tinta e papel) e o CSS mostra a da superfície atual. */
 function Celular({ tinta, papel, alt, className }) {
   return (
@@ -24,7 +27,7 @@ export const PhonePainel = () => (
     tinta={painelTinta}
     papel={painelPapel}
     className="phone--painel"
-    alt="Painel do vera.finance no celular: R$ 1.284 livres até 31 de agosto e as categorias Comida e Rolê"
+    alt="Imagem ilustrativa do painel do vera.finance no celular, com o saldo livre do mês e as categorias Comida e Rolê"
   />
 );
 
@@ -33,7 +36,7 @@ export const PhoneComparar = () => (
     tinta={compararTinta}
     papel={compararPapel}
     className="phone--comparar"
-    alt="Comparação do arroz branco 5kg: Atacadão R$ 23,40, Nagumo R$ 24,90, Covabra R$ 26,10"
+    alt="Imagem ilustrativa da tela de comparação de preços, com mercados de exemplo"
   />
 );
 
@@ -44,13 +47,13 @@ export function PhonesLista() {
         tinta={listaTinta}
         papel={listaPapel}
         className="phone--lista"
-        alt="Lista da semana com 5 itens, mais barata no Atacadão por R$ 178,60"
+        alt="Imagem ilustrativa da lista da semana, com o total no mercado mais barato"
       />
       <Celular
         tinta={impactoTinta}
         papel={impactoPapel}
         className="phone--impacto"
-        alt="Impacto da compra no ciclo: Comida chega a R$ 806"
+        alt="Imagem ilustrativa do impacto da compra na categoria Comida"
       />
     </div>
   );

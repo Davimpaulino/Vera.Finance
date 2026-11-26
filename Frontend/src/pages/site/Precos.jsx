@@ -19,8 +19,8 @@ export default function Precos() {
       <section className="precos-intro">
         <h1 className="precos-intro__title">Comece de graça. Assine quando fizer sentido.</h1>
         <p className="precos-intro__lead">
-          Categorias, projeção e metas não custam nada. O vera+ é para quem vive de nota fiscal e
-          quer o histórico de preço.
+          Categorias, projeção, metas e comparação de preços não custam nada. O vera+ é para quem
+          vive de nota fiscal ou divide as contas com a família.
         </p>
       </section>
       <section className="precos-grid">

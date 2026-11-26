@@ -221,6 +221,13 @@ export default function Configuracoes() {
       toast(e.message, 'danger');
     }
   };
+  const baixarMeusDados = async () => {
+    try {
+      await api.download('/me/exportar', 'vera-meus-dados.json', 'Não deu para gerar o arquivo.');
+    } catch (e) {
+      toast(e.message, 'danger');
+    }
+  };
   const sair = async () => {
     await logout();
     navigate('/');
@@ -430,6 +437,12 @@ export default function Configuracoes() {
             title="Exportar lançamentos em planilha"
             meta="todos os lançamentos em CSV"
             onClick={exportar}
+          />
+          <ListRow
+            icon="file-down"
+            title="Baixar todos os meus dados"
+            meta="perfil, lançamentos, metas, lista e notas em JSON"
+            onClick={baixarMeusDados}
           />
           <ListRow
             icon="receipt-text"

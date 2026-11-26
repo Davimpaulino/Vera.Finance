@@ -1,6 +1,6 @@
-import { createHash } from 'node:crypto';
 import { banco } from '../config/banco.js';
 import { matchScore, normalize } from '../utils/text.js';
+import { resumoDaChaveDaNota } from '../utils/resumoDaNota.js';
 
 const VALIDADE_DO_CACHE_MS = 60000;
 let precosEmCache = null;
@@ -31,7 +31,7 @@ export const PrecoModel = {
    */
   async gravarDaNota(nota, mercadoId) {
     const data = nota.compradoEm || new Date().toISOString();
-    const resumo = createHash('sha256').update(`vera-precos|${nota.chave}`).digest('hex').slice(0, 24);
+    const resumo = resumoDaChaveDaNota(nota.chave);
     const caminhos = {};
     nota.itens.forEach((item, i) => {
       caminhos[`precos/n${resumo}-${i + 1}`] = {

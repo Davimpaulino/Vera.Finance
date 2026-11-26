@@ -162,11 +162,140 @@ Backend (Render → Environment):
 | `CORS_ORIGIN` | Endereço do site (ex.: `https://vera-finance.onrender.com`). Nunca `*`. |
 | `FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL`, `FIREBASE_PRIVATE_KEY` | Conta de serviço do Firebase (Admin SDK). |
 | `FIREBASE_URL_BANCO` | URL do Realtime Database. |
+| `DATABASE_URL` | Opcional. Endereço do PostgreSQL. Com ela, os **dados** vão para o PostgreSQL e o login continua como está hoje (Firebase Auth com a conta de serviço, ou login próprio). Sem ela, nada muda. Veja "PostgreSQL" abaixo. |
+| `PGSSL` | Opcional. Força o SSL do PostgreSQL: `require`, `no-verify` ou `disable`. Sem ela, vale o `sslmode` da `DATABASE_URL`. |
 | `NODE_ENV` | `production` |
+
+Frontend (build do site estático no Render → Environment):
+
+| Variável | Para quê |
+|---|---|
+| `VITE_API_URL` | Endereço da API (ex.: `https://sua-api.onrender.com`). |
+| `VITE_SITE_URL` | Endereço público do site, sem `/` no fim. Padrão: `https://vera-finance.onrender.com`. Vai para o `og:image` e o JSON-LD do `index.html` e para os links absolutos das páginas (`src/lib/site.js`). O canonical e o `og:url` de cada página pública saem prontos no HTML pré-renderizado (`scripts/prerender.mjs`). Ao trocar para um domínio próprio, atualize também as URLs de `public/sitemap.xml`, `public/robots.txt` e `public/llms.txt`. |
 
 Regras do banco: o arquivo `database.rules.json` fecha o Realtime Database para leitura e escrita
 diretas (só a API, com a conta de serviço, acessa). Publique com `firebase deploy --only database`
 ou cole o conteúdo em Firebase Console → Realtime Database → Regras.
+
+---
+
+# 🔑 Levar as contas do login por senha para o Firebase Authentication
+
+As contas criadas pelo login próprio da API (e-mail e senha guardados em `credenciais` no banco)
+podem ir para o Firebase Authentication sem ninguém trocar de senha: o script leva o hash scrypt
+como está, com o mesmo identificador (uid), e-mail e nome.
+
+Na pasta `Backend`, com a conta de serviço do Firebase no `.env` (as mesmas variáveis do Render):
+
+```bash
+# 1. Simulação (padrão): só lê e mostra o relatório, não grava nada
+node --env-file=.env scripts/importar-usuarios-firebase.mjs
+
+# 2. Conferiu o relatório? Importa de verdade (lotes de até 1000 contas)
+node --env-file=.env scripts/importar-usuarios-firebase.mjs --executar
+```
+
+Contas que já existem no Firebase (mesmo uid ou mesmo e-mail) são puladas, e o relatório final
+lista as inválidas, as puladas e as que falharam. Rode primeiro num projeto de teste.
+
+Depois que todas as contas estiverem no Firebase, o login próprio pode ser desligado: o site já
+entra pelo Firebase, e as rotas `/api/auth/entrar`, `/api/auth/cadastrar`, `/api/me/senha` e o
+plano B em `Frontend/src/services/servicoDeLogin.js` deixam de ser necessários.
+
+---
+
+# ✅ Integração contínua
+
+Cada push e pull request roda os testes do backend (`cd Backend && npm test`) e o build do
+frontend (`cd Frontend && npm run build`) no GitHub Actions (`.github/workflows/ci.yml`).
+
+---
+
+# 🐘 PostgreSQL (dados)
+
+A API funciona com o Firebase Realtime Database (como hoje) ou com PostgreSQL. Quem escolhe é a
+variável `DATABASE_URL`: sem ela, nada muda. Só os dados mudam de lugar: o login continua como
+está hoje (Firebase Auth com a conta de serviço, ou login próprio).
+
+- O adaptador fica em `Backend/src/config/bancoPostgres.js` e segue a mesma interface dos outros
+  bancos (`ler`, `gravar`, `atualizar`, `mesclar`, `remover`, `adicionar`, `listar`,
+  `atualizarVarios`), então os models não mudam. O que ainda difere do banco em memória (poucos
+  detalhes, cada um com teste) está no comentário do início desse arquivo.
+- As tabelas ficam em `Backend/src/config/esquema.sql` e são criadas sozinhas na primeira conexão.
+  Os dados de cada pessoa ficam em `usuarios` (o perfil) e `itens_usuario` (categorias,
+  lançamentos, lista, metas, notas e fixos, separados pela coluna `colecao`); as demais coleções
+  (`contas`, `precos`, `familias`...) têm tabela própria. Apagar uma pessoa apaga tudo dela
+  (cascata). Caminho sem tabela própria vai para `documentos`, sem perder dado.
+
+## 1. Criar o banco (grátis, no Neon)
+
+1. Crie uma conta em [neon.tech](https://neon.tech) e um projeto novo.
+2. Na região, escolha **São Paulo** (AWS `sa-east-1`) se aparecer na lista; senão, a mais próxima
+   do Render.
+3. Em **Connection string**, copie o endereço `postgresql://...?sslmode=require`. Ele tem a senha
+   do banco: **nunca** coloque no código, em commit ou em print.
+
+## 2. Exportar o Firebase e migrar (em janela de manutenção)
+
+Escolha um horário de pouco uso e avise quem usa. A ideia é ninguém gravar nada entre o export e a
+troca do banco.
+
+1. **Pare a API** no Render (Dashboard → serviço → *Suspend*), para não entrar dado novo.
+2. **Exporte o JSON**: Firebase Console → Realtime Database → Dados → menu **⋮** → *Exportar JSON*.
+   O arquivo vem como `<projeto>-default-rtdb-export.json`. Salve **fora** da pasta do projeto
+   (ele tem dados pessoais; nunca vai para o Git). Os exemplos abaixo usam
+   `~/exportacao-firebase.json`; troque pelo caminho do seu arquivo.
+3. **Simule** a migração, na pasta `Backend` (só lê o arquivo e mostra as contagens):
+
+   ```bash
+   npm ci
+   npm run migrar:postgres -- ~/exportacao-firebase.json --simular
+   ```
+
+4. **Migre** apontando para o Neon. Passe a `DATABASE_URL` só no terminal (ou num `Backend/.env`,
+   que o Git ignora):
+
+   ```bash
+   DATABASE_URL='postgresql://...?sslmode=require' npm run migrar:postgres -- ~/exportacao-firebase.json
+   ```
+
+   O script grava em lotes (uma transação por lote), troca os ids antigos de preços pelo formato
+   novo (sem a chave de acesso da nota) e, no fim, mostra a **conferência**: a contagem de cada
+   coleção no export e no banco. Ele termina com "as contagens batem" ou aponta a diferença.
+   Se o banco de destino já tiver dados, ele não grava; para repetir uma migração interrompida,
+   use `--continuar`.
+
+5. **Configure o Render**: Dashboard → serviço → *Environment* → adicione `DATABASE_URL` com o
+   endereço do Neon. Salve e reative o serviço (*Resume*). O log de início deve mostrar
+   `PostgreSQL (DATABASE_URL)`.
+6. **Confira no site**: entre com uma conta de teste, veja lançamentos, lista, metas e a comparação
+   de preços.
+
+Para voltar atrás, basta remover `DATABASE_URL` do Render: a API volta a usar o Firebase (o que foi
+gravado no PostgreSQL nesse meio-tempo não volta junto).
+
+## 3. Depois de alguns dias sem problema
+
+Guarde o JSON exportado num lugar seguro e então apague o Realtime Database (Firebase Console →
+Realtime Database → menu **⋮** → excluir banco). **Não** apague o projeto do Firebase: o login usa
+o Firebase Auth. Depois disso, `FIREBASE_URL_BANCO` pode sair do Render.
+
+## Testes no PostgreSQL
+
+`npm test` usa o banco em memória e não precisa de PostgreSQL (os testes do adaptador são pulados).
+Para rodar **a suíte inteira** também no PostgreSQL, use um banco só de teste (o nome precisa ter
+"test", porque os testes apagam tudo):
+
+```bash
+# exemplo com um PostgreSQL local; qualquer outro serve
+createdb vera_teste
+cd Backend
+DATABASE_URL_TESTE='postgres://usuario:senha@localhost:5432/vera_teste' npm run test:pg
+```
+
+Sem PostgreSQL instalado, dá para subir um descartável com Docker:
+`docker run --rm -e POSTGRES_PASSWORD=teste -e POSTGRES_DB=vera_teste -p 5432:5432 postgres:16`
+e usar `DATABASE_URL_TESTE='postgres://postgres:teste@localhost:5432/vera_teste'`.
 
 ---
 
@@ -176,6 +305,66 @@ ou cole o conteúdo em Firebase Console → Realtime Database → Regras.
 ## Render (2TW)
 
 https://vera-finance.onrender.com/
+
+### Site estático (Frontend)
+
+- Build: `npm ci && npm run build` (pasta `Frontend`). Publicar a pasta `Frontend/dist`.
+- O `npm run build` faz três coisas: o build normal do Vite, um build SSR de
+  `src/entry-server.jsx` e o `scripts/prerender.mjs`, que grava o HTML pronto das páginas
+  públicas (`/`, `/precos`, `/perguntas`, `/termos`, `/privacidade`, `/entrar`, `/cadastro`)
+  em `dist/<rota>/index.html`. Assim buscadores e robôs de IA, que não rodam JavaScript, leem o
+  conteúdo. Não precisa de navegador no build. Título, descrição, canonical, robots e os textos
+  de compartilhamento (`og:`/`twitter:`) de cada página vêm de `src/lib/paginas.js` (o mesmo
+  arquivo que o app usa no navegador); a home mantém os do `index.html`.
+- O mesmo script grava `dist/app.html`, a casca do app: o `#root` vazio, sem o conteúdo da
+  landing, com `noindex` e sem canonical. É ela que atende as rotas sem arquivo, para o app
+  logado não baixar as imagens da landing e endereços que não existem não virarem cópias da home.
+- Regra de rewrite no Render (Redirects/Rewrites): **Source** `/*`, **Destination**
+  `/app.html`, **Action** `Rewrite`. O Render só aplica a regra quando não existe arquivo no
+  caminho, então `/` abre o `index.html`, `/precos` abre `precos/index.html` e só as rotas do
+  app (`/app`, `/app/lista`, `/cadastro/perguntas`...) e os endereços desconhecidos caem no
+  `app.html`. Não crie regras que mandem as páginas públicas para outro arquivo, senão elas
+  perdem o HTML pré-renderizado. Ao trocar a regra antiga (`/index.html`), publique antes um
+  build que já tenha o `app.html`.
+- `npm run preview` serve o `dist` do mesmo jeito, para conferir antes de publicar.
+- Depois do deploy, confira: o código-fonte de `https://<site>/precos` (Ctrl+U) precisa ter o
+  título `Planos e preços · vera.finance` e o texto dos planos, e o de `https://<site>/app` só o
+  `<div id="root"></div>` vazio, com `noindex, nofollow`.
+
+### App instalável (PWA)
+
+- `public/manifest.webmanifest` (nome, ícones, abre em `/app`) e `public/sw.js`.
+- O service worker só é registrado no build de produção. Ele guarda os arquivos de
+  `/assets/` (têm hash no nome) e busca as páginas na rede primeiro, com a última cópia (ou a
+  casca `app.html`) como reserva sem internet. Chamadas da API e pedidos com `Authorization`
+  nunca vão para o cache.
+- Sem internet abre só a casca do app, não os dados: o login e os números vêm da API, então
+  quem está logado vê a tela de Entrar até a conexão voltar. O login não se perde.
+- A versão do cache muda a cada build: o plugin `vera-versao-do-sw` do `vite.config.js` troca o
+  marcador `__VERSAO_DO_BUILD__` do `dist/sw.js` em qualquer `vite build` e faz o build falhar
+  se o marcador sumir. Os caches antigos são apagados quando a versão nova assume.
+- Emergência (o service worker atrapalhando em produção): copie `scripts/sw-emergencia.js` por
+  cima de `public/sw.js` e, no mesmo deploy, apague o bloco que registra o service worker em
+  `src/main.jsx`. Publique. A primeira visita de cada pessoa depois do deploy ainda passa pelo
+  service worker antigo, que baixa o novo; a partir daí os caches da vera somem, o registro sai
+  e tudo vem direto da rede. Se o bloco do `src/main.jsx` ficar, o registro continua, mas vazio:
+  não guarda nem intercepta nada. Para voltar ao normal, restaure os dois arquivos pelo git.
+
+## Avisar os buscadores (IndexNow)
+
+Depois de cada deploy que muda páginas públicas, avise Bing e os outros buscadores do IndexNow:
+
+```bash
+cd Frontend
+npm run indexnow                                   # usa VITE_SITE_URL ou o endereço padrão
+npm run indexnow -- https://seu-dominio.com.br     # outro endereço
+npm run indexnow -- --teste                        # só mostra o que seria enviado
+```
+
+O script lê as URLs de `public/sitemap.xml` e usa a chave do arquivo `public/<chave>.txt`, que
+precisa estar no ar (abra `https://<site>/<chave>.txt` para conferir antes de enviar).
+
+Para aparecer no Google, cadastre o site no Google Search Console e envie o `sitemap.xml`.
 
 
 ---

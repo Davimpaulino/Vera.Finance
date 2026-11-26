@@ -6,9 +6,9 @@ import { useVerPainel } from '../../components/site/useVerPainel.js';
 import { Link, useRouter } from '../../lib/router.jsx';
 import { useBreakpoint } from '../../hooks/useBreakpoint.js';
 import { cx } from '../../lib/cx.js';
+import { REDES_COM_PRECO } from '../../lib/site.js';
 import './css/landing.css';
 
-const HERO_AVATARS = ['MS', 'JP', 'LF', 'RC', 'AT'];
 const FEATURES = [
   [
     'scan-line',
@@ -18,7 +18,7 @@ const FEATURES = [
   [
     'arrow-left-right',
     'Comparação por bairro',
-    'O mesmo produto em até sete mercados do seu raio, com a data da nota que gerou cada preço.'
+    'O mesmo produto nos mercados do seu raio, com a data e a origem de cada preço.'
   ],
   [
     'trending-up',
@@ -26,11 +26,13 @@ const FEATURES = [
     'Uma linha que atravessa o dia de hoje e diz com quanto você fecha o mês, antes do estouro.'
   ]
 ];
-const MARCAS = ['Nagumo', 'Covabra', 'Atacadão', 'Dia', 'Assaí', 'Pão de Açúcar'];
+// Só redes que têm preço online de verdade (lista de lib/site.js).
+const MARCAS = ['Atacadão', 'Pão de Açúcar', 'Covabra', 'Savegnago', 'Tenda Atacado', 'Zaffari'];
+// Fatos do produto, não métricas de uso.
 const NUMEROS = [
-  ['R$ 214', 'economizados por pessoa em 2026'],
-  ['128.400', 'notas fiscais lidas este mês'],
-  ['7 mercados', 'no raio de 5 km da casa média']
+  [`${REDES_COM_PRECO.length} redes`, 'com preço online para o seu CEP'],
+  ['2 a 15 km', 'de raio de busca a partir do seu CEP'],
+  ['90 dias', 'de histórico de preço por produto']
 ];
 const PONTOS = [
   'Raio de busca a partir do seu CEP, de 2 a 15 km',
@@ -54,24 +56,18 @@ const PROTECOES = [
     'Lançamentos, notas e metas saem em planilha. Apagar a conta apaga tudo em 30 dias.'
   ]
 ];
-const DEPOIMENTOS = [
+const PERGUNTAS = [
   [
-    'Descobri que pagava R$ 6 mais caro no arroz sem sair do bairro. Em dois meses a troca de mercado pagou a assinatura do ano.',
-    'Marina Serra',
-    'Indaiatuba, SP · desde maio',
-    'MS'
+    'A vera é grátis?',
+    'Sim. O plano grátis não expira e inclui categorias, projeção do ciclo, lista de compras, até 3 metas e 5 notas lidas por mês.'
   ],
   [
-    'O que me pegou foi a data. Saber que a Comida dura até dia 29 é diferente de ver um gráfico do mês passado.',
-    'João Prado',
-    'Campinas, SP · desde março',
-    'JP'
+    'Precisa da senha do banco?',
+    'Não. A vera nunca pede senha de banco. Você lança os gastos ou lê a nota fiscal pelo QR Code.'
   ],
   [
-    'Uso no modo família com minha irmã. Cada lançamento mostra quem gastou e paramos de discutir no fim do mês.',
-    'Letícia Farias',
-    'Sorocaba, SP · desde junho',
-    'LF'
+    'De onde vêm os preços?',
+    'Do site de cada rede, para o seu CEP, e das notas fiscais lidas por quem usa a vera.'
   ]
 ];
 
@@ -108,16 +104,13 @@ export default function Landing() {
                 <span className="landing-c-1">para gastar.</span>
               </h1>
               <div className="landing-proof">
-                <div className="landing-avatars">
-                  {HERO_AVATARS.map((ini, i) => (
-                    <span key={ini} className={`landing-avatar landing-avatar--${i + 1}`}>
-                      {ini}
-                    </span>
-                  ))}
+                <div className="landing-proof__num">
+                  <span className="landing-proof__value">{REDES_COM_PRECO.length} redes</span>
+                  <span className="landing-proof__label">com preço online pelo seu CEP</span>
                 </div>
                 <div className="landing-proof__num">
-                  <span className="landing-proof__value">128 mil +</span>
-                  <span className="landing-proof__label">notas fiscais lidas este mês</span>
+                  <span className="landing-proof__value">R$ 0</span>
+                  <span className="landing-proof__label">plano grátis, sem cartão</span>
                 </div>
               </div>
               <div className="landing-hero__lead">
@@ -148,6 +141,7 @@ export default function Landing() {
                 <PhonePainel />
                 <PhoneComparar />
               </div>
+              <span className="landing-ilustrativa">Imagens ilustrativas.</span>
             </div>
           </div>
         </section>
@@ -159,11 +153,11 @@ export default function Landing() {
           <div className="landing-wrap landing-col landing-gap-44">
             <div className="landing-center landing-gap-12">
               <h2 className="landing-h2 landing-h2--42 landing-h2--tight">
-                Preço lido de nota fiscal, não de vitrine
+                Preço do site da rede e da nota fiscal
               </h2>
               <p className="landing-lead landing-max-560">
-                Cada valor que a vera mostra saiu do cupom de alguém que comprou perto de você, nos
-                últimos dias.
+                Cada valor que a vera mostra vem do site da rede para o seu CEP ou de uma nota
+                fiscal lida perto de você, sempre com a data.
               </p>
             </div>
             <div className="vera-grid vera-grid--3 landing-feats">
@@ -179,7 +173,7 @@ export default function Landing() {
             </div>
             <div className="landing-brands">
               <span className="landing-eyebrow landing-eyebrow--faint">
-                notas lidas em mercados como
+                preço online de redes como
               </span>
               <div className="landing-pills">
                 {MARCAS.map(m => (
@@ -188,6 +182,7 @@ export default function Landing() {
                   </span>
                 ))}
               </div>
+              <span className="landing-aviso">Sem vínculo com as redes citadas.</span>
             </div>
           </div>
         </section>
@@ -215,7 +210,7 @@ export default function Landing() {
                   nunca controlou nada.
                 </span>
                 <p className="landing-text">
-                  Cinco perguntas no cadastro e o mês já abre reservado. Sem planilha, sem categoria
+                  Cinco passos no cadastro e o mês já abre reservado. Sem planilha, sem categoria
                   vazia esperando você preencher.
                 </p>
               </div>
@@ -257,7 +252,7 @@ export default function Landing() {
               <h2 className="landing-h2">“Dá para gastar sem susto”</h2>
               <p className="landing-lead landing-max-480">
                 É o que a vera devolve todo dia: um número com data. Ela lê a nota, separa item por
-                item na categoria certa e compara com o que o seu bairro pagou na semana.
+                item na categoria certa e compara com o preço dos mercados perto de você.
               </p>
               <Button variant="secondary" size="lg" onClick={() => navigate('/precos')}>
                 Ver planos
@@ -281,8 +276,8 @@ export default function Landing() {
               <span className="landing-eyebrow landing-eyebrow--accent">planos</span>
               <h2 className="landing-h2 landing-h2--42 landing-h2--tight">Comece de graça</h2>
               <p className="landing-lead landing-max-520">
-                Categorias, projeção e metas não custam nada. O vera+ é para quem vive de nota
-                fiscal e quer o histórico de preço.
+                Categorias, projeção, metas e comparação de preços não custam nada. O vera+ é para
+                quem vive de nota fiscal ou divide as contas com a família.
               </p>
             </div>
             <div className="vera-grid vera-grid--3 vera-grid--stretch">
@@ -294,6 +289,7 @@ export default function Landing() {
                 <div className="landing-checks">
                   <Check>Categorias e projeção do ciclo</Check>
                   <Check>Lista de compras com total</Check>
+                  <Check>Comparação e histórico de preço</Check>
                   <Check>Até 3 metas</Check>
                   <Check muted>5 notas lidas por mês</Check>
                 </div>
@@ -309,7 +305,6 @@ export default function Landing() {
                 <div className="landing-checks">
                   {[
                     'Notas fiscais ilimitadas',
-                    'Histórico e comparação de preços',
                     'Metas ilimitadas com simulador',
                     'Modo família com 2 pessoas'
                   ].map(t => (
@@ -367,7 +362,10 @@ export default function Landing() {
                 Abrir a lista de compras
               </Button>
             </div>
-            <PhonesLista />
+            <div className="landing-lista-art">
+              <PhonesLista />
+              <span className="landing-ilustrativa">Imagens ilustrativas.</span>
+            </div>
           </div>
         </section>
 
@@ -402,26 +400,24 @@ export default function Landing() {
 
         <section className="landing-section landing-section--bt">
           <div className="landing-wrap landing-col landing-gap-36">
-            <div className="landing-col landing-gap-10 landing-max-560">
-              <h2 className="landing-h2 landing-h2--40">Quem usa, conta</h2>
-              <p className="landing-lead">
-                Três pessoas que fecharam o ciclo no azul depois de trocar de mercado.
-              </p>
+            <div className="landing-row-end">
+              <div className="landing-col landing-gap-10 landing-max-560">
+                <h2 className="landing-h2 landing-h2--40">Perguntas frequentes</h2>
+                <p className="landing-lead">O básico antes de criar a conta.</p>
+              </div>
+              <Button
+                variant="ghost"
+                iconRight="arrow-right"
+                onClick={() => navigate('/perguntas')}
+              >
+                Ver todas as perguntas
+              </Button>
             </div>
             <div className="vera-grid vera-grid--3">
-              {DEPOIMENTOS.map(([texto, nome, meta, ini]) => (
-                <div key={nome} className="landing-card landing-card--16 landing-card--lift">
-                  <span aria-label="5 estrelas" className="landing-stars">
-                    ★★★★★
-                  </span>
-                  <p className="landing-quote">{texto}</p>
-                  <div className="landing-person">
-                    <span className="landing-person__ini">{ini}</span>
-                    <span className="landing-col">
-                      <span className="landing-person__name">{nome}</span>
-                      <span className="landing-person__meta">{meta}</span>
-                    </span>
-                  </div>
+              {PERGUNTAS.map(([pergunta, resposta]) => (
+                <div key={pergunta} className="landing-card landing-card--12 landing-card--lift">
+                  <span className="landing-card__title">{pergunta}</span>
+                  <p className="landing-text">{resposta}</p>
                 </div>
               ))}
             </div>
@@ -436,8 +432,7 @@ export default function Landing() {
                 Comece o próximo ciclo sabendo até que dia o dinheiro dura
               </h2>
               <p className="landing-lead landing-max-520">
-                Cinco perguntas, dois minutos, nenhum cartão. O painel abre com o seu mês já
-                reservado.
+                Cinco passos, nenhum cartão. O painel abre com o seu mês já reservado.
               </p>
               <div className="vera-cta-stack">
                 <Button size="lg" block={mobile} onClick={cadastro}>

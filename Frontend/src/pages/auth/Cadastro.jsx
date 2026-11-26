@@ -3,7 +3,8 @@ import { Button, Icon, Input } from '../../components/ds/index.js';
 import { Brand } from '../../components/Brand.jsx';
 import { Link, useRouter } from '../../lib/router.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
-import { Divisor, FormError, SocialButtons } from './AuthShared.jsx';
+import { VERSAO_DOS_TERMOS } from '../../lib/termos.js';
+import { CaixaDeAceite, Divisor, FormError, SocialButtons } from './AuthShared.jsx';
 
 const GARANTIAS = [
   'Sem conectar banco',
@@ -11,6 +12,9 @@ const GARANTIAS = [
   'Leitura de NF-e por QR Code',
   'Seus dados saem em planilha quando você quiser'
 ];
+
+const FALTA_ACEITE =
+  'Para criar a conta, confirme que tem 18 anos ou mais e que leu os Termos de uso e a Política de privacidade.';
 
 export default function Cadastro() {
   const auth = useAuth();
@@ -20,13 +24,16 @@ export default function Cadastro() {
   const [senha, setSenha] = useState('');
   const [erro, setErro] = useState('');
   const [carregando, setCarregando] = useState(null);
+  const [aceito, setAceito] = useState(false);
+  const aceite = { versao: VERSAO_DOS_TERMOS };
 
   const criar = async e => {
     e.preventDefault();
+    if (!aceito) return setErro(FALTA_ACEITE);
     setErro('');
     setCarregando('email');
     try {
-      await auth.register(nome.trim(), email.trim(), senha);
+      await auth.register(nome.trim(), email.trim(), senha, aceite);
       navigate('/cadastro/perguntas');
     } catch (err) {
       setErro(err.message);
@@ -35,11 +42,13 @@ export default function Cadastro() {
     }
   };
 
+  // O aceite vale também para o Google e a Apple: sem a caixa marcada, o botão não segue.
   const social = async p => {
+    if (!aceito) return setErro(FALTA_ACEITE);
     setErro('');
     setCarregando(p);
     try {
-      const me = await auth.social(p);
+      const me = await auth.social(p, aceite);
       navigate(me && me.onboardingCompleto ? '/app' : '/cadastro/perguntas');
     } catch (err) {
       setErro(err.message);
@@ -96,6 +105,13 @@ export default function Cadastro() {
           value={senha}
           onChange={e => setSenha(e.target.value)}
         />
+        <CaixaDeAceite
+          checked={aceito}
+          onChange={e => {
+            setAceito(e.target.checked);
+            if (e.target.checked && erro === FALTA_ACEITE) setErro('');
+          }}
+        />
         <FormError>{erro}</FormError>
         <Button
           block
@@ -106,10 +122,6 @@ export default function Cadastro() {
         >
           Criar conta e continuar
         </Button>
-        <span className="auth__legal">
-          Ao criar conta você concorda com os <Link to="/termos">Termos</Link> e a{' '}
-          <Link to="/privacidade">Privacidade</Link>.
-        </span>
         <span className="auth__note auth__note--top4">
           Já tem conta?{' '}
           <Link to="/entrar" className="vera-tap vera-link-strong">

@@ -3,11 +3,15 @@ import { createContext, useContext, useEffect, useState, useCallback } from 'rea
 // Roteador mínimo sobre a History API: caminho atual, navegar e links.
 const RouterContext = createContext({ path: '/', navigate: () => {} });
 
-export function RouterProvider({ children }) {
-  const [path, setPath] = useState(window.location.pathname);
+// "/precos/" e "/precos" são a mesma página (o servidor estático pode pôr a barra no fim).
+const normalizar = caminho => (caminho.length > 1 ? caminho.replace(/\/+$/, '') || '/' : caminho);
+
+/** caminhoInicial serve para a pré-renderização no build, onde não existe window. */
+export function RouterProvider({ children, caminhoInicial }) {
+  const [path, setPath] = useState(() => normalizar(caminhoInicial ?? window.location.pathname));
 
   useEffect(() => {
-    const onPop = () => setPath(window.location.pathname);
+    const onPop = () => setPath(normalizar(window.location.pathname));
     window.addEventListener('popstate', onPop);
     return () => window.removeEventListener('popstate', onPop);
   }, []);
@@ -24,7 +28,7 @@ export function RouterProvider({ children }) {
       '',
       url.pathname + url.search + url.hash
     );
-    setPath(url.pathname);
+    setPath(normalizar(url.pathname));
     if (!url.hash) window.scrollTo(0, 0);
   }, []);
 

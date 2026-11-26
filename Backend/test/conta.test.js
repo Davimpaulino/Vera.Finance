@@ -2,12 +2,11 @@ import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { createServer } from 'node:http';
 
-process.env.BANCO = 'memoria';
-delete process.env.GOOGLE_APPLICATION_CREDENTIALS;
-delete process.env.FIREBASE_PRIVATE_KEY;
+await import('./apoio/ambiente.js');
 const { handle } = await import('../src/app.js');
 const { ContaModel } = await import('../src/models/ContaModel.js');
 const { CredencialModel } = await import('../src/models/CredencialModel.js');
+const { VERSAO_DOS_TERMOS } = await import('../src/config/termos.js');
 
 let server;
 let base;
@@ -79,13 +78,15 @@ test('não cria uma segunda conta para um e-mail que já existe', async () => {
   const repetido = await chamar('POST', '/auth/cadastrar', {
     nome: 'Caio',
     email: 'caio@exemplo.com',
-    senha: 'segredo123'
+    senha: 'segredo123',
+    aceite: { versao: VERSAO_DOS_TERMOS }
   });
   assert.equal(repetido.status, 409);
   const novo = await chamar('POST', '/auth/cadastrar', {
     nome: 'Novo',
     email: 'novo@exemplo.com',
-    senha: 'segredo123'
+    senha: 'segredo123',
+    aceite: { versao: VERSAO_DOS_TERMOS }
   });
   assert.equal(novo.status, 201);
   assert.equal((await chamar('POST', '/auth/email-em-uso', { email: 'novo@exemplo.com' })).body.emUso, true);

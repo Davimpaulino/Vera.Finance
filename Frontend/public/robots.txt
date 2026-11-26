@@ -1,4 +1,19 @@
+# Site público liberado para busca e para assistentes de IA; a área logada fica de fora.
 User-agent: *
+Allow: /
+Disallow: /app
+Disallow: /onboarding
+
+# Robôs de busca e de IA, liberados de forma explícita com as mesmas regras.
+User-agent: GPTBot
+User-agent: OAI-SearchBot
+User-agent: ChatGPT-User
+User-agent: ClaudeBot
+User-agent: Claude-SearchBot
+User-agent: PerplexityBot
+User-agent: Google-Extended
+User-agent: Applebot-Extended
+User-agent: Bingbot
 Allow: /
 Disallow: /app
 Disallow: /onboarding
