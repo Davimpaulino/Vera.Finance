@@ -57,5 +57,22 @@ export const PLANOS = [
 
 export const PlanoModel = {
   listar: () => PLANOS,
-  buscar: id => PLANOS.find(p => p.id === id) || null
+  buscar: id => PLANOS.find(p => p.id === id) || null,
+
+  /**
+   * Plano e assinatura que valem agora para um perfil. Cancelar só marca a assinatura
+   * (`cancelada` e `ativaAte`, o fim do período já começado) e nada roda nessa data para trocar o
+   * plano. Por isso a troca acontece na leitura: passou de `ativaAte`, a conta é do grátis, sem
+   * assinatura, e os limites do grátis voltam a valer. Nada é apagado: metas e modo família que
+   * já existem continuam; só não dá para passar dos limites do grátis daí em diante.
+   * Cancelada sem data de fim que dê para ler não tem período a respeitar: volta para o grátis.
+   */
+  emVigor(perfil, agora = new Date()) {
+    const assinatura = perfil?.assinatura || null;
+    const plano = perfil?.plano || 'gratis';
+    if (!assinatura?.cancelada) return { plano, assinatura };
+    const fim = Date.parse(assinatura.ativaAte);
+    if (fim > agora.getTime()) return { plano, assinatura };
+    return { plano: 'gratis', assinatura: null };
+  }
 };
