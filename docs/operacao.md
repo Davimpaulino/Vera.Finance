@@ -39,8 +39,9 @@ chat ou print.
 
 ### Antes
 
-- [ ] O pull request passou no CI (testes do backend e build do frontend).
-- [ ] Rodou local: `cd Backend && npm test` e `cd Frontend && npm run build`.
+- [ ] O pull request passou no CI (testes do backend, testes e build do frontend).
+- [ ] Rodou local: `cd Backend && npm test`, `cd Frontend && npm test` e
+      `cd Frontend && npm run build`.
 - [ ] Variável de ambiente nova? Cadastre no Render **antes** do deploy que depende dela. As
       `VITE_*` só valem depois de um build novo do site.
 - [ ] Mudou `Backend/src/config/esquema.sql`? O esquema roda sozinho na primeira conexão e precisa
@@ -121,8 +122,8 @@ dado pessoal.
 
 ## Rodar um script como job
 
-Os scripts estão listados no readme ("Scripts de operação"). Todos têm simulação: rode primeiro
-sem gravar e leia o relatório.
+Os scripts estão listados no readme ("Scripts de operação"). Os que gravam têm simulação: rode
+primeiro sem gravar e leia o relatório.
 
 ### Opção 1: no seu computador, com o `.env`
 
@@ -163,7 +164,10 @@ serviço do tipo *Cron Job* no Render, com o mesmo repositório, `Backend` como 
 `npm ci` no build, o comando do script e o horário (em UTC). Para não repetir as variáveis, guarde-as
 num *Environment Group* ligado à API e ao Cron Job.
 
-Hoje nenhuma tarefa recorrente precisa disso: a exclusão de contas vencidas roda dentro da API.
+Hoje o único Cron Job é o do monitor de saúde das redes (`npm run saude:redes`), que é opcional:
+como criar está no readme, em
+[Monitor de saúde das redes](../readme.md#monitor-de-saúde-das-redes). A exclusão de contas
+vencidas não precisa de Cron Job: ela roda dentro da API.
 
 ---
 
@@ -171,12 +175,22 @@ Hoje nenhuma tarefa recorrente precisa disso: a exclusão de contas vencidas rod
 
 **Sintoma**: na comparação ou na lista, uma rede que tinha preço passa a mostrar "o site da rede não
 respondeu agora", ou some dos resultados para CEPs onde ela tem loja. A API não registra no log a
-falha de cada busca: o sinal vem do app ou de alguém do time testando.
+falha de cada busca: o sinal vem do Cron Job do monitor de saúde das redes (`npm run saude:redes`),
+que falha e faz o Render avisar, do app ou de alguém do time testando.
 
 ### 1. Confirmar
 
-Na pasta `Backend`, rode o leitor da rede direto, com um produto comum e um CEP perto de uma loja
-dela. Troque `atacadao`, `arroz` e o CEP; os ids estão em `src/models/RedeModel.js`:
+Primeiro, rode o monitor só para essa rede, com um CEP perto de uma loja dela (os ids estão em
+`Backend/src/models/RedeModel.js`):
+
+```bash
+cd Backend && npm run saude:redes -- --redes=<id> --cep=<cep>
+```
+
+Ele mostra a situação (`ok`, `sem entrega no CEP`, `sem produtos` ou `erro`), o número de produtos,
+o tempo e o detalhe do erro, e não grava nada. Para ver os produtos que o site devolveu, rode o
+leitor da rede direto, na pasta `Backend`, com um produto comum e o mesmo CEP. Troque `atacadao`,
+`arroz` e o CEP:
 
 ```bash
 BANCO=memoria NODE_ENV=test node --input-type=module -e "
@@ -209,8 +223,8 @@ process.exit(0);
 |---|---|
 | `HTTP 403` ou `HTTP 429` | O site está recusando ou limitando os pedidos. |
 | `The operation was aborted due to timeout` | O site demorou mais de 9 segundos. Pode ser passageiro. |
-| `ok · 0 produtos` com produto comum | O formato da resposta mudou: o leitor não acha mais os campos. |
-| `semEntrega` | A loja online não atende aquele CEP. Teste outro CEP antes de concluir que quebrou. |
+| `ok · 0 produtos` com produto comum (no monitor, `sem produtos`) | O formato da resposta mudou: o leitor não acha mais os campos. |
+| `semEntrega` (no monitor, `sem entrega no CEP`) | A loja online não atende aquele CEP. Teste outro CEP antes de concluir que quebrou. |
 | `fetch failed` com `ENOTFOUND` | O endereço do site mudou. |
 
 ### 3. Corrigir
