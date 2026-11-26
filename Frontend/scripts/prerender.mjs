@@ -55,6 +55,15 @@ for (const rota of ROTAS_PUBLICAS) {
     ['name', 'robots', meta.robots],
     ['property', 'og:url', meta.canonical]
   ];
+  // A home fica com os textos de compartilhamento do index.html, escritos para WhatsApp e redes.
+  // As outras páginas mostram o próprio título e descrição quando o link é compartilhado.
+  if (rota !== '/')
+    metas.push(
+      ['property', 'og:title', meta.titulo],
+      ['property', 'og:description', meta.descricao],
+      ['name', 'twitter:title', meta.titulo],
+      ['name', 'twitter:description', meta.descricao]
+    );
 
   let html = trocar(modelo, /<title>[^<]*<\/title>/, `<title>${escapar(meta.titulo)}</title>`);
   for (const [atributo, nome, conteudo] of metas)

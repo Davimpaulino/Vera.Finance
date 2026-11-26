@@ -191,8 +191,9 @@ https://vera-finance.onrender.com/
   `src/entry-server.jsx` e o `scripts/prerender.mjs`, que grava o HTML pronto das páginas
   públicas (`/`, `/precos`, `/perguntas`, `/termos`, `/privacidade`, `/entrar`, `/cadastro`)
   em `dist/<rota>/index.html`. Assim buscadores e robôs de IA, que não rodam JavaScript, leem o
-  conteúdo. Não precisa de navegador no build. Título, descrição, canonical e robots de cada
-  página vêm de `src/lib/paginas.js` (o mesmo arquivo que o app usa no navegador).
+  conteúdo. Não precisa de navegador no build. Título, descrição, canonical, robots e os textos
+  de compartilhamento (`og:`/`twitter:`) de cada página vêm de `src/lib/paginas.js` (o mesmo
+  arquivo que o app usa no navegador); a home mantém os do `index.html`.
 - O mesmo script grava `dist/app.html`, a casca do app: o `#root` vazio, sem o conteúdo da
   landing, com `noindex` e sem canonical. É ela que atende as rotas sem arquivo, para o app
   logado não baixar as imagens da landing e endereços que não existem não virarem cópias da home.
