@@ -2,9 +2,7 @@ import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { createServer } from 'node:http';
 
-process.env.BANCO = 'memoria';
-delete process.env.GOOGLE_APPLICATION_CREDENTIALS;
-delete process.env.FIREBASE_PRIVATE_KEY;
+await import('./apoio/ambiente.js');
 const { handle } = await import('../src/app.js');
 const { popularDadosDeTeste } = await import('./apoio/dadosDeTeste.js');
 const { VERSAO_DOS_TERMOS } = await import('../src/config/termos.js');
@@ -102,6 +100,14 @@ test('lista: adicionar, quantidade e totais por mercado', async () => {
   assert.equal(body.itens.find(i => i.id === item.id).qtd, 3);
   assert.ok(body.totais.length > 0);
   assert.ok(body.totais[0].total <= body.totais[body.totais.length - 1].total);
+});
+
+test('texto com caractere nulo é limpo e id com nulo dá 400, não 500', async () => {
+  const { status, body } = await call('POST', '/lista', { nome: 'pão\u0000 francês' });
+  assert.equal(status, 201);
+  assert.ok(body.itens.some(i => i.nome === 'pão francês'));
+  assert.equal((await call('PATCH', '/lista/a%00b', { qtd: 2 })).status, 400);
+  assert.equal((await call('DELETE', '/categorias/a%00b')).status, 400);
 });
 
 test('cadastro guiado cria categorias, fixos e a renda do ciclo', async () => {

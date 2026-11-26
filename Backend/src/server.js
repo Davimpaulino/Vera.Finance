@@ -1,13 +1,15 @@
 import { createServer } from 'node:http';
 import { configuracao } from './config/env.js';
-import { modoBanco } from './config/banco.js';
+import { modoBanco, loginProprio } from './config/banco.js';
 import { handle } from './app.js';
 import { ExclusaoModel } from './models/ExclusaoModel.js';
 
 const descricaoDoBanco = {
   memoria: 'banco em memória (apaga ao reiniciar)',
   rest: `Firebase Realtime Database em ${configuracao.banco.url}`,
-  admin: `Firebase Realtime Database em ${configuracao.banco.url} (Admin SDK)`
+  admin: `Firebase Realtime Database em ${configuracao.banco.url} (Admin SDK)`,
+  // Sem a URL no log: ela carrega a senha do banco.
+  postgres: `PostgreSQL (DATABASE_URL) · login ${loginProprio ? 'próprio' : 'pelo Firebase Auth'}`
 };
 
 createServer(handle).listen(configuracao.porta, () => {
