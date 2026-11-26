@@ -156,6 +156,45 @@ test('sessão (Google/Apple) com aceite grava o aceite no perfil novo', async ()
   assert.equal(perfil.termosAceitos.versao, VERSAO_DOS_TERMOS);
 });
 
+test('sem o aceite em vigor o app não abre, mas perfil, dados e exclusão seguem livres', async () => {
+  // Conta nova pelo Google na tela Entrar: a sessão abre sem aceite.
+  const tk = assinarToken({ uid: 'google-sem-aceite', email: 'sem-aceite@gmail.com', nome: 'Edu' });
+  assert.equal((await pedir('POST', '/auth/sessao', {}, tk)).status, 200);
+  for (const [metodo, caminho, corpo] of [
+    ['GET', '/dashboard'],
+    ['GET', '/lista'],
+    ['POST', '/lista', { nome: 'arroz' }],
+    ['POST', '/onboarding', { renda: { rendaFixa: 2000 }, plano: 'gratis' }],
+    ['PATCH', '/me', { nome: 'Outro' }]
+  ]) {
+    const r = await pedir(metodo, caminho, corpo, tk);
+    assert.equal(r.status, 403, `${metodo} ${caminho}`);
+    assert.equal(json(r).detalhes.motivo, 'termos');
+  }
+  const me = json(await pedir('GET', '/me', null, tk));
+  assert.equal(me.termosAceitos, null);
+  assert.equal((await pedir('GET', '/me/exportar', null, tk)).status, 200);
+  assert.equal((await pedir('GET', '/lancamentos/export', null, tk)).status, 200);
+
+  // Depois do aceite, o app abre.
+  await pedir('POST', '/auth/sessao', { aceite: { versao: VERSAO_DOS_TERMOS } }, tk);
+  assert.equal((await pedir('GET', '/lista', null, tk)).status, 200);
+  assert.equal((await pedir('DELETE', '/me', null, tk)).status, 200);
+});
+
+test('aceite de uma versão anterior também pede o aceite de novo', async () => {
+  await UsuarioModel.criarSeNaoExistir('aceite-antigo', {
+    nome: 'Flor',
+    email: 'flor@email.com',
+    termosAceitos: { versao: 'v2025-01-01', em: '2025-01-01T00:00:00.000Z' }
+  });
+  const tk = assinarToken({ uid: 'aceite-antigo', email: 'flor@email.com', nome: 'Flor' });
+  assert.equal((await pedir('GET', '/lista', null, tk)).status, 403);
+  const perfil = json(await pedir('POST', '/auth/sessao', { aceite: { versao: VERSAO_DOS_TERMOS } }, tk));
+  assert.equal(perfil.termosAceitos.versao, VERSAO_DOS_TERMOS);
+  assert.equal((await pedir('GET', '/lista', null, tk)).status, 200);
+});
+
 test('a configuração pública informa a versão dos termos', async () => {
   const r = json(await pedir('GET', '/auth/configuracao', null, null));
   assert.equal(r.versaoDosTermos, VERSAO_DOS_TERMOS);

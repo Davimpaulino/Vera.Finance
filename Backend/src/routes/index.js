@@ -1,5 +1,6 @@
 import { Router } from '../utils/router.js';
 import { exigirLogin } from '../middlewares/auth.js';
+import { exigirAceiteDosTermos } from '../middlewares/termos.js';
 import { limitar } from '../middlewares/limite.js';
 import { authController } from '../controllers/authController.js';
 import { userController } from '../controllers/userController.js';
@@ -18,6 +19,13 @@ import { notificacaoController } from '../controllers/notificacaoController.js';
 
 const r = new Router();
 const auth = exigirLogin;
+// Rotas do app: além do login, pedem o aceite da versão em vigor dos termos.
+// Abrir a sessão (onde o aceite é gravado), ler o perfil e os direitos do titular
+// (baixar os dados e a planilha, apagar a conta, cancelar a assinatura) seguem só com o login.
+const app = async ctx => {
+  await exigirLogin(ctx);
+  await exigirAceiteDosTermos(ctx);
+};
 const MINUTO = 60 * 1000;
 const limiteDeLogin = limitar('login', 10, 15 * MINUTO);
 const limiteDeCadastro = limitar('cadastro', 5, 60 * MINUTO);
@@ -40,62 +48,63 @@ r.get('/api/onboarding/raio', onboardingController.raio);
 r.post('/api/auth/sessao', auth, authController.sessao);
 r.get('/api/me', auth, userController.me);
 r.get('/api/me/exportar', auth, userController.exportar);
-r.patch('/api/me', auth, userController.update);
-r.patch('/api/me/plano', auth, userController.trocarPlano);
+r.patch('/api/me', app, userController.update);
+r.patch('/api/me/plano', app, userController.trocarPlano);
 r.post('/api/me/cancelar-assinatura', auth, userController.cancelarAssinatura);
 r.delete('/api/me', auth, userController.agendarExclusao);
 r.post('/api/me/cancelar-exclusao', auth, userController.cancelarExclusao);
 r.post('/api/me/senha', limiteDeLogin, auth, authController.trocarSenha);
 
 // Cadastro guiado
-r.post('/api/onboarding/sugestao', auth, onboardingController.sugestao);
-r.post('/api/onboarding', auth, onboardingController.concluir);
+r.post('/api/onboarding/sugestao', app, onboardingController.sugestao);
+r.post('/api/onboarding', app, onboardingController.concluir);
 
 // App
-r.get('/api/dashboard', auth, dashboardController.get);
+r.get('/api/dashboard', app, dashboardController.get);
 
-r.get('/api/lancamentos', auth, lancamentoController.list);
+r.get('/api/lancamentos', app, lancamentoController.list);
+// A planilha dos lançamentos também é portabilidade: segue só com o login.
 r.get('/api/lancamentos/export', auth, lancamentoController.exportar);
-r.post('/api/lancamentos', auth, lancamentoController.create);
-r.delete('/api/lancamentos/:id', auth, lancamentoController.remove);
+r.post('/api/lancamentos', app, lancamentoController.create);
+r.delete('/api/lancamentos/:id', app, lancamentoController.remove);
 
-r.get('/api/categorias', auth, categoriaController.list);
-r.post('/api/categorias', auth, categoriaController.create);
-r.patch('/api/categorias/:id', auth, categoriaController.update);
-r.delete('/api/categorias/:id', auth, categoriaController.remove);
+r.get('/api/categorias', app, categoriaController.list);
+r.post('/api/categorias', app, categoriaController.create);
+r.patch('/api/categorias/:id', app, categoriaController.update);
+r.delete('/api/categorias/:id', app, categoriaController.remove);
 
-r.get('/api/metas', auth, metaController.list);
-r.post('/api/metas', auth, metaController.create);
-r.patch('/api/metas/:id', auth, metaController.update);
-r.delete('/api/metas/:id', auth, metaController.remove);
-r.post('/api/metas/:id/aportes', auth, metaController.aporte);
-r.get('/api/metas/:id/simular', auth, metaController.simular);
+r.get('/api/metas', app, metaController.list);
+r.post('/api/metas', app, metaController.create);
+r.patch('/api/metas/:id', app, metaController.update);
+r.delete('/api/metas/:id', app, metaController.remove);
+r.post('/api/metas/:id/aportes', app, metaController.aporte);
+r.get('/api/metas/:id/simular', app, metaController.simular);
 
-r.get('/api/relatorios', auth, relatorioController.get);
+r.get('/api/relatorios', app, relatorioController.get);
 
-r.get('/api/mercados/produtos', auth, mercadoController.produtos);
-r.get('/api/mercados/comparar', auth, mercadoController.comparar);
+r.get('/api/mercados/produtos', app, mercadoController.produtos);
+r.get('/api/mercados/comparar', app, mercadoController.comparar);
 
-r.get('/api/lista', auth, listaController.get);
-r.get('/api/lista/opcoes', auth, listaController.opcoes);
-r.post('/api/lista', auth, listaController.add);
-r.delete('/api/lista/comprados', auth, listaController.limparComprados);
-r.post('/api/lista/finalizar', auth, listaController.finalizar);
-r.patch('/api/lista/:id', auth, listaController.update);
-r.delete('/api/lista/:id', auth, listaController.remove);
+r.get('/api/lista', app, listaController.get);
+r.get('/api/lista/opcoes', app, listaController.opcoes);
+r.post('/api/lista', app, listaController.add);
+r.delete('/api/lista/comprados', app, listaController.limparComprados);
+r.post('/api/lista/finalizar', app, listaController.finalizar);
+r.patch('/api/lista/:id', app, listaController.update);
+r.delete('/api/lista/:id', app, listaController.remove);
 
-r.get('/api/notas', auth, notaController.pendentes);
-r.post('/api/notas/ler', limiteDeNotas, auth, notaController.ler);
-r.post('/api/notas/:id/confirmar', auth, notaController.confirmar);
-r.delete('/api/notas/:id', auth, notaController.descartar);
+r.get('/api/notas', app, notaController.pendentes);
+r.post('/api/notas/ler', limiteDeNotas, app, notaController.ler);
+r.post('/api/notas/:id/confirmar', app, notaController.confirmar);
+r.delete('/api/notas/:id', app, notaController.descartar);
 
-r.get('/api/notificacoes', auth, notificacaoController.listar);
-r.post('/api/notificacoes/vistas', auth, notificacaoController.marcarVistas);
+r.get('/api/notificacoes', app, notificacaoController.listar);
+r.post('/api/notificacoes/vistas', app, notificacaoController.marcarVistas);
 
-r.get('/api/familia', auth, familiaController.get);
-r.post('/api/familia', auth, familiaController.criar);
-r.post('/api/familia/convites', auth, familiaController.convidar);
-r.get('/api/familia/convites', auth, familiaController.meusConvites);
-r.post('/api/familia/:id/aceitar', auth, familiaController.aceitar);
+r.get('/api/familia', app, familiaController.get);
+r.post('/api/familia', app, familiaController.criar);
+r.post('/api/familia/convites', app, familiaController.convidar);
+r.get('/api/familia/convites', app, familiaController.meusConvites);
+r.post('/api/familia/:id/aceitar', app, familiaController.aceitar);
 
 export default r;
