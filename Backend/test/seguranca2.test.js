@@ -133,6 +133,33 @@ test('id com barra codificada (%2F) na URL é recusado e não apaga a coleção 
   assert.ok(await banco.ler('usuarios/ana/categorias/comida'));
 });
 
+test('id com nome de função do JavaScript (constructor, toString) dá "não encontrado", não 500', async () => {
+  // Antes, no banco em memória, o id descia até a função do protótipo e o structuredClone falhava.
+  for (const id of ['constructor', 'toString', 'valueOf', 'hasOwnProperty']) {
+    const pedidos = [
+      ['DELETE', `/lancamentos/${id}`],
+      ['PATCH', `/categorias/${id}`, { limite: 1 }],
+      ['PATCH', `/metas/${id}`, { alvo: 1 }],
+      ['DELETE', `/metas/${id}`],
+      ['POST', `/metas/${id}/aportes`, { valor: 1 }],
+      ['PATCH', `/lista/${id}`, { qtd: 2 }],
+      ['POST', `/familia/${id}/aceitar`],
+      ['POST', `/notas/${id}/confirmar`, { categoriaId: 'comida' }]
+    ];
+    for (const [metodo, caminho, corpo] of pedidos) {
+      const { status } = await pedir(metodo, caminho, { corpo, token: tokenDaAna });
+      assert.ok([204, 404].includes(status), `${metodo} ${caminho}: ${status}`);
+    }
+    const lancamento = await pedir('POST', '/lancamentos', {
+      corpo: { titulo: 'Teste', valor: 1, tipo: 'saida', categoriaId: id },
+      token: tokenDaAna
+    });
+    assert.equal(lancamento.status, 400, `categoriaId ${id}`);
+  }
+  assert.ok(await banco.ler('usuarios/ana/lancamentos/l-comida'), 'os lançamentos continuam lá');
+  assert.ok(await banco.ler('usuarios/ana/categorias/comida'), 'as categorias continuam lá');
+});
+
 test('endereço com %-codificação quebrada dá 400, não 500', async () => {
   assert.equal((await pedir('DELETE', '/lista/%E0%A4%A', { token: tokenDaAna })).status, 400);
 });
