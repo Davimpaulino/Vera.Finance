@@ -16,6 +16,24 @@ const temCoordenadas = ponto =>
 const CASAS = 3;
 const arredondar = valor => Number(Number(valor).toFixed(CASAS));
 
+// A política de uso do Nominatim público pede no máximo 1 pedido por segundo para a aplicação
+// inteira (app logado e verificador público de CEP juntos). Os pedidos saem em fila, com 1,1 s
+// entre um e outro. Quando a fila já passa de 10 s de espera, o pedido desiste na hora (fica
+// como "o mapa não achou"), em vez de empilhar sem fim.
+const INTERVALO_DO_NOMINATIM_MS = 1100;
+const ESPERA_MAXIMA_DO_NOMINATIM_MS = 10 * 1000;
+let proximaVezNoNominatim = 0;
+const esperar = ms => new Promise(resolver => setTimeout(resolver, ms));
+
+async function buscarNoNominatim(endereco) {
+  const agora = Date.now();
+  const vez = Math.max(agora, proximaVezNoNominatim);
+  if (vez - agora > ESPERA_MAXIMA_DO_NOMINATIM_MS) return null;
+  proximaVezNoNominatim = vez + INTERVALO_DO_NOMINATIM_MS;
+  if (vez > agora) await esperar(vez - agora);
+  return buscarJson(endereco);
+}
+
 async function buscarJson(endereco) {
   try {
     const resposta = await fetch(endereco, {
@@ -47,7 +65,7 @@ export const GeoModel = {
   async geocodificar(endereco) {
     const texto = String(endereco || '').trim();
     if (!texto) return null;
-    const resultado = await buscarJson(
+    const resultado = await buscarNoNominatim(
       `https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=br&q=${encodeURIComponent(texto)}`
     );
     if (!resultado || !resultado[0]) return null;
@@ -60,7 +78,7 @@ export const GeoModel = {
     const [lat, lng] = [arredondar(ponto.lat), arredondar(ponto.lng)];
     const chave = `${lat},${lng}`;
     if (cepsAchados.has(chave)) return cepsAchados.get(chave);
-    const dados = await buscarJson(
+    const dados = await buscarNoNominatim(
       `https://nominatim.openstreetmap.org/reverse?format=json&zoom=18&addressdetails=1&lat=${lat}&lon=${lng}`
     );
     const cep = String(dados?.address?.postcode || '').replace(/\D/g, '');

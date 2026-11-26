@@ -12,9 +12,30 @@ const SERVIDORES = [
 ];
 const VALIDADE_MS = 7 * 24 * 60 * 60 * 1000;
 const RAIO_MAXIMO_KM = 15;
+// Cada região guarda a lista inteira de mercados (centenas numa capital), então a memória tem
+// teto: passou dele, sai a região usada há mais tempo. Ela continua no banco pelos 7 dias e volta
+// de lá, sem consultar o mapa de novo.
+const MAXIMO_EM_MEMORIA = 100;
 const emCache = new Map();
 const emAndamento = new Map();
 const esperar = ms => new Promise(resolver => setTimeout(resolver, ms));
+
+/** Região guardada em memória e ainda válida. A usada agora vai para o fim da fila de saída. */
+function daMemoria(chave) {
+  const mercados = emCache.get(chave);
+  if (!mercados) return null;
+  emCache.delete(chave);
+  if (Date.now() - mercados.em > VALIDADE_MS) return null;
+  emCache.set(chave, mercados);
+  return mercados;
+}
+
+function lembrar(chave, mercados) {
+  emCache.delete(chave);
+  emCache.set(chave, mercados);
+  // O Map guarda a ordem de entrada: o primeiro é o usado há mais tempo.
+  while (emCache.size > MAXIMO_EM_MEMORIA) emCache.delete(emCache.keys().next().value);
+}
 
 const chaveDaRegiao = (origem, raioKm) =>
   `${Number(origem.lat).toFixed(2)}_${Number(origem.lng).toFixed(2)}_${raioKm}`.replace(/[.-]/g, m =>
@@ -82,19 +103,28 @@ export const RegiaoModel = {
   /**
    * Mercados num raio do ponto, do mais perto para o mais longe, com a rede reconhecida.
    * Devolve null quando o mapa não respondeu.
+   *
+   * `guardar: false` (o verificador público de CEP, que qualquer um chama sem login) usa o que já
+   * estiver guardado, mas o que vier do mapa não é gravado no banco nem fica na memória: pedido
+   * anônimo não faz o banco nem a memória crescerem.
    */
-  async mercadosPerto(origem, raioKm) {
+  async mercadosPerto(origem, raioKm, { guardar = true } = {}) {
     if (!GeoModel.temCoordenadas(origem)) return [];
     const raio = Math.min(RAIO_MAXIMO_KM, Math.max(1, Number(raioKm) || 5));
     const chave = chaveDaRegiao(origem, raio);
-    let mercados = emCache.get(chave);
-    if (!mercados || Date.now() - mercados.em > VALIDADE_MS) {
-      if (!emAndamento.has(chave))
-        emAndamento.set(
-          chave,
-          this.carregar(chave, origem, raio).finally(() => emAndamento.delete(chave))
+    let mercados = daMemoria(chave);
+    if (!mercados) {
+      const chaveDaCarga = guardar ? chave : `${chave}|sem-guardar`;
+      // Pedidos ao mesmo tempo esperam a mesma carga. Quem não guarda pode esperar a carga de
+      // quem guarda (dá o mesmo resultado); o contrário não, para a região não deixar de ser gravada.
+      let carga = emAndamento.get(chave) || emAndamento.get(chaveDaCarga);
+      if (!carga) {
+        carga = this.carregar(chave, origem, raio, { guardar }).finally(() =>
+          emAndamento.delete(chaveDaCarga)
         );
-      mercados = await emAndamento.get(chave);
+        emAndamento.set(chaveDaCarga, carga);
+      }
+      mercados = await carga;
       if (!mercados) return null;
     }
     return mercados.lista
@@ -104,7 +134,7 @@ export const RegiaoModel = {
   },
 
   // Uma consulta por região de cada vez: pedidos ao mesmo tempo esperam a mesma resposta.
-  async carregar(chave, origem, raio) {
+  async carregar(chave, origem, raio, { guardar = true } = {}) {
     const salvo = await banco.ler(`regioes/${chave}`).catch(() => null);
     let mercados;
     if (salvo && Date.now() - new Date(salvo.em).getTime() < VALIDADE_MS) {
@@ -113,9 +143,14 @@ export const RegiaoModel = {
       const lista = await consultar(origem, raio);
       if (!lista) return null;
       mercados = { em: Date.now(), lista };
-      banco.gravar(`regioes/${chave}`, { em: new Date().toISOString(), lista }).catch(() => {});
+      if (guardar)
+        banco.gravar(`regioes/${chave}`, { em: new Date().toISOString(), lista }).catch(() => {});
     }
-    emCache.set(chave, mercados);
+    if (guardar) lembrar(chave, mercados);
     return mercados;
+  },
+
+  limparCache() {
+    emCache.clear();
   }
 };

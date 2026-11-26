@@ -21,6 +21,7 @@ const MAPA = {
 };
 const CEPS = {
   13334100: { logradouro: 'Rua das Flores', bairro: 'Centro', localidade: 'Indaiatuba', uf: 'SP' },
+  13334200: { logradouro: 'Rua das Palmeiras', bairro: 'Centro', localidade: 'Indaiatuba', uf: 'SP' },
   // CEP cujo mapa não responde (outra região, para não cair no cache da primeira).
   69900000: { logradouro: '', bairro: '', localidade: 'Rio Branco', uf: 'AC' },
   99999999: { erro: true }
@@ -28,11 +29,13 @@ const CEPS = {
 const LUGARES = { Indaiatuba: INDAIATUBA, 'Rio Branco': { lat: -9.97, lng: -67.81 } };
 
 const consultas = [];
+const horasNoNominatim = [];
 const fetchDeVerdade = globalThis.fetch;
 globalThis.fetch = async (endereco, opcoes = {}) => {
   const url = new URL(String(endereco));
   if (url.hostname === 'localhost') return fetchDeVerdade(endereco, opcoes);
   consultas.push(url.hostname);
+  if (url.hostname === 'nominatim.openstreetmap.org') horasNoNominatim.push(Date.now());
   const json = (corpo, status = 200) => ({ ok: status < 400, status, json: async () => corpo });
   if (url.hostname === 'viacep.com.br') {
     const cep = url.pathname.split('/')[2];
@@ -53,6 +56,8 @@ globalThis.fetch = async (endereco, opcoes = {}) => {
 };
 
 const { handle } = await import('../src/app.js');
+const { banco } = await import('../src/config/banco.js');
+const { CoberturaModel } = await import('../src/models/CoberturaModel.js');
 
 let server;
 let base;
@@ -152,4 +157,32 @@ test('limite de tentativas por IP: 20 CEPs a cada 15 minutos', async () => {
   assert.equal(passou.status, 429);
   assert.ok(Number(passou.cabecalhos.get('retry-after')) > 0);
   assert.equal((await pedir('13334100', '10.0.0.7')).status, 200, 'outro IP segue livre');
+});
+
+test('pedido anônimo não grava a região do mapa no banco', async () => {
+  assert.ok(consultas.includes('overpass-api.de'), 'os testes acima consultaram o mapa');
+  assert.equal(await banco.ler('regioes'), null);
+});
+
+test('o Nominatim recebe no máximo um pedido por segundo, mesmo com CEPs ao mesmo tempo', async () => {
+  CoberturaModel.limparCache();
+  horasNoNominatim.length = 0;
+  const [a, b] = await Promise.all([pedir('13334100', '10.0.2.1'), pedir('13334200', '10.0.2.2')]);
+  assert.deepEqual([a.status, b.status], [200, 200]);
+  assert.equal(horasNoNominatim.length, 2);
+  assert.ok(horasNoNominatim[1] - horasNoNominatim[0] >= 1000, 'um pedido por vez, com 1 s entre eles');
+});
+
+test('teto do serviço inteiro: 10 CEPs novos por minuto; o que já está no cache continua saindo', async () => {
+  CoberturaModel.limparCache();
+  assert.equal((await pedir('13334100', '10.0.1.1')).status, 200);
+  // CEPs que o ViaCEP não conhece também gastam a vaga: foi uma consulta nova.
+  for (let i = 1; i <= 9; i++) assert.equal((await pedir(`5000000${i}`, `10.0.1.${i + 1}`)).status, 404);
+  const cheio = await pedir('50000010', '10.0.1.20');
+  assert.equal(cheio.status, 429);
+  assert.match(cheio.corpo.erro, /Tente de novo/);
+  const segundos = Number(cheio.cabecalhos.get('retry-after'));
+  assert.ok(segundos > 0 && segundos <= 60);
+  assert.equal((await pedir('13334100', '10.0.1.21')).status, 200, 'CEP do cache não gasta vaga');
+  assert.equal((await pedir('50000001', '10.0.1.21')).status, 404, 'nem o que não existe');
 });

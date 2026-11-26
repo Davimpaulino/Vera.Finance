@@ -12,9 +12,44 @@ const VALIDADE_MS = 24 * 60 * 60 * 1000;
 const VALIDADE_DA_FALHA_MS = 5 * 60 * 1000;
 const MAXIMO_NO_CACHE = 5000;
 const MAXIMO_SEM_PRECO = 10;
+// Qualquer um chama este endpoint, sem login, e cada CEP novo custa uma consulta ao ViaCEP, uma
+// ou duas ao Nominatim e uma ao mapa (Overpass) num raio de 15 km. Além do limite por IP (em
+// routes/index.js), há um teto para o serviço inteiro, para esses serviços gratuitos não
+// bloquearem a vera (o que quebraria a localização também no app): no máximo 10 CEPs novos por
+// minuto e 2 consultas ao mesmo tempo. Passou do teto, a resposta é "tente de novo daqui a pouco";
+// CEP já consultado continua saindo do cache.
+const CEPS_NOVOS_POR_MINUTO = 10;
+const CONSULTAS_AO_MESMO_TEMPO = 2;
+const MINUTO_MS = 60 * 1000;
 
 const emCache = new Map();
 const emAndamento = new Map();
+const iniciosRecentes = [];
+const fila = [];
+let consultando = 0;
+
+/** Reserva um dos CEPs novos do minuto. Devolve 0 ou, sem vaga, em quantos segundos abre uma. */
+function reservarCepNovo(agora = Date.now()) {
+  while (iniciosRecentes.length && agora - iniciosRecentes[0] >= MINUTO_MS) iniciosRecentes.shift();
+  if (iniciosRecentes.length >= CEPS_NOVOS_POR_MINUTO)
+    return Math.max(1, Math.ceil((iniciosRecentes[0] + MINUTO_MS - agora) / 1000));
+  iniciosRecentes.push(agora);
+  return 0;
+}
+
+/** Roda a consulta quando houver vaga (no máximo CONSULTAS_AO_MESMO_TEMPO ao mesmo tempo). */
+async function naVez(tarefa) {
+  if (consultando < CONSULTAS_AO_MESMO_TEMPO) consultando += 1;
+  // Sem vaga, espera quem está consultando passar a vez (a vaga passa direto, sem disputa).
+  else await new Promise(resolver => fila.push(resolver));
+  try {
+    return await tarefa();
+  } finally {
+    const proximo = fila.shift();
+    if (proximo) proximo();
+    else consultando -= 1;
+  }
+}
 
 const cepBonito = cep => `${cep.slice(0, 5)}-${cep.slice(5)}`;
 const plural = (n, um, varios) => `${n} ${n === 1 ? um : varios}`;
@@ -68,7 +103,11 @@ async function consultar(cep) {
   if (local.erro === 'naoExiste' || local.erro === 'invalido') return { naoExiste: true };
   const base = { cep: cepBonito(cep), cidade: local.cidade || null, raioKm: RAIO_KM };
   const semCoordenadas = !GeoModel.temCoordenadas(local);
-  const mercados = semCoordenadas ? null : await RegiaoModel.mercadosPerto(local, RAIO_KM);
+  // guardar: false — a região que vier do mapa não vai para o banco nem fica na memória do
+  // RegiaoModel; daqui só fica o resumo pequeno, no cache deste arquivo.
+  const mercados = semCoordenadas
+    ? null
+    : await RegiaoModel.mercadosPerto(local, RAIO_KM, { guardar: false });
   if (!mercados) {
     const falha = { situacao: 'mapaFalhou', totalMercados: 0, comPrecoOnline: 0, redes: [] };
     return { ...base, ...falha, mensagem: mensagemDe({ ...falha, semCoordenadas }) };
@@ -94,27 +133,32 @@ export const CoberturaModel = {
 
   /**
    * Redes com preço online perto do CEP (8 números). Devolve { naoExiste: true } quando o CEP não
-   * existe; senão { cep, cidade, raioKm, situacao: 'ok' | 'mapaFalhou', mensagem, totalMercados,
+   * existe; { ocupado: true, tenteEmSegundos } quando o teto de CEPs novos do minuto já foi usado;
+   * senão { cep, cidade, raioKm, situacao: 'ok' | 'mapaFalhou', mensagem, totalMercados,
    * comPrecoOnline, redes: [{ id, nome, tipo, precoOnline, lojas, distanciaKm }] }.
    */
   async doCep(cep) {
     const guardado = emCache.get(cep);
     if (guardado && Date.now() < guardado.ate) return guardado.resultado;
-    // Pedidos do mesmo CEP ao mesmo tempo esperam a mesma consulta.
-    if (!emAndamento.has(cep))
+    // Pedidos do mesmo CEP ao mesmo tempo esperam a mesma consulta (e gastam uma vaga só).
+    if (!emAndamento.has(cep)) {
+      const tenteEmSegundos = reservarCepNovo();
+      if (tenteEmSegundos) return { ocupado: true, tenteEmSegundos };
       emAndamento.set(
         cep,
-        consultar(cep)
+        naVez(() => consultar(cep))
           .then(resultado => {
             guardar(cep, resultado);
             return resultado;
           })
           .finally(() => emAndamento.delete(cep))
       );
+    }
     return emAndamento.get(cep);
   },
 
   limparCache() {
     emCache.clear();
+    iniciosRecentes.length = 0;
   }
 };
