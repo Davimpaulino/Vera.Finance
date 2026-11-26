@@ -49,18 +49,31 @@ const armazenamento = {
 
 // Aceite dos termos feito no cadastro. Fica guardado até a sessão abrir, porque no celular
 // o login do Google/Apple sai do site (redirecionamento) e volta sem passar pelo formulário.
+// Vale por 10 minutos e para um login só: um redirecionamento abandonado não pode deixar
+// o aceite na aba para a próxima conta que entrar.
 const CHAVE_DO_ACEITE = 'vera.aceite';
+const VALIDADE_DO_ACEITE_MS = 10 * 60 * 1000;
 const aceitePendente = {
   ler() {
     try {
-      return JSON.parse(sessionStorage.getItem(CHAVE_DO_ACEITE) || 'null');
+      const guardado = JSON.parse(sessionStorage.getItem(CHAVE_DO_ACEITE) || 'null');
+      if (guardado?.aceite && Date.now() - guardado.guardadoEm < VALIDADE_DO_ACEITE_MS)
+        return guardado.aceite;
+      sessionStorage.removeItem(CHAVE_DO_ACEITE);
+      return null;
     } catch {
       return null;
     }
   },
+  /** Guarda o aceite deste login. Sem aceite, apaga o que tiver sobrado de outro login. */
   guardar(aceite) {
     try {
-      if (aceite) sessionStorage.setItem(CHAVE_DO_ACEITE, JSON.stringify(aceite));
+      if (aceite)
+        sessionStorage.setItem(
+          CHAVE_DO_ACEITE,
+          JSON.stringify({ aceite, guardadoEm: Date.now() })
+        );
+      else sessionStorage.removeItem(CHAVE_DO_ACEITE);
     } catch {
       return;
     }
@@ -77,9 +90,12 @@ const aceitePendente = {
 /** Abre a sessão na API (cria o perfil na primeira vez), levando o aceite pendente, se houver. */
 async function abrirSessao(corpo = {}) {
   const aceite = aceitePendente.ler();
-  const perfil = await api.post('/auth/sessao', aceite ? { ...corpo, aceite } : corpo);
-  if (aceite) aceitePendente.apagar();
-  return perfil;
+  try {
+    return await api.post('/auth/sessao', aceite ? { ...corpo, aceite } : corpo);
+  } finally {
+    // Gravado ou recusado (versão antiga dos termos), o aceite não vai de novo sozinho.
+    if (aceite) aceitePendente.apagar();
+  }
 }
 
 const usuarioFirebase = () => (firebaseHabilitado ? autenticacaoFirebase.currentUser : null);
@@ -148,6 +164,8 @@ export const servicoDeLogin = {
 
   /** Login com e-mail: tenta o Firebase e, se a conta não estiver lá, o login próprio do backend. */
   async entrar(email, senha, lembrar = true) {
+    // Login de quem já tem conta: nenhum aceite que sobrou na aba vai junto.
+    aceitePendente.apagar();
     try {
       if (firebaseHabilitado) {
         try {
@@ -219,7 +237,7 @@ export const servicoDeLogin = {
     }
   },
 
-  /** Google ou Apple. No cadastro, `aceite` é { versao } dos termos aceitos. */
+  /** Google ou Apple. No cadastro, `aceite` é { versao } dos termos aceitos; na tela Entrar, nada. */
   async entrarComProvedor(provedor, aceite) {
     if (!firebaseHabilitado) throw new Error(SEM_FIREBASE);
     aceitePendente.guardar(aceite);
