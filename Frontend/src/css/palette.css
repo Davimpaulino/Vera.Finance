@@ -20,7 +20,11 @@
   --ambar-400:#e8843f;
   --ambar-500:#d96c2f;
   --ambar-700:#a84d14;
+  /* Texto âmbar do papel: 4,9:1 sobre o fundo lavado de destaque (o 700 ficava em 4,47:1). */
+  --ambar-800:#9e4811;
   --ardosia-100:#dce5e7;
+  /* Ardósia clara: texto de dado no tinta (5,5:1 até sobre o fundo lavado de dado). */
+  --ardosia-300:#8aa4ad;
   --ardosia-400:#5d7d88;
   --ardosia-600:#33505a;
   --verde-400:#4ecb8b;
