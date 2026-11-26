@@ -111,6 +111,34 @@ disallow:
   );
 });
 
+test('robots.txt: acento e percent-encoding são comparados já normalizados (RFC 9309)', () => {
+  const caminhoDe = endereco => {
+    const url = new URL(endereco);
+    return `${url.pathname}${url.search}`;
+  };
+  // Regra com acento cru bloqueia o caminho que o new URL() devolve codificado.
+  const comAcento = lerRobots('User-agent: *\nDisallow: /açúcar');
+  assert.equal(caminhoDe('https://x.com/açúcar/refinado'), '/a%C3%A7%C3%BAcar/refinado');
+  assert.equal(permitido(comAcento, 'x', caminhoDe('https://x.com/açúcar/refinado')), false);
+  assert.equal(permitido(comAcento, 'x', '/acucar'), true);
+  // Hexadecimal minúsculo na regra ou no caminho é o mesmo octeto.
+  const minusculo = lerRobots('User-agent: *\nDisallow: /a%c3%a7');
+  assert.equal(permitido(minusculo, 'x', '/a%C3%A7ucar'), false);
+  assert.equal(permitido(lerRobots('User-agent: *\nDisallow: /a%C3%A7'), 'x', '/a%c3%a7ucar'), false);
+  // Caractere não reservado codificado é o próprio caractere.
+  const til = lerRobots('User-agent: *\nDisallow: /%7Eana');
+  assert.equal(permitido(til, 'x', '/~ana/fotos'), false);
+  assert.equal(permitido(lerRobots('User-agent: *\nDisallow: /~ana'), 'x', '/%7eana'), false);
+  // "%2A" é um asterisco de verdade, não o curinga; "/" codificado continua diferente de "/".
+  const asterisco = lerRobots('User-agent: *\nDisallow: /a%2Ab');
+  assert.equal(permitido(asterisco, 'x', '/a%2ab'), false);
+  assert.equal(permitido(asterisco, 'x', '/axb'), true);
+  assert.equal(permitido(lerRobots('User-agent: *\nDisallow: /a/b'), 'x', '/a%2Fb'), true);
+  // O tamanho da regra também é medido já codificado: "/aç" e "/a%C3%A7" empatam, e o Allow ganha.
+  const empate = lerRobots('User-agent: *\nDisallow: /a%C3%A7\nAllow: /aç');
+  assert.equal(permitido(empate, 'x', caminhoDe('https://x.com/açucar')), true);
+});
+
 test('coleta desligada (padrão): user-agent de navegador e nenhum robots.txt baixado', async () => {
   assert.equal(agenteDaColeta(), NAVEGADOR);
   const r = await CatalogoModel.buscar(tenda, 'arroz 5kg');

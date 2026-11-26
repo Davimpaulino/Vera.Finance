@@ -2,9 +2,35 @@
 // - Vale o grupo com o nome do nosso robô; sem ele, o grupo "*"; sem nenhum dos dois, tudo liberado.
 // - Entre Allow e Disallow, ganha a regra mais longa que casa com o caminho; no empate, Allow.
 // - "*" casa com qualquer sequência e "$" no fim prende o fim do caminho.
+// - Regra e caminho são comparados já normalizados (RFC 9309, 2.2.2): "/açúcar" na regra e
+//   "/a%C3%A7%C3%BAcar" no endereço são o mesmo caminho, e "%c3" é o mesmo que "%C3".
 
 // A RFC pede ler pelo menos 500 KiB; o que passar disso é ignorado.
 const TAMANHO_MAXIMO = 500 * 1024;
+
+const NAO_RESERVADO = /^[A-Za-z0-9\-._~]$/;
+
+/**
+ * Caminho (ou regra) no formato de comparação: o que não é ASCII vira %XX em UTF-8, todo %xx fica
+ * com hexadecimal maiúsculo e %XX de caractere não reservado (letra, número, "-", ".", "_", "~")
+ * volta a ser o caractere. "*" e "$" não mudam, e "%2A" continua sendo um asterisco de verdade
+ * (não o curinga).
+ */
+export function normalizarCaminho(texto) {
+  return String(texto || '')
+    .replace(/[^\x00-\x7F]+/gu, trecho => {
+      try {
+        return encodeURIComponent(trecho);
+      } catch {
+        // Pedaço de caractere inválido (surrogate solto): não há como codificar, sai da comparação.
+        return '';
+      }
+    })
+    .replace(/%([0-9a-fA-F]{2})/g, (_, hex) => {
+      const caractere = String.fromCharCode(parseInt(hex, 16));
+      return NAO_RESERVADO.test(caractere) ? caractere : `%${hex.toUpperCase()}`;
+    });
+}
 
 const nomeDoAgente = valor =>
   String(valor || '')
@@ -38,7 +64,8 @@ export function lerRobots(texto) {
       if (!atual) continue;
       // "Disallow:" vazio não proíbe nada.
       if (!valor) continue;
-      atual.regras.push({ permitir: chave === 'allow', caminho: valor });
+      // Já normalizada: a "regra mais longa" também é medida assim.
+      atual.regras.push({ permitir: chave === 'allow', caminho: normalizarCaminho(valor) });
     }
     // Sitemap, Crawl-delay e outras linhas são ignoradas, como fazem os buscadores.
   }
@@ -63,7 +90,8 @@ export function regrasPara(grupos, robo) {
 }
 
 /** O robô pode pedir este caminho (com a busca, ex.: "/api/busca?q=arroz")? */
-export function permitido(grupos, robo, caminho) {
+export function permitido(grupos, robo, caminhoCru) {
+  const caminho = normalizarCaminho(caminhoCru);
   if (caminho === '/robots.txt') return true;
   let vencedora = null;
   for (const regra of regrasPara(grupos, robo)) {
