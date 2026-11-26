@@ -2,6 +2,7 @@ import { HttpError } from '../utils/http.js';
 
 // Versão em vigor dos Termos de uso e da Política de privacidade. Troque junto com a data
 // do texto (Frontend/src/pages/site/Legal.jsx) e com VERSAO_DOS_TERMOS do Frontend/src/lib/termos.js.
+// Trocar a versão pede o aceite de novo a todas as contas: o app só abre depois dele.
 export const VERSAO_DOS_TERMOS = 'v2026-11-24';
 
 const FALTA_ACEITE =
