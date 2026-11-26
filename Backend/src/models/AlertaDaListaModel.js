@@ -127,10 +127,10 @@ export const AlertaDaListaModel = {
 
   /**
    * Guarda os alertas da comparação que a lista acabou de fazer. `ctx` é o contexto da pessoa
-   * (o dono da lista em ctx.owner). Com o alerta desligado nas preferências, não guarda nada.
+   * (o dono da lista em ctx.owner). Guarda sempre, mesmo com o alerta desligado: no modo família
+   * cada pessoa tem a própria chave, e quem mostra ou não é notificacoes().
    */
   async guardar(ctx, comparacao, mercados) {
-    if (ctx.owner.prefs?.alertaAltaPreco === false) return;
     const achados = itensMaisBaratos(comparacao, mercados);
     const habitualId = ctx.owner.local?.mercadoHabitual || null;
     const atual = ctx.owner.alertasDaLista;
@@ -151,11 +151,12 @@ export const AlertaDaListaModel = {
 
   /**
    * Notificações dos alertas guardados que ainda valem: o item segue na lista sem comprar, o
-   * mercado de sempre é o mesmo e o mais barato continua dentro do raio.
+   * mercado de sempre é o mesmo e o mais barato continua dentro do raio. Segue a chave de quem
+   * abre o sino (ctx.user), não a do dono: no modo família, cada pessoa liga ou desliga o seu.
    */
   notificacoes(ctx, itensDaLista) {
     const guardado = ctx.owner.alertasDaLista;
-    if (ctx.owner.prefs?.alertaAltaPreco === false || !guardado?.em) return [];
+    if (ctx.user.prefs?.alertaAltaPreco === false || !guardado?.em) return [];
     if (Date.now() - Date.parse(guardado.em) > VALIDADE_MS) return [];
     if ((guardado.habitualId || null) !== (ctx.owner.local?.mercadoHabitual || null)) return [];
     const raioKm = Number(ctx.owner.local?.raioKm) || 5;

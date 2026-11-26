@@ -119,7 +119,9 @@ export const NotificacaoModel = {
         });
     });
 
-    if (ctx.owner.prefs?.alertaAltaPreco !== false) {
+    // No modo família, o alerta de preço segue a chave de quem abre o sino (Configurações grava
+    // a preferência de cada pessoa), e não a do dono do ciclo.
+    if (ctx.user.prefs?.alertaAltaPreco !== false) {
       const dica = await ComparacaoModel.dica(mercados, ctx.owner.local?.mercadoHabitual);
       if (dica)
         lista.push({

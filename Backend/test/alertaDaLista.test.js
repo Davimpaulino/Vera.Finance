@@ -235,10 +235,8 @@ test('preço que sobe ou volta ao já avisado não reabre o aviso; só um preço
     { id: 'hab', nome: 'Habitual', distanciaKm: 1 },
     { id: 'a', nome: 'Mercado A', distanciaKm: 2 }
   ];
-  const ctx = {
-    ownerUid: 'alerta-precos',
-    owner: { prefs: { alertaAltaPreco: true }, local: { mercadoHabitual: 'hab', raioKm: 5 } }
-  };
+  const pessoa = { prefs: { alertaAltaPreco: true }, local: { mercadoHabitual: 'hab', raioKm: 5 } };
+  const ctx = { ownerUid: 'alerta-precos', user: pessoa, owner: pessoa };
   const daLista = [{ id: 'leite', nome: 'Leite', done: false }];
   const avisoCom = async preco => {
     const comparacao = {
@@ -334,4 +332,74 @@ test('item genérico da lista: o pacote menor de outra loja não vira alerta', a
     ['Feijão carioca está mais barato no Supermercados Confiança']
   );
   assert.match(alertas[0].texto, /^R\$ 13,90 lá e R\$ 16,00 no Savegnago: R\$ 2,10 a menos \(13%\)/);
+});
+
+test('modo família: o alerta da lista segue a chave de quem abre o sino, não a do dono', async () => {
+  // O Caio é o dono do ciclo e da lista; a Duda é da família dele. Cada um tem a própria chave.
+  const pessoa = async (uid, email, nome, extra) => {
+    await CredencialModel.cadastrar({ email, senha: 'senha1234', nome, uid });
+    await banco.gravar(`usuarios/${uid}/perfil`, {
+      nome,
+      email,
+      plano: 'gratis',
+      onboardingCompleto: true,
+      termosAceitos: { versao: VERSAO_DOS_TERMOS, em: new Date().toISOString() },
+      familiaId: 'alerta-casa',
+      ...extra
+    });
+    const entrada = await fetch(`${base}/auth/entrar`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, senha: 'senha1234' })
+    });
+    return (await entrada.json()).token;
+  };
+  const doCaio = await pessoa('alerta-caio', 'caio@alerta.teste', 'Caio', {
+    plano: 'mensal',
+    ciclo: { diaVirada: 1, frequencia: 'Uma vez por mês', rendaFixa: 3000, rendaVariavel: 0 },
+    local: { cep: '13334-100', ...LOCAL, raioKm: 5, mercados: ['osm-n1'], mercadoHabitual: 'osm-n1' },
+    prefs: { alertaAltaPreco: false }
+  });
+  const daDuda = await pessoa('alerta-duda', 'duda@alerta.teste', 'Duda', { prefs: { alertaAltaPreco: true } });
+  await banco.gravar('familias/alerta-casa', {
+    nome: 'Casa do Caio',
+    donoId: 'alerta-caio',
+    membros: [
+      { uid: 'alerta-caio', nome: 'Caio', papel: 'dono', divisao: 100 },
+      { uid: 'alerta-duda', nome: 'Duda', papel: 'membro', divisao: 0 }
+    ],
+    convites: [],
+    convitesEmails: []
+  });
+  await banco.gravar('usuarios/alerta-caio/lista/arroz', {
+    nome: 'Arroz Camil Tipo 1 5kg',
+    produto: ARROZ,
+    qtd: 1,
+    done: false,
+    criadoEm: new Date().toISOString()
+  });
+  const como = async (quem, metodo, caminho, corpo) => {
+    const antes = token;
+    token = quem;
+    try {
+      return await chamar(metodo, caminho, corpo);
+    } finally {
+      token = antes;
+    }
+  };
+  const alertasDe = async quem =>
+    (await como(quem, 'GET', '/notificacoes')).body.notificacoes
+      .filter(aviso => aviso.tipo === 'lista')
+      .map(aviso => aviso.titulo);
+  const titulo = 'Arroz Camil Tipo 1 5kg está mais barato no Tenda Atacado';
+
+  // A Duda abre a lista do Caio: o alerta fica guardado mesmo com a chave do dono desligada.
+  assert.equal((await como(daDuda, 'GET', '/lista')).status, 200);
+  assert.deepEqual(await alertasDe(daDuda), [titulo], 'dono desligado e membro ligado: o membro vê');
+  assert.deepEqual(await alertasDe(doCaio), [], 'o dono desligou o dele');
+
+  await como(daDuda, 'PATCH', '/me', { prefs: { alertaAltaPreco: false } });
+  await como(doCaio, 'PATCH', '/me', { prefs: { alertaAltaPreco: true } });
+  assert.deepEqual(await alertasDe(daDuda), [], 'membro desligado não vê');
+  assert.deepEqual(await alertasDe(doCaio), [titulo], 'a chave da Duda não mexe na do Caio');
 });
