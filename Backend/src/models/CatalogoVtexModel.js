@@ -1,18 +1,21 @@
 import { round2 } from '../utils/money.js';
+import { pedirNaRede, salvoBloqueio } from './ColetaModel.js';
 
 // Catálogo de redes na plataforma VTEX. O preço e a disponibilidade vêm da simulação de carrinho
 // para o CEP da pessoa: é o que o próprio site mostra quando ela informa o CEP. Produto que a rede
 // não entrega naquele CEP não entra.
-export const NAVEGADOR =
-  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126 Safari/537.36';
-const CABECALHOS = { 'User-Agent': NAVEGADOR, Accept: 'application/json' };
+// O user-agent (navegador ou robô identificado) e o robots.txt ficam no ColetaModel.
+export { NAVEGADOR } from './ColetaModel.js';
 const DIA_MS = 24 * 60 * 60 * 1000;
 const regioes = new Map();
 
 async function pedirJson(endereco, opcoes = {}) {
-  const resposta = await fetch(endereco, {
+  const resposta = await pedirNaRede(endereco, {
     ...opcoes,
-    headers: { ...CABECALHOS, ...(opcoes.body ? { 'Content-Type': 'application/json' } : {}) },
+    headers: {
+      Accept: 'application/json',
+      ...(opcoes.body ? { 'Content-Type': 'application/json' } : {})
+    },
     signal: AbortSignal.timeout(9000)
   });
   if (!resposta.ok && resposta.status !== 206) throw new Error(`HTTP ${resposta.status}`);
@@ -24,9 +27,11 @@ async function regiao(rede, cep) {
   const chave = `${rede.id}|${cep}`;
   const guardada = regioes.get(chave);
   if (guardada && Date.now() - guardada.em < DIA_MS) return guardada;
+  // Região que não veio vira "sem região" (busca no catálogo nacional), menos o bloqueio do
+  // robots.txt, que sobe para a rede ficar como 'falhou'.
   const dados = await pedirJson(
     `${rede.site}/api/checkout/pub/regions?country=BRA&postalCode=${cep}`
-  ).catch(() => []);
+  ).catch(salvoBloqueio([]));
   const achada = {
     em: Date.now(),
     id: dados[0]?.id || null,
@@ -85,7 +90,7 @@ async function simular(rede, itens, cep) {
       const sozinho = await pedirJson(`${rede.site}/api/checkout/pub/orderForms/simulation?sc=1`, {
         method: 'POST',
         body: JSON.stringify(corpo([item]))
-      }).catch(() => null);
+      }).catch(salvoBloqueio(null));
       if (sozinho) ler([item], sozinho);
     })
   );
@@ -103,7 +108,7 @@ export const CatalogoVtexModel = {
     if (regional?.lojas.length && regional.id) {
       const dados = await pedirJson(
         `${rede.site}/api/io/_v/api/intelligent-search/product_search/?query=${encodeURIComponent(termo)}&count=40&page=1&locale=pt-BR&hideUnavailableItems=true&regionId=${encodeURIComponent(regional.id)}`
-      ).catch(() => null);
+      ).catch(salvoBloqueio(null));
       candidatos = (dados?.products || []).map(p => candidato(p, rede)).filter(Boolean);
       candidatos.forEach(item => {
         item.vendedor = regional.lojas[0].id;
@@ -129,7 +134,9 @@ export const CatalogoVtexModel = {
           }))
       };
 
-    const simulados = await simular(rede, candidatos.slice(0, 30), cep).catch(() => new Map());
+    const simulados = await simular(rede, candidatos.slice(0, 30), cep).catch(
+      salvoBloqueio(new Map())
+    );
     const situacoes = [...simulados.values()].map(linha => linha.availability);
     const produtos = candidatos
       .filter(item => simulados.get(item.itemId)?.availability === 'available')

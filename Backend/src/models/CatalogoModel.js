@@ -1,26 +1,12 @@
 import { banco } from '../config/banco.js';
 import { matchScore, normalize } from '../utils/text.js';
-import { CatalogoVtexModel } from './CatalogoVtexModel.js';
-import { CatalogoGpaModel } from './CatalogoGpaModel.js';
-import { CatalogoPagueMenosModel } from './CatalogoPagueMenosModel.js';
-import { CatalogoTendaModel } from './CatalogoTendaModel.js';
-import { CatalogoOccModel } from './CatalogoOccModel.js';
-import { CatalogoSfccModel } from './CatalogoSfccModel.js';
+import { LEITORES } from './LeitoresDeCatalogo.js';
 
 // Busca de produtos no site de cada rede, já filtrada pelo CEP de quem pergunta.
 // Cada plataforma tem o seu leitor; aqui ficam a pontuação, o cache e o histórico.
 const VALIDADE_MS = 30 * 60 * 1000;
 const emCache = new Map();
 const DE_BICHO = /\b(racao|caes|cao|gatos?|pet|petisco|filhotes?)\b/;
-
-const LEITORES = {
-  vtex: CatalogoVtexModel,
-  gpa: CatalogoGpaModel,
-  paguemenos: CatalogoPagueMenosModel,
-  tenda: CatalogoTendaModel,
-  occ: CatalogoOccModel,
-  sfcc: CatalogoSfccModel
-};
 
 // Prefere o produto cujo nome começa pela palavra buscada ("arroz…" antes de "ração … arroz")
 // e tira ração de bicho quando a busca não fala de bicho.
@@ -38,7 +24,9 @@ export const chaveDeProduto = item =>
 export const CatalogoModel = {
   /**
    * { situacao, produtos } da rede para o termo e o CEP. situacao: 'ok', 'semEntrega'
-   * (a rede não vende online para o CEP), 'semCep' ou 'falhou'. Produtos do mais parecido ao menos.
+   * (a rede não vende online para o CEP), 'semCep' ou 'falhou' (o site não respondeu, ou o
+   * robots.txt não deixa o robô identificado consultar: veja ColetaModel). Produtos do mais
+   * parecido ao menos.
    */
   async buscar(rede, termo, cep = '') {
     const chave = `${rede.id}|${cep}|${normalize(termo)}`;

@@ -1,5 +1,5 @@
 import { round2 } from '../utils/money.js';
-import { NAVEGADOR } from './CatalogoVtexModel.js';
+import { ColetaBloqueada, pedirNaRede } from './ColetaModel.js';
 
 // Pão de Açúcar (grupo GPA): o CEP escolhe a loja que atende o endereço, e a busca traz
 // o preço e o estoque daquela loja.
@@ -8,7 +8,6 @@ const DIA_MS = 24 * 60 * 60 * 1000;
 const lojas = new Map();
 
 const cabecalhos = rede => ({
-  'User-Agent': NAVEGADOR,
   Accept: 'application/json',
   Origin: rede.site,
   Referer: `${rede.site}/`
@@ -20,14 +19,16 @@ async function lojaDoCep(rede, cep) {
   if (guardada && Date.now() - guardada.em < DIA_MS) return guardada;
   let loja = null;
   try {
-    const resposta = await fetch(`${API}/${rede.marcaGpa}/delivery/options?zipCode=${cep}`, {
+    const resposta = await pedirNaRede(`${API}/${rede.marcaGpa}/delivery/options?zipCode=${cep}`, {
       headers: cabecalhos(rede),
       signal: AbortSignal.timeout(9000)
     });
     const dados = await resposta.json();
     const opcao = (dados.content?.deliveryTypes || []).find(tipo => tipo.storeid);
     if (opcao) loja = { id: opcao.storeid, nome: String(opcao.storeName || '').replace(/^\d+\s*-\s*/, '') };
-  } catch {
+  } catch (erro) {
+    // Bloqueio do robots.txt não é "sem loja para o CEP": sobe para a rede ficar como 'falhou'.
+    if (erro instanceof ColetaBloqueada) throw erro;
     loja = null;
   }
   const achada = { em: Date.now(), loja };
@@ -40,7 +41,7 @@ export const CatalogoGpaModel = {
     if (!cep) return { situacao: 'semCep', produtos: [] };
     const { loja } = await lojaDoCep(rede, cep);
     if (!loja) return { situacao: 'semEntrega', produtos: [] };
-    const resposta = await fetch(`${API}/${rede.marcaGpa}/search/search`, {
+    const resposta = await pedirNaRede(`${API}/${rede.marcaGpa}/search/search`, {
       method: 'POST',
       headers: { ...cabecalhos(rede), 'Content-Type': 'application/json' },
       body: JSON.stringify({
