@@ -5,11 +5,24 @@ import { AuthContext } from './context/AuthContext.jsx';
 import { UiProvider } from './context/UiContext.jsx';
 import { DadosIniciaisContext } from './hooks/useApi.js';
 import App from './App.jsx';
+import { ROTAS_PUBLICAS } from './lib/paginas.js';
 // Os planos são estáticos no código da API; lidos daqui, a página de preços sai completa no HTML.
 import { PLANOS } from '../../Backend/src/models/PlanoModel.js';
+// No navegador, a ajuda e o blog vêm num pedaço baixado depois (conteudo/carregar.js). Aqui ele
+// entra direto, para o renderToString desenhar o artigo inteiro, sem esperar import().
+import * as conteudo from './pages/site/Conteudo.jsx';
+import { usarConteudoJaImportado } from './conteudo/carregar.js';
+import { ARTIGOS } from './conteudo/index.js';
 
-export { ROTAS_PUBLICAS, metaDaPagina } from './lib/paginas.js';
+usarConteudoJaImportado(conteudo);
+
+export { metaDaPagina } from './lib/paginas.js';
 export { problemasDoConteudo } from './conteudo/index.js';
+// Páginas fixas (lib/paginas.js) e um artigo por caminho de src/conteudo.
+export const ROTAS_PRE_RENDERIZADAS = [
+  ...ROTAS_PUBLICAS,
+  ...ARTIGOS.map(artigo => artigo.caminho)
+];
 
 // No build ninguém está logado: as páginas saem como para um visitante.
 // O login de verdade (Firebase) só começa no navegador, pelo AuthProvider de main.jsx.

@@ -4,7 +4,7 @@ import { Brand } from '../Brand.jsx';
 import { Link } from '../../lib/router.jsx';
 import { api } from '../../services/api.js';
 import { useUi } from '../../context/UiContext.jsx';
-import { POSTS_DO_BLOG } from '../../conteudo/blog.js';
+import { BLOG_NO_RODAPE } from '../../conteudo/rodape.js';
 import './css/site-footer.css';
 
 const STATUS_URL =
@@ -40,12 +40,9 @@ const COLS = [
     ]
   },
   {
-    // Os artigos mais novos do blog (src/conteudo/blog.js), pelo nome curto.
+    // Artigos do blog pelo nome curto (src/conteudo/rodape.js).
     titulo: 'blog',
-    itens: [
-      ['Todos os artigos', '/blog'],
-      ...POSTS_DO_BLOG.slice(0, 4).map(post => [post.curto, `/blog/${post.slug}`])
-    ]
+    itens: [['Todos os artigos', '/blog'], ...BLOG_NO_RODAPE]
   }
 ];
 

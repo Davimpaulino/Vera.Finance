@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { REDES } from '../src/models/RedeModel.js';
 import { ARTIGOS, problemasDoConteudo } from '../../Frontend/src/conteudo/index.js';
+import { BLOG_NO_RODAPE } from '../../Frontend/src/conteudo/rodape.js';
 import {
   partesDoTexto,
   textoPuro,
@@ -91,7 +92,8 @@ test('a conferência do build para em data que não existe ou fora de ordem', ()
     publicadoEm: '2026-11-26',
     atualizadoEm: '2026-11-26'
   };
-  const problemas = mudancas => problemasDoConteudo([], [{ ...artigo, ...mudancas }]).join(' | ');
+  const problemas = mudancas =>
+    problemasDoConteudo([], [{ ...artigo, ...mudancas }], []).join(' | ');
   assert.equal(problemas({}), '');
   assert.match(problemas({ publicadoEm: '2026-13-01' }), /publicadoEm precisa ser uma data/);
   assert.match(problemas({ publicadoEm: undefined }), /publicadoEm precisa ser uma data/);
@@ -102,5 +104,19 @@ test('a conferência do build para em data que não existe ou fora de ordem', ()
   assert.equal(
     problemas({ secao: 'blog', caminho: '/blog/teste', atualizadoEm: undefined }),
     ''
+  );
+});
+
+test('rodapé do site: só artigos do blog que existem', () => {
+  const blog = ARTIGOS.filter(artigo => artigo.secao === 'blog').map(artigo => artigo.caminho);
+  for (const [rotulo, caminho] of BLOG_NO_RODAPE) {
+    assert.ok(rotulo, caminho);
+    assert.ok(blog.includes(caminho), `${caminho} não é um artigo do blog`);
+  }
+  assert.deepEqual(
+    problemasDoConteudo([], ARTIGOS, [['Sumiu', '/blog/nao-existe']]).filter(p =>
+      p.startsWith('rodapé')
+    ),
+    ['rodapé (rodape.js): /blog/nao-existe não é um artigo do blog.']
   );
 });

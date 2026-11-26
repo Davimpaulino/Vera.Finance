@@ -1,13 +1,14 @@
 import { urlDoSite } from '../lib/site.js';
-import { AUTOR_DO_BLOG } from './blog.js';
 import { textoPuro } from './formato.js';
 
 // JSON-LD (schema.org) das páginas de conteúdo, montado a partir dos mesmos dados da página:
-// o que o Google e as IAs leem é o que a pessoa vê.
+// o que o Google e as IAs leem é o que a pessoa vê. Não importa ajuda.js nem blog.js: a página
+// Onde funciona usa a trilha daqui e está no pacote principal do JavaScript.
 
+// Autor e publicador dos artigos.
 const VERA = {
   '@type': 'Organization',
-  name: AUTOR_DO_BLOG,
+  name: 'vera.finance',
   url: urlDoSite('/'),
   logo: { '@type': 'ImageObject', url: urlDoSite('/icons/icon-512.png') }
 };

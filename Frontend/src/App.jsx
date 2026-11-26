@@ -12,9 +12,8 @@ import Precos from './pages/site/Precos.jsx';
 import Legal from './pages/site/Legal.jsx';
 import Perguntas from './pages/site/Perguntas.jsx';
 import OndeFunciona from './pages/site/OndeFunciona.jsx';
-import ListaDeArtigos from './pages/site/ListaDeArtigos.jsx';
-import Artigo from './pages/site/Artigo.jsx';
-import { artigoDoCaminho } from './conteudo/index.js';
+import { PaginaDeConteudo } from './pages/site/PaginaDeConteudo.jsx';
+import { ehCaminhoDeConteudo, useConteudo } from './conteudo/carregar.js';
 import Login from './pages/auth/Login.jsx';
 import Cadastro from './pages/auth/Cadastro.jsx';
 import AceiteDosTermos from './pages/auth/AceiteDosTermos.jsx';
@@ -63,6 +62,8 @@ export default function App() {
   const { path } = useRouter();
   const { status, user } = useAuth();
   const { setTheme } = useUi();
+  // Quando o pedaço da ajuda e do blog chega, os artigos ganham título e descrição no <head>.
+  const conteudo = useConteudo();
 
   // A superfície escolhida em Configurações vem junto com o perfil.
   // Aplica só quando a pessoa entra, para não brigar com a troca feita no topo da tela.
@@ -82,7 +83,7 @@ export default function App() {
       tagNoHead('link[rel="canonical"]', 'link', { rel: 'canonical', href: meta.canonical });
       tagNoHead('meta[property="og:url"]', 'meta', { property: 'og:url', content: meta.canonical });
     } else document.head.querySelector('link[rel="canonical"]')?.remove();
-  }, [path]);
+  }, [path, conteudo]);
 
   if (path === '/') return <Landing />;
   if (path === '/precos') return <Precos />;
@@ -90,11 +91,9 @@ export default function App() {
   if (path === '/termos') return <Legal tipo="termos" />;
   if (path === '/privacidade') return <Legal tipo="privacidade" />;
   if (path === '/onde-funciona') return <OndeFunciona />;
-  if (path === '/ajuda') return <ListaDeArtigos secao="ajuda" />;
-  if (path === '/blog') return <ListaDeArtigos secao="blog" />;
-  // Artigos da ajuda e do blog (src/conteudo): caminho que não é de artigo segue adiante.
-  const artigo = artigoDoCaminho(path);
-  if (artigo) return <Artigo artigo={artigo} />;
+  // Central de ajuda, blog e artigos (src/conteudo), num pedaço separado do JavaScript.
+  // Artigo que não existe vai para a home.
+  if (ehCaminhoDeConteudo(path)) return <PaginaDeConteudo caminho={path} />;
 
   if (status === 'loading') return <Carregando />;
   const logado = status === 'in';

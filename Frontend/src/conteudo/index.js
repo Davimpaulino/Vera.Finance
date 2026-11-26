@@ -1,6 +1,7 @@
 import { ARTIGOS_DE_AJUDA } from './ajuda.js';
 import { POSTS_DO_BLOG } from './blog.js';
 import { dataValida, linksInternos } from './formato.js';
+import { BLOG_NO_RODAPE } from './rodape.js';
 
 // As duas seções de conteúdo do site. As rotas, o título e a descrição de cada artigo saem daqui
 // para src/lib/paginas.js (e de lá para o App e para a pré-renderização do build).
@@ -54,10 +55,15 @@ const textosDoArtigo = artigo => [
 /**
  * Erros de escrita que quebrariam a página ou o JSON-LD: slug repetido ou com caractere
  * estranho, campo faltando, passo a passo sem passos, data que não existe, link interno ou
- * "Leia também" para uma página que não existe. O build (scripts/prerender.mjs) para se a lista
- * não vier vazia. `artigos` é só para os testes; o build confere todos os de ARTIGOS.
+ * "Leia também" para uma página que não existe, rodapé com artigo do blog que não existe.
+ * O build (scripts/prerender.mjs) para se a lista não vier vazia. `artigos` e `rodape` são só
+ * para os testes; o build confere os de verdade.
  */
-export function problemasDoConteudo(rotasExistentes, artigos = ARTIGOS) {
+export function problemasDoConteudo(
+  rotasExistentes,
+  artigos = ARTIGOS,
+  rodape = BLOG_NO_RODAPE
+) {
   const rotas = new Set(rotasExistentes);
   const problemas = [];
   const vistos = new Set();
@@ -91,5 +97,8 @@ export function problemasDoConteudo(rotasExistentes, artigos = ARTIGOS) {
       if (!rotas.has(caminho) || !tituloDoCaminho(caminho))
         problemas.push(`${nome}: "Leia também" aponta para ${caminho}, que não existe ou não tem título.`);
   }
+  for (const [rotulo, caminho] of rodape)
+    if (!rotulo || !artigos.some(artigo => artigo.secao === 'blog' && artigo.caminho === caminho))
+      problemas.push(`rodapé (rodape.js): ${caminho} não é um artigo do blog.`);
   return problemas;
 }

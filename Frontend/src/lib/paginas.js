@@ -1,8 +1,10 @@
 import { urlDoSite } from './site.js';
-import { ARTIGOS, artigoDoCaminho } from '../conteudo/index.js';
 
 // Título e descrição por página (o Google usa os dois no resultado da busca).
 // Usado pelo App no navegador e pela pré-renderização no build (scripts/prerender.mjs).
+// Os artigos da ajuda e do blog não estão aqui: o título e a descrição deles vêm de
+// src/conteudo (ajuda.js e blog.js) e entram por registrarPaginasDeConteudo quando o pedaço
+// do conteúdo carrega (src/conteudo/carregar.js). Artigo novo vira rota sozinho.
 export const PAGINAS = {
   '/': [
     'vera.finance · controle de gastos e comparador de preços de supermercado',
@@ -37,19 +39,30 @@ export const PAGINAS = {
   '/privacidade': [
     'Política de privacidade · vera.finance',
     'Como a vera.finance trata os seus dados pessoais, conforme a LGPD.'
-  ],
-  // Um por artigo de src/conteudo (ajuda.js e blog.js): artigo novo vira rota sozinho.
-  ...Object.fromEntries(
-    ARTIGOS.map(artigo => [artigo.caminho, [`${artigo.titulo} · vera.finance`, artigo.descricao]])
-  )
+  ]
 };
 
-// Páginas públicas que o build gera em HTML pronto (dist/<rota>/index.html).
+// Páginas fixas que o build gera em HTML pronto (dist/<rota>/index.html). Os artigos entram
+// junto, pelo entry-server (ROTAS_PRE_RENDERIZADAS).
 export const ROTAS_PUBLICAS = Object.keys(PAGINAS);
 
-/** Título, descrição, canonical, robots e tipo (og:type) de um caminho. */
+// Artigos da ajuda e do blog: caminho → [título, descrição].
+const ARTIGOS_REGISTRADOS = new Map();
+
+/** Guarda o título e a descrição dos artigos ({ caminho, titulo, descricao }). */
+export function registrarPaginasDeConteudo(artigos) {
+  for (const { caminho, titulo, descricao } of artigos)
+    ARTIGOS_REGISTRADOS.set(caminho, [`${titulo} · vera.finance`, descricao]);
+}
+
+/**
+ * Título, descrição, canonical e robots de um caminho. Nos artigos da ajuda e do blog, também
+ * `tipo: 'article'` (og:type de quem compartilha o link); nas outras páginas fica o "website"
+ * do index.html.
+ */
 export function metaDaPagina(caminho) {
-  const [titulo, descricao] = PAGINAS[caminho] || ['vera.finance', PAGINAS['/'][1]];
+  const artigo = ARTIGOS_REGISTRADOS.get(caminho);
+  const [titulo, descricao] = PAGINAS[caminho] || artigo || ['vera.finance', PAGINAS['/'][1]];
   // Área logada não entra no Google.
   const privada = caminho.startsWith('/app') || caminho.startsWith('/onboarding');
   return {
@@ -58,7 +71,6 @@ export function metaDaPagina(caminho) {
     // Canonical sempre no endereço público, mesmo abrindo por outro domínio.
     canonical: urlDoSite(caminho),
     robots: privada ? 'noindex, nofollow' : 'index, follow',
-    // Artigos de ajuda e do blog são "article" para quem compartilha o link; o resto, "website".
-    tipo: artigoDoCaminho(caminho) ? 'article' : 'website'
+    ...(artigo ? { tipo: 'article' } : {})
   };
 }

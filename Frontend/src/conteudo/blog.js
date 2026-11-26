@@ -1,21 +1,19 @@
 // Artigos do blog. Cada um vira a página /blog/<slug>, pré-renderizada no build (a lista de
-// rotas sai daqui, por src/lib/paginas.js). Mesmo formato dos artigos de ajuda (veja ajuda.js),
-// com dois campos a mais:
+// rotas sai daqui, pelo src/entry-server.jsx). Mesmo formato dos artigos de ajuda (veja
+// ajuda.js), sem `tipo` nem `passos`:
 // - publicadoEm: data de publicação (AAAA-MM-DD), que vai para o JSON-LD (BlogPosting).
-// - curto: nome curto para o rodapé do site.
+// - atualizadoEm: opcional, data da última revisão (dateModified).
 // Depois de escrever, ponha a URL em public/sitemap.xml e em public/llms.txt
-// (o teste Backend/test/conteudo.test.js confere). O artigo mais novo vai primeiro.
+// (o teste Backend/test/conteudo.test.js confere) e, se for para o rodapé do site, em
+// rodape.js, com um nome curto. O artigo mais novo vai primeiro.
 //
 // Regras: conselho prático e verdadeiro. Nada de número inventado: conta de exemplo diz que é
 // exemplo, e dado de fora só com a fonte e o link.
-
-export const AUTOR_DO_BLOG = 'vera.finance';
 
 export const POSTS_DO_BLOG = [
   {
     slug: 'economizar-comparando-preco-por-quilo-e-por-litro',
     titulo: 'Como economizar no supermercado comparando preços por quilo e por litro',
-    curto: 'Preço por quilo e por litro',
     descricao:
       'Embalagens de tamanhos diferentes enganam. Aprenda a fazer a conta do preço por quilo e por litro e veja os cuidados com pacotes, promoções e concentrados.',
     resumo:
@@ -64,7 +62,6 @@ export const POSTS_DO_BLOG = [
   {
     slug: 'qr-code-da-nota-fiscal-nfc-e',
     titulo: 'Como ler o QR Code da nota fiscal (NFC-e) e o que ela mostra',
-    curto: 'QR Code da NFC-e',
     descricao:
       'O QR Code do cupom abre a nota fiscal no site da Secretaria da Fazenda. Veja como ler, o que a NFC-e mostra e os cuidados para não expor os seus dados.',
     resumo:
@@ -113,7 +110,6 @@ export const POSTS_DO_BLOG = [
   {
     slug: 'atacarejo-ou-supermercado-quando-compensa',
     titulo: 'Atacarejo ou supermercado: quando compensa',
-    curto: 'Atacarejo ou supermercado',
     descricao:
       'O atacarejo pode sair mais barato, mas nem sempre compensa. Veja para quais compras ele faz sentido, quando o supermercado ganha e como fazer a conta.',
     resumo:
@@ -156,7 +152,6 @@ export const POSTS_DO_BLOG = [
   {
     slug: 'organizar-renda-por-categorias',
     titulo: 'Como organizar a renda por categorias e saber até que dia o dinheiro dura',
-    curto: 'Renda por categorias',
     descricao:
       'Separe a renda do mês em categorias com limite, acompanhe o ritmo de gasto e descubra até que dia o dinheiro de cada categoria dura. Passo a passo e a conta.',
     resumo:
