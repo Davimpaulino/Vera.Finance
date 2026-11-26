@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   Button,
   Card,
@@ -143,6 +143,7 @@ export default function Configuracoes() {
   const [nome, setNome] = useState(user.nome || '');
   const [renda, setRenda] = useState(moneyField(user.ciclo?.rendaFixa || 0));
   const [cep, setCep] = useState(user.local?.cep || '');
+  const campoCep = useRef(null);
   const [confirmar, setConfirmar] = useState(null);
 
   useEffect(() => {
@@ -159,18 +160,22 @@ export default function Configuracoes() {
     }
   };
   const pref = (k, v) => salvar({ prefs: { [k]: v } });
-  // CEP em branco apaga a localização: o CEP, o ponto aproximado e a cidade (Política de
-  // Privacidade). O raio e os mercados escolhidos ficam.
+  // CEP em branco apaga a localização (Política de Privacidade): o CEP, o ponto aproximado, a
+  // cidade e os mercados que a pessoa costuma usar. O raio fica.
   const apagarLocalizacao = async () => {
     try {
       setUser(await api.patch('/me', { local: { cep: '' } }));
       setCep('');
       toast('Localização apagada.');
+      return true;
     } catch (e) {
       toast(e.message, 'danger');
+      return false;
     }
   };
-  const temLocalizacao = Boolean(user.local?.cep) || user.local?.lat != null;
+  const temLocalizacao =
+    Boolean(user.local?.cep || user.local?.cidade || user.local?.mercados?.length) ||
+    user.local?.lat != null;
   const salvarCep = async () => {
     if (!cep.replace(/\D/g, '')) return apagarLocalizacao();
     try {
@@ -339,7 +344,12 @@ export default function Configuracoes() {
                     .replace(/^(\d{5})(\d)/, '$1-$2')
                 )
               }
-              onBlur={() => cep !== user.local.cep && salvarCep()}
+              ref={campoCep}
+              onBlur={() => {
+                // Perfil sem CEP guardado começa com o campo vazio: entrar e sair sem digitar
+                // não apaga nada.
+                if (cep !== (user.local?.cep || '')) salvarCep();
+              }}
             />
             <Select
               label="Raio de busca"
@@ -351,10 +361,24 @@ export default function Configuracoes() {
             />
           </div>
           {temLocalizacao ? (
-            <div>
-              <Button variant="secondary" size="sm" onClick={apagarLocalizacao}>
-                Apagar localização
-              </Button>
+            <div className="vera-stack vera-stack--8">
+              <div>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={async () => {
+                    // O botão sai da tela depois de apagar: o foco vai para o CEP, e quem usa
+                    // teclado ou leitor de tela não perde o lugar.
+                    if (await apagarLocalizacao()) campoCep.current?.focus();
+                  }}
+                >
+                  Apagar localização
+                </Button>
+              </div>
+              <span className="vera-t-caption">
+                Apaga o CEP, a cidade, o ponto aproximado e os mercados que você costuma usar.
+                Deixar o CEP em branco faz o mesmo.
+              </span>
             </div>
           ) : null}
           <Switch
@@ -512,8 +536,8 @@ export default function Configuracoes() {
         >
           <span className="vera-modal__text">
             Depois disso a conta volta para o grátis: 5 notas por mês, até 3 metas e{' '}
-            {user.familia ? 'sem convidar mais pessoas para a família' : 'sem modo família'}. Nada
-            é apagado.
+            {user.familia ? 'sem convidar mais pessoas para a família' : 'sem modo família'}. Nada é
+            apagado.
           </span>
         </Modal>
       ) : null}
