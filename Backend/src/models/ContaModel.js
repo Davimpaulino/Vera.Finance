@@ -1,4 +1,5 @@
 import { banco } from '../config/banco.js';
+import { guardarComTeto } from '../utils/cache.js';
 
 // Uma conta por e-mail. O login próprio da API e o Firebase Auth (e-mail, Google, Apple) geram
 // identificadores diferentes para a mesma pessoa; aqui o e-mail aponta para o identificador dono
@@ -11,6 +12,7 @@ const caminhoDaCredencial = email => `credenciais/${chaveDoEmail(email)}`;
 
 const VALIDADE_MS = 10 * 60 * 1000;
 const emCache = new Map();
+const TETO_DO_CACHE = 10_000;
 
 export const ContaModel = {
   buscar: email => (email ? banco.ler(caminhoDaConta(email)) : null),
@@ -22,7 +24,7 @@ export const ContaModel = {
     const guardado = emCache.get(chave);
     if (guardado && Date.now() - guardado.em < VALIDADE_MS) return guardado.uid;
     const escolhido = await this.resolver({ uid, email, verificado });
-    emCache.set(chave, { em: Date.now(), uid: escolhido });
+    guardarComTeto(emCache, chave, { em: Date.now(), uid: escolhido }, TETO_DO_CACHE);
     return escolhido;
   },
 

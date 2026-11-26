@@ -1,23 +1,50 @@
-import { contexto } from '../models/ContextoModel.js';
+import { contexto, podeVerCategoria, podeVerLancamento } from '../models/ContextoModel.js';
 import { CicloModel } from '../models/CicloModel.js';
 import { LancamentoModel, TIPOS, ORIGENS } from '../models/LancamentoModel.js';
 import { CategoriaModel } from '../models/CategoriaModel.js';
 import { materializarRecorrentes } from '../models/RecorrenteModel.js';
 import { HttpError, requireFields, toNumber } from '../utils/http.js';
+import { idValido, texto } from '../utils/validacao.js';
 import { normalize } from '../utils/text.js';
 import { sum } from '../utils/money.js';
 
-const csvCell = v => {
-  const s = String(v ?? '');
-  return /[";\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+// Quantos ciclos para trás (ou para a frente) a tela pode pedir: 10 anos bastam, e um número
+// absurdo levaria a uma data inválida.
+const CICLOS_MAXIMOS = 120;
+const deslocamentoDoCiclo = valor => {
+  const numero = Math.trunc(Number(valor) || 0);
+  return Math.max(-CICLOS_MAXIMOS, Math.min(CICLOS_MAXIMOS, numero));
 };
+
+function dataDoCorpo(valor) {
+  if (valor === undefined || valor === null || valor === '') return new Date().toISOString();
+  const data = typeof valor === 'string' || typeof valor === 'number' ? new Date(valor) : null;
+  const ano = data?.getFullYear();
+  if (!data || !Number.isFinite(data.getTime()) || ano < 1900 || ano > 2200)
+    throw new HttpError(400, 'Data inválida.');
+  return data.toISOString();
+}
+
+// Cada célula vai entre aspas (com as aspas de dentro dobradas): vírgula, ponto e vírgula ou
+// quebra de linha no meio do texto não partem a célula.
+const csvCell = v => `"${String(v ?? '').replace(/"/g, '""')}"`;
+const CABECALHO_DA_PLANILHA = 'data;tipo;descricao;categoria;valor;origem;quem';
+
+// Texto que a pessoa digitou (descrição, categoria, nome de quem lançou) e que começa com = + - @
+// vira fórmula ao abrir a planilha no Excel ou no Google Planilhas. No modo família, um membro
+// poderia pôr uma fórmula na planilha do dono. O apóstrofo na frente deixa o texto como texto.
+// Vale também logo depois de vírgula, ponto e vírgula, tabulação ou quebra de linha: um programa
+// que separa as colunas por outro caractere (o Excel em inglês usa a vírgula) parte o texto ali,
+// e o pedaço seguinte vira o começo de outra célula.
+const COMECO_DE_FORMULA = /(^|[,;\t\r\n])(\s*)([=+\-@])/g;
+const textoDaPlanilha = v => String(v ?? '').replace(COMECO_DE_FORMULA, "$1$2'$3");
 
 export const lancamentoController = {
   /** Lançamentos do ciclo, agrupados por dia, com filtros de categoria, tipo e busca. */
   async list({ user, query }) {
     const ctx = await contexto(user.uid);
     await materializarRecorrentes(ctx.owner, ctx.ownerUid);
-    const resumo = await CicloModel.resumo(ctx, Number(query.get('ciclo')) || 0);
+    const resumo = await CicloModel.resumo(ctx, deslocamentoDoCiclo(query.get('ciclo')));
     const categoriaId = query.get('categoria') || '';
     const tipo = query.get('tipo') || '';
     const q = normalize(query.get('q') || '');
@@ -81,20 +108,26 @@ export const lancamentoController = {
     const valor = toNumber(body.valor, 'valor');
     if (valor <= 0) throw new HttpError(400, 'O valor precisa ser maior que zero.');
 
+    const titulo = texto(body.titulo, 'A descrição', { max: 120, obrigatorio: true });
+    const data = dataDoCorpo(body.data);
+
     let categoria = null;
     if (tipo === 'saida') {
       if (!body.categoriaId) throw new HttpError(400, 'Escolha a categoria do gasto.');
+      if (!idValido(body.categoriaId)) throw new HttpError(400, 'Categoria não encontrada.');
       categoria = await CategoriaModel.buscar(ctx.ownerUid, body.categoriaId);
-      if (!categoria) throw new HttpError(400, 'Categoria não encontrada.');
+      // No modo família, quem não é dono só lança nas categorias que o dono compartilhou.
+      if (!categoria || !podeVerCategoria(ctx, categoria))
+        throw new HttpError(400, 'Categoria não encontrada.');
     }
     const lanc = await LancamentoModel.criar(ctx.ownerUid, {
-      titulo: String(body.titulo).trim(),
+      titulo,
       valor,
       tipo,
       origem,
       categoriaId: categoria ? categoria.id : null,
       categoriaNome: categoria ? categoria.nome : 'entrada',
-      data: body.data ? new Date(body.data).toISOString() : new Date().toISOString(),
+      data,
       quemId: user.uid,
       quemNome: ctx.user.nome || 'Você'
     });
@@ -111,22 +144,29 @@ export const lancamentoController = {
     return { status: 204 };
   },
 
-  /** Planilha (CSV) de todos os lançamentos. */
-  async exportar({ user, res }) {
+  /** Planilha (CSV) dos lançamentos que a pessoa pode ver (no modo família, os mesmos da tela). */
+  async exportar({ user }) {
     const ctx = await contexto(user.uid);
-    const todos = await LancamentoModel.listar(ctx.ownerUid, { orderBy: 'data', dir: 'desc' });
-    const linhas = [['data', 'tipo', 'descricao', 'categoria', 'valor', 'origem', 'quem']].concat(
-      todos.map(l => [
-        l.data.slice(0, 10),
-        l.tipo,
-        l.titulo,
-        l.categoriaNome,
+    const [todos, categorias] = await Promise.all([
+      LancamentoModel.listar(ctx.ownerUid, { ordenarPor: 'data', direcao: 'desc' }),
+      CategoriaModel.listar(ctx.ownerUid)
+    ]);
+    const visiveis = todos.filter(podeVerLancamento(ctx, categorias));
+    const linhas = visiveis.map(l =>
+      [
+        String(l.data || '').slice(0, 10),
+        textoDaPlanilha(l.tipo),
+        textoDaPlanilha(l.titulo),
+        textoDaPlanilha(l.categoriaNome),
         String(l.valor).replace('.', ','),
-        l.origem,
-        l.quemNome
-      ])
+        textoDaPlanilha(l.origem),
+        textoDaPlanilha(l.quemNome)
+      ]
+        .map(csvCell)
+        .join(';')
     );
-    const csv = '﻿' + linhas.map(r => r.map(csvCell).join(';')).join('\n');
+    // O BOM no começo faz o Excel abrir a planilha como UTF-8 (com os acentos certos).
+    const csv = '﻿' + [CABECALHO_DA_PLANILHA, ...linhas].join('\n');
     return {
       raw: csv,
       contentType: 'text/csv; charset=utf-8',

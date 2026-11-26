@@ -15,3 +15,14 @@
   height:180px;
   border-radius:var(--r-card)
 }
+.vera-sem-conexao{
+  flex-direction:column;
+  gap:var(--sp-2);
+  padding:var(--sp-6) var(--gutter-md)
+}
+.vera-sem-conexao__acoes{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+  gap:var(--sp-3)
+}

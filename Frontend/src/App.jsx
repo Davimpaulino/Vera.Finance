@@ -5,25 +5,38 @@ import { useAuth } from './context/AuthContext.jsx';
 import { aceitouTermos } from './lib/termos.js';
 import { useUi } from './context/UiContext.jsx';
 import { metaDaPagina } from './lib/paginas.js';
-import { AppShell } from './components/app/AppShell.jsx';
-import { PageSkeleton } from './components/Loading.jsx';
+import { precisaDeLogin } from './lib/rotas.js';
+import { importarTela } from './lib/versaoNova.js';
+import { PageSkeleton, SemConexao } from './components/Loading.jsx';
+// As páginas pré-renderizadas no build (site, entrar e cadastro) entram direto: o
+// renderToString não espera import(). O resto só baixa quando alguém logado precisa.
 import Landing from './pages/site/Landing.jsx';
 import Precos from './pages/site/Precos.jsx';
 import Legal from './pages/site/Legal.jsx';
 import Perguntas from './pages/site/Perguntas.jsx';
+import OndeFunciona from './pages/site/OndeFunciona.jsx';
+import { PaginaDeConteudo } from './pages/site/PaginaDeConteudo.jsx';
+import { ehCaminhoDeConteudo, useConteudo } from './conteudo/carregar.js';
 import Login from './pages/auth/Login.jsx';
 import Cadastro from './pages/auth/Cadastro.jsx';
-import AceiteDosTermos from './pages/auth/AceiteDosTermos.jsx';
-const Onboarding = lazy(() => import('./pages/auth/Onboarding.jsx'));
-const Painel = lazy(() => import('./pages/app/Painel.jsx'));
-const Lancamentos = lazy(() => import('./pages/app/Lancamentos.jsx'));
-const Relatorios = lazy(() => import('./pages/app/Relatorios.jsx'));
-const Metas = lazy(() => import('./pages/app/Metas.jsx'));
-const Categorias = lazy(() => import('./pages/app/Categorias.jsx'));
-const Comparar = lazy(() => import('./pages/app/Comparar.jsx'));
-const Lista = lazy(() => import('./pages/app/Lista.jsx'));
-const Familia = lazy(() => import('./pages/app/Familia.jsx'));
-const Configuracoes = lazy(() => import('./pages/app/Configuracoes.jsx'));
+// Tela que só baixa quando alguém precisa. Se o pedaço sumiu num deploy, a página recarrega
+// e a tela fica no "Carregando" até a página nova chegar (src/lib/versaoNova.js).
+const sobDemanda = importar => lazy(importarTela(importar));
+// A casca do app (menu, novo gasto, notificações, leitor de nota) vem num pedaço só dela.
+const AppShell = sobDemanda(() =>
+  import('./components/app/AppShell.jsx').then(m => ({ default: m.AppShell }))
+);
+const AceiteDosTermos = sobDemanda(() => import('./pages/auth/AceiteDosTermos.jsx'));
+const Onboarding = sobDemanda(() => import('./pages/auth/Onboarding.jsx'));
+const Painel = sobDemanda(() => import('./pages/app/Painel.jsx'));
+const Lancamentos = sobDemanda(() => import('./pages/app/Lancamentos.jsx'));
+const Relatorios = sobDemanda(() => import('./pages/app/Relatorios.jsx'));
+const Metas = sobDemanda(() => import('./pages/app/Metas.jsx'));
+const Categorias = sobDemanda(() => import('./pages/app/Categorias.jsx'));
+const Comparar = sobDemanda(() => import('./pages/app/Comparar.jsx'));
+const Lista = sobDemanda(() => import('./pages/app/Lista.jsx'));
+const Familia = sobDemanda(() => import('./pages/app/Familia.jsx'));
+const Configuracoes = sobDemanda(() => import('./pages/app/Configuracoes.jsx'));
 
 const APP_PAGES = {
   '/app': Painel,
@@ -56,9 +69,11 @@ function Carregando() {
 }
 
 export default function App() {
-  const { path } = useRouter();
-  const { status, user } = useAuth();
+  const { path, navigate } = useRouter();
+  const { status, user, tentarDeNovo, temSessao, logout } = useAuth();
   const { setTheme } = useUi();
+  // Quando o pedaço da ajuda e do blog chega, os artigos ganham título e descrição no <head>.
+  const conteudo = useConteudo();
 
   // A superfície escolhida em Configurações vem junto com o perfil.
   // Aplica só quando a pessoa entra, para não brigar com a troca feita no topo da tela.
@@ -78,19 +93,38 @@ export default function App() {
       tagNoHead('link[rel="canonical"]', 'link', { rel: 'canonical', href: meta.canonical });
       tagNoHead('meta[property="og:url"]', 'meta', { property: 'og:url', content: meta.canonical });
     } else document.head.querySelector('link[rel="canonical"]')?.remove();
-  }, [path]);
+  }, [path, conteudo]);
 
   if (path === '/') return <Landing />;
   if (path === '/precos') return <Precos />;
   if (path === '/perguntas') return <Perguntas />;
   if (path === '/termos') return <Legal tipo="termos" />;
   if (path === '/privacidade') return <Legal tipo="privacidade" />;
+  if (path === '/onde-funciona') return <OndeFunciona />;
+  // Central de ajuda, blog e artigos (src/conteudo), num pedaço separado do JavaScript.
+  // Artigo que não existe vai para a home.
+  if (ehCaminhoDeConteudo(path)) return <PaginaDeConteudo caminho={path} />;
 
+  // Endereço que não existe vai para a home sem esperar o login (que nem liga fora destas rotas).
+  if (!precisaDeLogin(path)) return <Redirect to="/" />;
   if (status === 'loading') return <Carregando />;
+  if (status === 'offline') {
+    // Sair não precisa de rede: num computador emprestado, a pessoa sai mesmo com a API fora.
+    const sair = async () => {
+      await logout();
+      navigate('/');
+    };
+    return <SemConexao onTentar={tentarDeNovo} onSair={temSessao() ? sair : null} />;
+  }
   const logado = status === 'in';
   // Sem o aceite da versão em vigor dos termos nada abre, nem o cadastro guiado: vale para
   // quem entrou pelo Google ou pela Apple na tela Entrar e para quem tem um aceite antigo.
-  if (logado && !aceitouTermos(user)) return <AceiteDosTermos />;
+  if (logado && !aceitouTermos(user))
+    return (
+      <Suspense fallback={<Carregando />}>
+        <AceiteDosTermos />
+      </Suspense>
+    );
   const pronto = logado && user?.onboardingCompleto;
 
   if (path === '/entrar') return pronto ? <Redirect to="/app" /> : <Login />;
@@ -118,11 +152,13 @@ export default function App() {
     if (!logado) return <Redirect to="/entrar" />;
     if (!pronto) return <Redirect to="/cadastro/perguntas" />;
     return (
-      <AppShell>
-        <Suspense fallback={<PageSkeleton />}>
-          <Page key={path} />
-        </Suspense>
-      </AppShell>
+      <Suspense fallback={<Carregando />}>
+        <AppShell>
+          <Suspense fallback={<PageSkeleton />}>
+            <Page key={path} />
+          </Suspense>
+        </AppShell>
+      </Suspense>
     );
   }
   return <Redirect to="/" />;

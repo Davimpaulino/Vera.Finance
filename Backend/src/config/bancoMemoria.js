@@ -11,8 +11,14 @@ import {
 export function criarBancoMemoria() {
   let raiz = {};
 
+  // Só desce por chaves do próprio dado, como o bancoPostgres: um id como "constructor" ou
+  // "toString" existe em todo objeto do JavaScript e levaria a uma função do protótipo (que o
+  // structuredClone não copia), em vez de dar "não encontrado".
   const lerNo = caminho =>
-    partesDoCaminho(caminho).reduce((no, parte) => (no == null ? undefined : no[parte]), raiz);
+    partesDoCaminho(caminho).reduce(
+      (no, parte) => (no != null && Object.hasOwn(Object(no), parte) ? no[parte] : undefined),
+      raiz
+    );
 
   function escreverNo(caminho, valor) {
     const partes = partesDoCaminho(caminho);
@@ -22,7 +28,7 @@ export function criarBancoMemoria() {
     }
     let no = raiz;
     partes.slice(0, -1).forEach(parte => {
-      if (!no[parte] || typeof no[parte] !== 'object') no[parte] = {};
+      if (!Object.hasOwn(no, parte) || !no[parte] || typeof no[parte] !== 'object') no[parte] = {};
       no = no[parte];
     });
     const ultimo = partes[partes.length - 1];

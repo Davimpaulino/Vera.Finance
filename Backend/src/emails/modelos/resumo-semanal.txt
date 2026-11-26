@@ -1,0 +1,15 @@
+Sua semana: {{periodo}}
+
+Oi, {{nome}}. Este é o resumo da sua semana na vera.
+
+Gasto na semana: {{totalGasto}}
+Livre no ciclo: {{livre}}
+
+{{projecao}}
+
+Por categoria (gasto · ainda dá):
+{{#categorias}}- {{categoria}}: {{gasto}} · {{restante}}
+{{/categorias}}
+Abrir o painel: {{linkApp}}
+
+Não quer mais receber o resumo da semana? Parar de receber: {{linkDescadastro}}

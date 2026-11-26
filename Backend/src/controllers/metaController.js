@@ -3,8 +3,70 @@ import { MetaModel } from '../models/MetaModel.js';
 import { CicloModel } from '../models/CicloModel.js';
 import { PlanoModel } from '../models/PlanoModel.js';
 import { HttpError, requireFields, toNumber } from '../utils/http.js';
+import { texto } from '../utils/validacao.js';
 import { inRange } from '../utils/dates.js';
 import { round2, sum } from '../utils/money.js';
+
+const nomeDaMeta = valor => texto(valor, 'O nome da meta', { max: 80, obrigatorio: true });
+
+// Nome de ícone (lucide): letras minúsculas, números e hífen.
+function iconeDaMeta(valor) {
+  if (typeof valor !== 'string' || !/^[a-z0-9-]{1,40}$/.test(valor))
+    throw new HttpError(400, 'Ícone desconhecido.');
+  return valor;
+}
+
+function valorPositivo(valor, campo, mensagem) {
+  const numero = toNumber(valor, campo);
+  if (numero < 0) throw new HttpError(400, mensagem);
+  return numero;
+}
+
+// Aporte feito junto com a criação da meta (o "já guardado" do formulário): mesma data da meta.
+const JUNTO_COM_A_CRIACAO_MS = 2000;
+const reais = valor => `R$ ${valor.toFixed(2).replace('.', ',')}`;
+
+/**
+ * Quem criou a meta. As metas gravadas antes do campo quemId não o têm: nelas vale quem fez o
+ * aporte junto com a criação. Sem esse aporte, não dá para saber, e só o dono muda a meta.
+ */
+function criadorDaMeta(meta) {
+  if (meta.quemId) return meta.quemId;
+  const primeiro = (meta.aportes || [])[0];
+  if (!primeiro?.quemId || !meta.criadoEm) return null;
+  const distancia = Math.abs(new Date(primeiro.data) - new Date(meta.criadoEm));
+  return distancia <= JUNTO_COM_A_CRIACAO_MS ? primeiro.quemId : null;
+}
+
+/**
+ * No modo família as metas ficam no espaço do dono e todos guardam nelas (cada aporte leva quem
+ * guardou). Mudar o nome, o valor ou apagar a meta é do dono ou de quem a criou.
+ */
+const podeMudarMeta = (ctx, meta) => ctx.isDono || criadorDaMeta(meta) === ctx.uid;
+
+function exigirQuemPodeMudar(ctx, meta) {
+  if (!podeMudarMeta(ctx, meta))
+    throw new HttpError(403, 'Só o dono do ciclo ou quem criou a meta pode mudar ou apagar.');
+}
+
+/**
+ * Retirar dinheiro da meta também muda a meta: os outros da família retiram só o que eles mesmos
+ * guardaram nela (senão um aporte negativo zeraria a meta de outra pessoa).
+ */
+function exigirQuemPodeRetirar(ctx, meta, valor) {
+  if (valor >= 0 || podeMudarMeta(ctx, meta)) return;
+  const doProprio = sum((meta.aportes || []).filter(a => a.quemId === ctx.uid), a => a.valor);
+  if (doProprio <= 0)
+    throw new HttpError(
+      403,
+      'Só o dono do ciclo ou quem criou a meta pode retirar dinheiro dela.'
+    );
+  if (round2(doProprio + valor) < 0)
+    throw new HttpError(
+      403,
+      `Você pode retirar só o que guardou nesta meta: ${reais(doProprio)}.`
+    );
+}
 
 export function apresentarMeta(m, ciclo) {
   const aportes = m.aportes || [];
@@ -68,20 +130,25 @@ export const metaController = {
           `O plano grátis permite até ${limite} metas. Assine o vera+ para ter metas ilimitadas.`
         );
     }
+    const nome = nomeDaMeta(body.nome);
+    const alvo = toNumber(body.alvo, 'alvo');
+    if (alvo <= 0) throw new HttpError(400, 'O valor da meta precisa ser maior que zero.');
+    const guardado = body.guardado
+      ? valorPositivo(body.guardado, 'guardado', 'O valor guardado não pode ser negativo.')
+      : 0;
     const meta = await MetaModel.criar(ctx.ownerUid, {
-      nome: String(body.nome).trim(),
-      icon: body.icon || 'target',
-      alvo: toNumber(body.alvo, 'alvo'),
-      aportePorCiclo: toNumber(body.aportePorCiclo || 0, 'aportePorCiclo'),
+      nome,
+      icon: body.icon ? iconeDaMeta(body.icon) : 'target',
+      alvo,
+      aportePorCiclo: valorPositivo(
+        body.aportePorCiclo || 0,
+        'aportePorCiclo',
+        'O aporte por ciclo não pode ser negativo.'
+      ),
       sobraNaVirada: !!body.sobraNaVirada,
-      aportes: body.guardado
-        ? [
-            {
-              data: new Date().toISOString(),
-              valor: toNumber(body.guardado, 'guardado'),
-              quemId: user.uid
-            }
-          ]
+      quemId: user.uid,
+      aportes: guardado
+        ? [{ data: new Date().toISOString(), valor: guardado, quemId: user.uid }]
         : []
     });
     const resumo = await CicloModel.resumo(ctx);
@@ -92,14 +159,22 @@ export const metaController = {
     const ctx = await contexto(user.uid);
     const atual = await MetaModel.buscar(ctx.ownerUid, params.id);
     if (!atual) throw new HttpError(404, 'Meta não encontrada.');
+    exigirQuemPodeMudar(ctx, atual);
     const data = {};
-    if (body.nome !== undefined) data.nome = String(body.nome).trim();
-    if (body.icon !== undefined) data.icon = body.icon;
+    if (body.nome !== undefined) {
+      if (typeof body.nome === 'string' && !body.nome.trim())
+        throw new HttpError(400, 'Dê um nome para a meta.');
+      data.nome = nomeDaMeta(body.nome);
+    }
+    if (body.icon !== undefined) data.icon = iconeDaMeta(body.icon);
     if (body.alvo !== undefined) data.alvo = toNumber(body.alvo, 'alvo');
     if (body.aportePorCiclo !== undefined)
-      data.aportePorCiclo = toNumber(body.aportePorCiclo, 'aportePorCiclo');
+      data.aportePorCiclo = valorPositivo(
+        body.aportePorCiclo,
+        'aportePorCiclo',
+        'O aporte por ciclo não pode ser negativo.'
+      );
     if (body.sobraNaVirada !== undefined) data.sobraNaVirada = !!body.sobraNaVirada;
-    if (data.nome === '') throw new HttpError(400, 'Dê um nome para a meta.');
     if (data.alvo !== undefined && data.alvo <= 0)
       throw new HttpError(400, 'O valor da meta precisa ser maior que zero.');
     const meta = await MetaModel.atualizar(ctx.ownerUid, params.id, data);
@@ -116,8 +191,9 @@ export const metaController = {
     const valor = toNumber(body.valor, 'valor');
     if (!valor) throw new HttpError(400, 'Digite um valor.');
     const guardado = sum(atual.aportes || [], a => a.valor);
-    if (guardado + valor < 0)
-      throw new HttpError(400, `Só há R$ ${guardado.toFixed(2).replace('.', ',')} guardados nesta meta.`);
+    if (round2(guardado + valor) < 0)
+      throw new HttpError(400, `Só há ${reais(guardado)} guardados nesta meta.`);
+    exigirQuemPodeRetirar(ctx, atual, valor);
     // quemId: no modo família, cada aporte é de quem guardou (vai na exportação dessa pessoa).
     const aportes = [
       ...(atual.aportes || []),
@@ -140,6 +216,9 @@ export const metaController = {
 
   async remove({ user, params }) {
     const ctx = await contexto(user.uid);
+    const atual = await MetaModel.buscar(ctx.ownerUid, params.id);
+    if (!atual) return { status: 204 };
+    exigirQuemPodeMudar(ctx, atual);
     await MetaModel.remover(ctx.ownerUid, params.id);
     return { status: 204 };
   }

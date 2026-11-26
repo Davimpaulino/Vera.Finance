@@ -1,0 +1,11 @@
+Pedido para apagar a conta
+
+Oi, {{nome}}. Recebemos o seu pedido para apagar a conta. Em {{dataDaExclusao}} a vera apaga tudo: perfil, lançamentos, metas, lista, notas, login e participação em família.
+
+Até lá, dá para desistir em Configurações › Dados. Quer guardar o histórico? Na mesma tela você baixa os lançamentos em planilha e todos os seus dados em um arquivo.
+
+Abrir Configurações: {{linkConfiguracoes}}
+
+Os preços da base anônima continuam, porque não identificam ninguém.
+
+Não foi você? Entre na conta, desista da exclusão e troque a senha. Se precisar, escreva para {{emailPrivacidade}}.

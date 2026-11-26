@@ -1,0 +1,9 @@
+O pagamento não passou
+
+Oi, {{nome}}. Em {{dataDaTentativa}} tentamos cobrar {{valor}} do {{plano}}, mas o pagamento não foi aprovado. Pode ser um cartão vencido, sem limite ou bloqueado.
+
+O vera+ continua até {{dataLimite}}. Se o pagamento não passar até lá, a conta volta para o plano grátis. Nada é apagado: lançamentos, metas e listas continuam lá.
+
+Atualizar pagamento: {{linkPagamento}}
+
+Não quer mais o vera+? Não precisa fazer nada: a conta volta para o grátis sozinha.

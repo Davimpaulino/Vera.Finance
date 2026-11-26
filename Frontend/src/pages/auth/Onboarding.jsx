@@ -199,7 +199,7 @@ export default function Onboarding() {
   }[plano];
 
   return (
-    <section className="onb">
+    <main className="onb">
       <header className="onb__top">
         <Brand size="md" />
         <span className="onb__step">passo {step + 1} de 5</span>
@@ -501,6 +501,6 @@ export default function Onboarding() {
           </Button>
         </div>
       </div>
-    </section>
+    </main>
   );
 }

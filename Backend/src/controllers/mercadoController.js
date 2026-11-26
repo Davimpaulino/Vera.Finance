@@ -4,6 +4,11 @@ import { PrecoModel } from '../models/PrecoModel.js';
 import { GeoModel } from '../models/GeoModel.js';
 import { PrecoRegionalModel } from '../models/PrecoRegionalModel.js';
 import { HttpError } from '../utils/http.js';
+import { coordenadaValida, raioKm } from '../utils/validacao.js';
+
+// Termo buscado nos sites das redes: mais do que isto não é nome de produto.
+const MAXIMO_DO_TERMO = 80;
+const termoDaBusca = (query, nome) => String(query.get(nome) || '').trim().slice(0, MAXIMO_DO_TERMO);
 
 /** Ponto de onde medir: lat/lng da busca ou, na falta, o CEP. */
 export async function origemDaBuscaOuCep(query) {
@@ -13,22 +18,23 @@ export async function origemDaBuscaOuCep(query) {
   return achado?.lat ? { lat: achado.lat, lng: achado.lng } : null;
 }
 
+// Coordenada fora do planeta (lat 1e308) não vira consulta ao mapa.
 export const origemDaBusca = query =>
-  query.get('lat') && query.get('lng')
+  coordenadaValida(query.get('lat'), query.get('lng'))
     ? { lat: Number(query.get('lat')), lng: Number(query.get('lng')) }
     : null;
 
 export const mercadoController = {
   /** Lista pública de mercados (usada no cadastro para escolher os de costume). */
   async list({ query }) {
-    const km = Number(query.get('raio')) || 15;
+    const km = raioKm(query.get('raio'), 15);
     const origem = await origemDaBuscaOuCep(query);
     return (await MercadoModel.daRegiao(km, origem)).mercados.slice(0, 40);
   },
 
   async produtos({ user, query }) {
-    const q = query.get('q') || '';
-    if (q.trim().length < 2) return [];
+    const q = termoDaBusca(query, 'q');
+    if (q.length < 2) return [];
     const ctx = await contexto(user.uid);
     const { modo, mercados } = await MercadoModel.daRegiao(
       ctx.owner.local?.raioKm || 5,
@@ -42,7 +48,7 @@ export const mercadoController = {
   },
 
   async comparar({ user, query }) {
-    const produto = (query.get('produto') || '').trim();
+    const produto = termoDaBusca(query, 'produto');
     if (produto.length < 2) throw new HttpError(400, 'Digite o nome do produto.');
     const ctx = await contexto(user.uid);
     const raioKm = ctx.owner.local?.raioKm || 5;
@@ -52,7 +58,7 @@ export const mercadoController = {
       const cep = await GeoModel.cepParaPrecos(ctx.owner.local);
       const real = await PrecoRegionalModel.comparar(produto, mercados, habitual, {
         cep,
-        opcao: query.get('opcao') || ''
+        opcao: String(query.get('opcao') || '').slice(0, 200)
       });
       return {
         ...real,

@@ -37,3 +37,13 @@
   color:var(--text-2);
   margin:0
 }
+/* Link no meio do texto precisa de sublinhado, não só de cor (WCAG 1.4.1). */
+.perguntas__p a{
+  text-decoration:underline;
+  text-decoration-color:var(--border-strong);
+  text-decoration-thickness:1px;
+  text-underline-offset:3px
+}
+.perguntas__p a:hover{
+  text-decoration-color:currentColor
+}

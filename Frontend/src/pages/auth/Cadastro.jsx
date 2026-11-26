@@ -58,7 +58,7 @@ export default function Cadastro() {
   };
 
   return (
-    <section className="vera-page auth">
+    <main className="vera-page auth">
       <div className="auth__side auth__side--cadastro">
         <Brand size="lg" to="/" className="auth__brand" />
         <span className="auth__headline">
@@ -129,6 +129,6 @@ export default function Cadastro() {
           </Link>
         </span>
       </form>
-    </section>
+    </main>
   );
 }

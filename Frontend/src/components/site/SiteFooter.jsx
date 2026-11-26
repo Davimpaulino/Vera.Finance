@@ -4,6 +4,7 @@ import { Brand } from '../Brand.jsx';
 import { Link } from '../../lib/router.jsx';
 import { api } from '../../services/api.js';
 import { useUi } from '../../context/UiContext.jsx';
+import { BLOG_NO_RODAPE } from '../../conteudo/rodape.js';
 import './css/site-footer.css';
 
 const STATUS_URL =
@@ -24,18 +25,24 @@ const COLS = [
     itens: [
       ['Como funciona', '/#como-funciona'],
       ['Planos', '/precos'],
-      ['Perguntas frequentes', '/perguntas'],
+      ['Onde funciona', '/onde-funciona'],
       ['Base de preços', '/app/comparar']
     ]
   },
   {
     titulo: 'ajuda',
     itens: [
-      ['Central de ajuda', 'mailto:ajuda@vera.finance'],
-      ['Ler NF-e', '/app'],
+      ['Central de ajuda', '/ajuda'],
+      ['Perguntas frequentes', '/perguntas'],
+      ['Ler nota fiscal', '/ajuda/ler-nota-fiscal'],
       ['Contato', 'mailto:oi@vera.finance'],
       ['Status', STATUS_URL]
     ]
+  },
+  {
+    // Artigos do blog pelo nome curto (src/conteudo/rodape.js).
+    titulo: 'blog',
+    itens: [['Todos os artigos', '/blog'], ...BLOG_NO_RODAPE]
   }
 ];
 

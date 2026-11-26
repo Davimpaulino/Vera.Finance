@@ -2,7 +2,9 @@ import { test, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 
 process.env.BANCO = 'memoria';
-const { NfceModel, buscarNaSefaz } = await import('../src/models/NfceModel.js');
+const { NfceModel, buscarNaSefaz, TAMANHO_MAXIMO_DA_PAGINA } = await import(
+  '../src/models/NfceModel.js'
+);
 
 const CHAVE = '35241112345678000190650010000123451234567890';
 const QR = `https://www.nfce.fazenda.sp.gov.br/qrcode?p=${CHAVE}|2|1|1|abc`;
@@ -62,4 +64,22 @@ test('nota: mais de 5 redirecionamentos é recusado', async () => {
   const pedidos = fetchFalso(rotas);
   await assert.rejects(buscarNaSefaz(new URL(QR)), { status: 502 });
   assert.equal(pedidos.length, 6);
+});
+
+test('nota: página da Sefaz grande demais é recusada sem ficar inteira na memória', async () => {
+  fetchFalso({ [QR]: { corpo: 'x'.repeat(TAMANHO_MAXIMO_DA_PAGINA + 1) } });
+  await assert.rejects(NfceModel.ler(QR), { status: 502, message: /grande demais/ });
+});
+
+test('nota: página que avisa no Content-Length que é grande demais é recusada antes de ler', async () => {
+  // O corpo é pequeno: só a conferência do tamanho avisado recusa (lido, daria "não mostrou").
+  globalThis.fetch = async () =>
+    new Response('<html>pequena</html>', {
+      status: 200,
+      headers: {
+        'content-type': 'text/html',
+        'content-length': String(TAMANHO_MAXIMO_DA_PAGINA + 1)
+      }
+    });
+  await assert.rejects(NfceModel.ler(QR), { status: 502, message: /grande demais/ });
 });

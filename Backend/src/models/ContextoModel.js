@@ -18,3 +18,21 @@ export async function contexto(uid) {
 export function podeVerCategoria(ctx, categoria) {
   return ctx.isDono || !categoria || categoria.compartilhada;
 }
+
+/**
+ * Filtro dos lançamentos que a pessoa enxerga: o dono vê todos; quem não é dono vê as entradas,
+ * os gastos das categorias compartilhadas e os próprios. Vale para a tela, o relatório e a planilha.
+ */
+export function podeVerLancamento(ctx, categorias) {
+  if (ctx.isDono) return () => true;
+  const visiveis = new Set(categorias.filter(c => podeVerCategoria(ctx, c)).map(c => c.id));
+  return l => l.tipo === 'entrada' || visiveis.has(l.categoriaId) || l.quemId === ctx.uid;
+}
+
+/**
+ * Nota lida no modo família: fica no espaço do dono, mas antes de virar lançamento é só de quem a
+ * leu (mostra o mercado, o valor e cada produto comprado). O dono vê e confirma todas.
+ */
+export function podeVerNota(ctx, nota) {
+  return ctx.isDono || nota.quemId === ctx.uid;
+}

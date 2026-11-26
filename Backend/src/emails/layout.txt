@@ -1,0 +1,7 @@
+{{conteudo}}
+
+--
+vera.finance · {{linkSite}}
+Dúvidas? Escreva para {{emailAjuda}}.
+{{rodape}}
+A vera nunca pede a senha do seu banco nem os dados do seu cartão por e-mail.

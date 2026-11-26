@@ -5,8 +5,8 @@
 ## Produto
 
 - Controle de gastos por categoria: a renda do mês é reservada em categorias (como Comida e Rolê) e a vera mostra quanto ainda dá para gastar e até que dia o dinheiro dura.
-- Leitura de nota fiscal: a pessoa aponta a câmera para o QR Code da NFC-e (cupom fiscal eletrônico); a vera busca os itens no portal da Secretaria da Fazenda e separa cada item na categoria.
-- Comparação de preços: o mesmo produto nos mercados num raio de 2 a 15 km do CEP, com preços do site de cada rede (consultado para o CEP) e de notas fiscais lidas por quem usa a vera. Histórico de preço de 90 dias por produto.
+- Leitura de nota fiscal: a pessoa aponta a câmera para o QR Code da NFC-e (cupom fiscal eletrônico); a vera busca a nota no portal da Secretaria da Fazenda, prepara um gasto com o valor e a loja para a pessoa escolher a categoria e guarda os preços para comparar.
+- Comparação de preços: o mesmo produto nos mercados num raio de 2 a 15 km do CEP, com preços do site de cada rede (consultado para o CEP quando a rede permite; nas outras, o preço da loja online) e de notas fiscais lidas por quem usa a vera. Histórico de preço de 90 dias por produto.
 - Lista de compras: soma a lista em cada mercado do raio e mostra onde ela sai mais barata.
 - Redes com preço online hoje: Atacadão, Sam's Club, Savegnago, Covabra, Giassi, Angeloni, Zona Sul, Prezunic, Mambo, Bistek, Hortifruti, Super Nosso, GBarbosa, Amigão, Giga Atacado, Mercantil Atacado, Zaffari, Super Muffato, Hiperideal, Rissul, Oba Hortifruti, Coop, São Vicente, Tenda Atacado, Confiança, Pão de Açúcar e Pague Menos. A vera não tem vínculo com essas redes.
 - Modo família (vera+): o dono do ciclo convida pessoas e escolhe quais categorias são compartilhadas.
@@ -14,17 +14,39 @@
 
 ## Planos
 
-- Grátis: categorias, projeção do ciclo, lista de compras, comparação e histórico de preço, até 3 metas e 5 notas fiscais lidas por mês. Sem cartão.
+- Grátis: categorias, projeção do ciclo, lista de compras, comparação e histórico de preço, alerta de alta de preço, até 3 metas com simulador e 5 notas fiscais lidas por mês. Sem cartão.
 - vera+ mensal: R$ 12,90 por mês. Notas ilimitadas, metas ilimitadas e modo família com 2 pessoas.
-- vera+ anual: R$ 99,90 por ano. Tudo do vera+, exportar o ano em planilha e modo família com 5 pessoas.
+- vera+ anual: R$ 99,90 por ano. Tudo do vera+ mensal e modo família com 5 pessoas.
+- Em todos os planos, os lançamentos saem em planilha (CSV) e todos os dados num arquivo só (JSON).
 
 ## Páginas
 
 - [Início](https://vera-finance.onrender.com/): o que a vera faz e como funciona.
 - [Planos e preços](https://vera-finance.onrender.com/precos): o plano grátis e o vera+.
 - [Perguntas frequentes](https://vera-finance.onrender.com/perguntas): respostas curtas sobre preço, redes, nota fiscal, família, dados e conta.
+- [Onde a vera funciona](https://vera-finance.onrender.com/onde-funciona): consulta por CEP de quais redes com preço online têm loja perto, e a lista das redes separadas em supermercados e atacados.
 - [Política de privacidade](https://vera-finance.onrender.com/privacidade): como a vera trata os dados pessoais, conforme a LGPD.
 - [Termos de uso](https://vera-finance.onrender.com/termos): regras de uso do serviço.
+
+## Central de ajuda
+
+- [Central de ajuda](https://vera-finance.onrender.com/ajuda): todos os artigos de ajuda.
+- [Como ler a nota fiscal pelo QR Code (NFC-e)](https://vera-finance.onrender.com/ajuda/ler-nota-fiscal): passo a passo pela câmera, por foto ou colando o link; até 5 notas por mês no plano grátis.
+- [Como funciona a comparação de preços](https://vera-finance.onrender.com/ajuda/como-funciona-a-comparacao): mercados num raio de 2 a 15 km do CEP, preço do site da rede e de notas de até 45 dias, mesmo produto por código de barras ou marca, tamanho e variante.
+- [Por que o preço da vera pode ser diferente na loja](https://vera-finance.onrender.com/ajuda/preco-diferente-na-loja): o preço que vale é o do caixa; os motivos da diferença e como conferir.
+- [Como montar a lista de compras e escolher a marca e o tamanho](https://vera-finance.onrender.com/ajuda/montar-a-lista): busca nos sites das redes da região, filtros por marca e tamanho, preço por kg/L e total em cada mercado.
+- [Como funciona o modo família](https://vera-finance.onrender.com/ajuda/modo-familia): criar, convidar pelo e-mail, aceitar o convite e escolher as categorias compartilhadas; vera+ com 2 pessoas no mensal e 5 no anual.
+- [Como baixar os meus dados e apagar a conta](https://vera-finance.onrender.com/ajuda/baixar-dados-e-apagar-conta): planilha CSV dos lançamentos, arquivo JSON com todos os dados e exclusão da conta em 30 dias.
+- [Planos da vera e como cancelar](https://vera-finance.onrender.com/ajuda/planos-e-cancelamento): o que tem em cada plano e como cancelar em Configurações, sem multa.
+- [A vera precisa da senha do meu banco?](https://vera-finance.onrender.com/ajuda/senha-do-banco): não; como os gastos entram sem acesso ao banco.
+
+## Blog
+
+- [Blog](https://vera-finance.onrender.com/blog): todos os artigos.
+- [Como economizar no supermercado comparando preços por quilo e por litro](https://vera-finance.onrender.com/blog/economizar-comparando-preco-por-quilo-e-por-litro): a conta do preço por quilo, por litro e por unidade, e onde ela engana.
+- [Como ler o QR Code da nota fiscal (NFC-e) e o que ela mostra](https://vera-finance.onrender.com/blog/qr-code-da-nota-fiscal-nfc-e): o que é a NFC-e, como consultar, o que ela mostra e os cuidados com o QR Code.
+- [Atacarejo ou supermercado: quando compensa](https://vera-finance.onrender.com/blog/atacarejo-ou-supermercado-quando-compensa): para quais compras o atacarejo faz sentido e quando o supermercado ganha.
+- [Como organizar a renda por categorias e saber até que dia o dinheiro dura](https://vera-finance.onrender.com/blog/organizar-renda-por-categorias): ciclo a partir do dia do salário, fixos, categorias com limite e a conta do ritmo de gasto.
 
 ## Contato
 

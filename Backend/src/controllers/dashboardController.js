@@ -16,7 +16,7 @@ export const dashboardController = {
       CicloModel.resumo(ctx, 0),
       CicloModel.resumo(ctx, -1),
       MetaModel.listar(ctx.ownerUid),
-      NotaModel.pendentes(ctx.ownerUid),
+      NotaModel.pendentesVisiveis(ctx),
       MercadoModel.dentroDoRaio(ctx.owner.local?.raioKm || 5, ctx.owner.local)
     ]);
     const dica = await ComparacaoModel.dica(mercados, ctx.owner.local?.mercadoHabitual);

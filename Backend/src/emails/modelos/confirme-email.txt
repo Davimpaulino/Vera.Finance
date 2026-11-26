@@ -1,0 +1,7 @@
+Confirme o seu e-mail
+
+Oi, {{nome}}. Falta só confirmar que este e-mail é seu. É ele que recupera a conta se você esquecer a senha.
+
+Confirmar e-mail: {{linkConfirmacao}}
+
+O link vale por {{validade}}.

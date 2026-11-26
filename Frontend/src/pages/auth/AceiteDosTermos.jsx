@@ -48,7 +48,7 @@ export default function AceiteDosTermos() {
   };
 
   return (
-    <section className="vera-page auth">
+    <main className="vera-page auth">
       <div className="auth__side auth__side--sunken">
         <Brand size="lg" to="/" className="auth__brand" />
         <span className="auth__headline">Falta só um passo para abrir o seu painel.</span>
@@ -96,6 +96,6 @@ export default function AceiteDosTermos() {
           explica como apagar a conta ou levar os seus dados.
         </span>
       </form>
-    </section>
+    </main>
   );
 }

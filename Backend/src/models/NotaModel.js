@@ -1,4 +1,5 @@
 import { ColecaoDoUsuario } from './ColecaoDoUsuario.js';
+import { podeVerNota } from './ContextoModel.js';
 
 class Notas extends ColecaoDoUsuario {
   constructor() {
@@ -21,6 +22,11 @@ class Notas extends ColecaoDoUsuario {
   async pendentes(uid) {
     const todas = await this.listar(uid, { ordenarPor: 'lidaEm', direcao: 'desc' });
     return todas.filter(nota => nota.status === 'pendente');
+  }
+
+  /** Pendentes que a pessoa do contexto pode ver (no modo família, quem não é dono vê as suas). */
+  async pendentesVisiveis(ctx) {
+    return (await this.pendentes(ctx.ownerUid)).filter(nota => podeVerNota(ctx, nota));
   }
 }
 

@@ -112,6 +112,9 @@
   overflow-y:auto;
   animation:veraSheet var(--dur-sheet) var(--ease-out)
 }
+.vera-modal__panel:focus{
+  outline:none
+}
 .vera-modal__panel--sm{
   max-width:420px
 }

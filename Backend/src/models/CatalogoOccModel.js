@@ -1,14 +1,14 @@
 import { round2 } from '../utils/money.js';
-import { NAVEGADOR } from './CatalogoVtexModel.js';
+import { pedirNaRede } from './ColetaModel.js';
 
 // Lojas na Oracle Commerce Cloud (Confiança): busca pública do próprio site (/ccstore/v1/search).
 const primeiro = (atributos, nome) => (atributos[nome] || [])[0];
 
 export const CatalogoOccModel = {
   async buscar(rede, termo) {
-    const resposta = await fetch(
+    const resposta = await pedirNaRede(
       `${rede.site}/ccstore/v1/search?Ntt=${encodeURIComponent(termo)}&Nrpp=40`,
-      { headers: { 'User-Agent': NAVEGADOR, Accept: 'application/json' }, signal: AbortSignal.timeout(9000) }
+      { headers: { Accept: 'application/json' }, signal: AbortSignal.timeout(9000) }
     );
     if (!resposta.ok) throw new Error(`HTTP ${resposta.status}`);
     const dados = await resposta.json();

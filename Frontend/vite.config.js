@@ -2,7 +2,8 @@ import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 import { existsSync, statSync } from 'node:fs';
 import { readFile, writeFile } from 'node:fs/promises';
-import { join, resolve } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
+import { cssDosIcones } from './scripts/icones.mjs';
 
 // Mesmo padrão de src/lib/site.js: o endereço público vem de VITE_SITE_URL.
 const SITE_PADRAO = 'https://vera-finance.onrender.com';
@@ -35,6 +36,19 @@ export default defineConfig(({ mode }) => {
         }
       },
       {
+        // Ícones: no build do site, a fonte e o CSS do Bootstrap Icons saem só com os ícones de
+        // src/components/ds/icons.js (scripts/icones.mjs). No dev (npm run dev) fica o pacote
+        // inteiro. Antes de vite:css, para o CSS novo passar pelo mesmo caminho do original.
+        name: 'vera-icones',
+        enforce: 'pre',
+        apply: (_config, { command, isSsrBuild }) => command === 'build' && !isSsrBuild,
+        async transform(css, id) {
+          const arquivo = id.split('?')[0];
+          if (!arquivo.endsWith('/bootstrap-icons/font/bootstrap-icons.min.css')) return null;
+          return { code: await cssDosIcones(css, dirname(arquivo)), map: null };
+        }
+      },
+      {
         // npm run preview igual ao Render: /precos abre dist/precos/index.html (pré-renderizado)
         // e o que não tem arquivo (/app, /app/lista, endereço que não existe, arquivo apagado)
         // recebe dist/app.html, a casca do app, como na regra de rewrite /* -> /app.html.
@@ -60,6 +74,14 @@ export default defineConfig(({ mode }) => {
         }
       }
     ],
-    server: { port: 5173 }
+    server: { port: 5173 },
+    // Testes de unidade (npm test, Vitest): componentes no jsdom, sem servidor e sem rede.
+    // Os de ponta a ponta ficam em e2e/ (npm run test:e2e, Playwright).
+    test: {
+      environment: 'jsdom',
+      include: ['test/**/*.test.{js,jsx}'],
+      setupFiles: ['./test/preparar.js'],
+      restoreMocks: true
+    }
   };
 });

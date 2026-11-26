@@ -28,8 +28,12 @@ export async function verificarTokenFirebase(token, idProjeto) {
   const corpo = lerParte(corpoBruto);
   if (cabecalho.alg !== 'RS256') throw new Error('Algoritmo inesperado.');
   const chaves = await chavesPublicas();
-  const certificado = chaves[cabecalho.kid];
-  if (!certificado) throw new Error('Chave desconhecida.');
+  // Só as chaves que o Google publicou: um kid como "constructor" não pode achar nada no objeto.
+  const certificado =
+    typeof cabecalho.kid === 'string' && Object.hasOwn(chaves, cabecalho.kid)
+      ? chaves[cabecalho.kid]
+      : null;
+  if (typeof certificado !== 'string') throw new Error('Chave desconhecida.');
   const valido = verify(
     'RSA-SHA256',
     Buffer.from(`${cabecalhoBruto}.${corpoBruto}`),

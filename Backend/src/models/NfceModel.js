@@ -162,6 +162,28 @@ const CABECALHOS = {
   'Accept-Language': 'pt-BR,pt;q=0.9'
 };
 const MAXIMO_DE_REDIRECIONAMENTOS = 5;
+// A página de uma NFC-e tem dezenas de KB. Mais do que isto não é nota: para de ler antes de
+// guardar tudo na memória do servidor.
+export const TAMANHO_MAXIMO_DA_PAGINA = 3 * 1024 * 1024;
+
+async function lerComTeto(resposta, maximo = TAMANHO_MAXIMO_DA_PAGINA) {
+  const declarado = Number(resposta.headers.get('content-length'));
+  const grandeDemais = () =>
+    new HttpError(502, 'A página da Sefaz veio grande demais para ser uma nota. Lance o gasto à mão.');
+  if (declarado > maximo) {
+    await resposta.body?.cancel().catch(() => {});
+    throw grandeDemais();
+  }
+  if (!resposta.body) return new Uint8Array(0);
+  const partes = [];
+  let total = 0;
+  for await (const parte of resposta.body) {
+    total += parte.length;
+    if (total > maximo) throw grandeDemais();
+    partes.push(parte);
+  }
+  return Buffer.concat(partes);
+}
 
 const ehDaSefaz = url =>
   ['http:', 'https:'].includes(url.protocol) && url.hostname.toLowerCase().endsWith('.gov.br');
@@ -209,7 +231,7 @@ export const NfceModel = {
     if (!resposta.ok)
       throw new HttpError(502, `A Sefaz respondeu com erro (${resposta.status}). Tente de novo.`);
 
-    const html = decodificar(await resposta.arrayBuffer(), resposta.headers.get('content-type'));
+    const html = decodificar(await lerComTeto(resposta), resposta.headers.get('content-type'));
     const nota = interpretarPagina(html, chave);
     const temEmitente = /txtTopo|id=["']?u20/i.test(html);
     if (!nota.itens.length && !temEmitente)

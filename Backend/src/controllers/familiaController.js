@@ -4,6 +4,7 @@ import { UsuarioModel } from '../models/UsuarioModel.js';
 import { CicloModel } from '../models/CicloModel.js';
 import { PlanoModel } from '../models/PlanoModel.js';
 import { HttpError, requireFields } from '../utils/http.js';
+import { email as emailDoCorpo, texto } from '../utils/validacao.js';
 import { round2, sum } from '../utils/money.js';
 
 async function montar(ctx) {
@@ -66,8 +67,9 @@ export const familiaController = {
     if (ctx.familia) throw new HttpError(409, 'Você já está em um modo família.');
     const plano = PlanoModel.buscar(ctx.user.plano);
     if (plano.limites.familia < 2) throw new HttpError(403, 'O modo família faz parte do vera+.');
+    const nome = texto(body.nome, 'O nome da família', { max: 60 });
     const familia = await FamiliaModel.criar({
-      nome: body.nome || `Casa ${(ctx.user.nome || '').split(' ').pop() || ''}`.trim(),
+      nome: nome || `Casa ${(ctx.user.nome || '').split(' ').pop() || ''}`.trim(),
       donoId: user.uid,
       membros: [
         {
@@ -97,8 +99,7 @@ export const familiaController = {
         403,
         `Seu plano permite ${plano.limites.familia} pessoas no modo família.`
       );
-    const email = String(body.email).toLowerCase().trim();
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new HttpError(400, 'E-mail inválido.');
+    const email = emailDoCorpo(body.email);
     if ((ctx.familia.convites || []).some(c => c.email === email))
       throw new HttpError(409, 'Esse e-mail já foi convidado.');
     const convites = [
@@ -127,6 +128,9 @@ export const familiaController = {
     if (!familia || !(familia.convites || []).some(c => c.email === email))
       throw new HttpError(404, 'Convite não encontrado.');
     const perfil = await UsuarioModel.buscar(user.uid);
+    // Quem já está num modo família (inclusive nesta) não entra de novo: entraria duas vezes na
+    // lista de membros, ou deixaria a outra família apontando para quem já saiu dela.
+    if (perfil?.familiaId) throw new HttpError(409, 'Você já está em um modo família.');
     await FamiliaModel.atualizar(familia.id, {
       convites: familia.convites.filter(c => c.email !== email),
       convitesEmails: familia.convites.filter(c => c.email !== email).map(c => c.email),

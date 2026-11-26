@@ -19,8 +19,21 @@ export class ApiError extends Error {
   }
 }
 
+/** Erro de rede (status 0): o AuthContext mostra "Sem conexão" em vez de mandar para o login. */
+export const SEM_CONEXAO = 'Sem conexão com a vera. Confira a internet e tente de novo.';
+
+/** Token da sessão. Sem internet, renovar o token do Firebase também falha: vira erro de rede. */
+async function tokenDaSessao() {
+  try {
+    return await tokenProvider();
+  } catch (erro) {
+    if (erro?.code === 'auth/network-request-failed') throw new ApiError(0, SEM_CONEXAO);
+    throw erro;
+  }
+}
+
 async function request(method, path, body) {
-  const token = await tokenProvider();
+  const token = await tokenDaSessao();
   let res;
   try {
     res = await fetch(BASE + '/api' + path, {
@@ -32,7 +45,7 @@ async function request(method, path, body) {
       body: body !== undefined ? JSON.stringify(body) : undefined
     });
   } catch {
-    throw new ApiError(0, 'Sem conexão com a vera. Confira a internet e tente de novo.');
+    throw new ApiError(0, SEM_CONEXAO);
   }
   if (res.status === 204) return null;
   const type = res.headers.get('content-type') || '';
@@ -52,7 +65,7 @@ export const api = {
 
   /** Baixa um arquivo autenticado (CSV dos lançamentos, JSON com todos os dados). */
   async download(path, filename, erro = 'Não deu para gerar a planilha.') {
-    const token = await tokenProvider();
+    const token = await tokenDaSessao();
     const res = await fetch(BASE + '/api' + path, {
       headers: token ? { Authorization: `Bearer ${token}` } : {}
     });

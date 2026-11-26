@@ -1,5 +1,4 @@
 import { SiteLayout } from '../../components/site/SiteLayout.jsx';
-import { SiteFooter } from '../../components/site/SiteFooter.jsx';
 import { Link } from '../../lib/router.jsx';
 import { REDES_COM_PRECO, urlDoSite } from '../../lib/site.js';
 import './css/perguntas.css';
@@ -32,7 +31,7 @@ export const PERGUNTAS = [
   {
     pergunta: 'De onde vêm os preços?',
     resposta:
-      'De dois lugares: do site público de cada rede, consultado para o seu CEP, e das notas fiscais lidas por quem usa a vera. Cada preço mostra a data e a origem.'
+      'De dois lugares: do site público de cada rede e das notas fiscais lidas por quem usa a vera. Na maioria das redes, o site é consultado para o seu CEP; nas outras, vale o preço da loja online. Cada preço mostra a data e a origem.'
   },
   {
     pergunta: 'O preço da vera é o mesmo da loja?',
@@ -47,7 +46,7 @@ export const PERGUNTAS = [
   {
     pergunta: 'Como leio uma nota fiscal?',
     resposta:
-      'Aponte a câmera para o QR Code do cupom fiscal eletrônico (NFC-e). A vera busca os itens no portal da Secretaria da Fazenda, separa cada item na categoria certa e guarda os preços para comparar.'
+      'Aponte a câmera para o QR Code do cupom fiscal eletrônico (NFC-e). A vera busca a nota no portal da Secretaria da Fazenda, prepara um gasto com o valor e a loja para você escolher a categoria e guarda os preços para comparar.'
   },
   {
     pergunta: 'Como funciona o modo família?',
@@ -104,6 +103,12 @@ export default function Perguntas() {
           </div>
         ))}
         <p className="perguntas__p">
+          Passo a passo de cada parte do app está na <Link to="/ajuda">central de ajuda</Link>.
+          Para saber se há rede com preço online perto de você, veja{' '}
+          <Link to="/onde-funciona">onde a vera funciona</Link>. Dicas para economizar no mercado
+          estão no <Link to="/blog">blog</Link>.
+        </p>
+        <p className="perguntas__p">
           Veja também: <Link to="/precos">Planos</Link>,{' '}
           <Link to="/privacidade">Política de privacidade</Link> e{' '}
           <Link to="/termos">Termos de uso</Link>. Outra dúvida? Escreva para{' '}
@@ -115,7 +120,6 @@ export default function Perguntas() {
         // "<" escapado para o texto nunca fechar a tag script.
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c') }}
       />
-      <SiteFooter />
     </SiteLayout>
   );
 }

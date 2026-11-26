@@ -3,7 +3,7 @@ import { round2, sum } from '../utils/money.js';
 import { CategoriaModel } from './CategoriaModel.js';
 import { FixoModel } from './FixoModel.js';
 import { LancamentoModel } from './LancamentoModel.js';
-import { podeVerCategoria } from './ContextoModel.js';
+import { podeVerCategoria, podeVerLancamento } from './ContextoModel.js';
 
 /**
  * Estado de uma categoria no ciclo: uso, ritmo, até quando dura.
@@ -97,10 +97,7 @@ export const CicloModel = {
       FixoModel.listar(ctx.ownerUid)
     ]);
     const categorias = cats.filter(c => podeVerCategoria(ctx, c));
-    const visiveisIds = new Set(categorias.map(c => c.id));
-    const lancs = todos.filter(
-      l => l.tipo === 'entrada' || visiveisIds.has(l.categoriaId) || l.quemId === ctx.uid
-    );
+    const lancs = todos.filter(podeVerLancamento(ctx, cats));
 
     const entradasLanc = sum(
       lancs.filter(l => l.tipo === 'entrada'),

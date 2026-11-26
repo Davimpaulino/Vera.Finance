@@ -1,5 +1,5 @@
 import 'bootstrap-icons/font/bootstrap-icons.min.css';
-import { ICONS } from './icons.js';
+import { ICONE_RESERVA, ICONS } from './icons.js';
 import { cx } from '../../lib/cx.js';
 import './css/icon.css';
 
@@ -14,7 +14,7 @@ export function Icon({ name, size = 18, strokeWidth, tone, label, className }) {
     <i
       className={cx(
         'bi',
-        `bi-${ICONS[name] || 'question-circle'}`,
+        `bi-${ICONS[name] || ICONE_RESERVA}`,
         'vera-icon',
         `vera-icon--s${px}`,
         tone && `vera-icon--${tone}`,
