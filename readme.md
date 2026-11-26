@@ -193,21 +193,30 @@ https://vera-finance.onrender.com/
   em `dist/<rota>/index.html`. Assim buscadores e robôs de IA, que não rodam JavaScript, leem o
   conteúdo. Não precisa de navegador no build. Título, descrição, canonical e robots de cada
   página vêm de `src/lib/paginas.js` (o mesmo arquivo que o app usa no navegador).
+- O mesmo script grava `dist/app.html`, a casca do app: o `#root` vazio, sem o conteúdo da
+  landing, com `noindex` e sem canonical. É ela que atende as rotas sem arquivo, para o app
+  logado não baixar as imagens da landing e endereços que não existem não virarem cópias da home.
 - Regra de rewrite no Render (Redirects/Rewrites): **Source** `/*`, **Destination**
-  `/index.html`, **Action** `Rewrite`. O Render só aplica a regra quando não existe arquivo no
-  caminho, então `/precos` continua abrindo `precos/index.html` e só as rotas do app (`/app`,
-  `/app/lista`, `/cadastro/perguntas`...) caem no `index.html`. Não crie regras que mandem as
-  páginas públicas para o `index.html`, senão elas perdem o HTML pré-renderizado.
+  `/app.html`, **Action** `Rewrite`. O Render só aplica a regra quando não existe arquivo no
+  caminho, então `/` abre o `index.html`, `/precos` abre `precos/index.html` e só as rotas do
+  app (`/app`, `/app/lista`, `/cadastro/perguntas`...) e os endereços desconhecidos caem no
+  `app.html`. Não crie regras que mandem as páginas públicas para outro arquivo, senão elas
+  perdem o HTML pré-renderizado. Ao trocar a regra antiga (`/index.html`), publique antes um
+  build que já tenha o `app.html`.
 - `npm run preview` serve o `dist` do mesmo jeito, para conferir antes de publicar.
 - Depois do deploy, confira: o código-fonte de `https://<site>/precos` (Ctrl+U) precisa ter o
-  título `Planos e preços · vera.finance` e o texto dos planos.
+  título `Planos e preços · vera.finance` e o texto dos planos, e o de `https://<site>/app` só o
+  `<div id="root"></div>` vazio, com `noindex, nofollow`.
 
 ### App instalável (PWA)
 
 - `public/manifest.webmanifest` (nome, ícones, abre em `/app`) e `public/sw.js`.
 - O service worker só é registrado no build de produção. Ele guarda os arquivos de
-  `/assets/` (têm hash no nome) e busca as páginas na rede primeiro, com a última cópia como
-  reserva sem internet. Chamadas da API e pedidos com `Authorization` nunca vão para o cache.
+  `/assets/` (têm hash no nome) e busca as páginas na rede primeiro, com a última cópia (ou a
+  casca `app.html`) como reserva sem internet. Chamadas da API e pedidos com `Authorization`
+  nunca vão para o cache.
+- Sem internet abre só a casca do app, não os dados: o login e os números vêm da API, então
+  quem está logado vê a tela de Entrar até a conexão voltar. O login não se perde.
 - A versão do cache muda a cada build; os caches antigos são apagados quando a versão nova
   assume.
 

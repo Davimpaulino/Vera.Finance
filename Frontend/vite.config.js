@@ -1,7 +1,7 @@
 import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
-import { existsSync } from 'node:fs';
-import { join } from 'node:path';
+import { existsSync, statSync } from 'node:fs';
+import { join, resolve } from 'node:path';
 
 // Mesmo padrão de src/lib/site.js: o endereço público vem de VITE_SITE_URL.
 const SITE_PADRAO = 'https://vera-finance.onrender.com';
@@ -19,15 +19,25 @@ export default defineConfig(({ mode }) => {
       },
       {
         // npm run preview igual ao Render: /precos abre dist/precos/index.html (pré-renderizado)
-        // em vez de cair no index.html da landing.
+        // e o que não tem arquivo (/app, /app/lista, endereço que não existe, arquivo apagado)
+        // recebe dist/app.html, a casca do app, como na regra de rewrite /* -> /app.html.
         name: 'vera-paginas-prerenderizadas',
         configurePreviewServer(server) {
-          const dist = server.config.build.outDir;
+          const dist = resolve(server.config.root, server.config.build.outDir);
           server.middlewares.use((req, _res, next) => {
             const [caminho, busca = ''] = req.url.split('?');
             const pasta = caminho.replace(/\/+$/, '');
-            if (pasta && !pasta.includes('..') && existsSync(join(dist, pasta, 'index.html')))
-              req.url = `${pasta}/index.html${busca ? `?${busca}` : ''}`;
+            let nome;
+            try {
+              nome = decodeURIComponent(pasta);
+            } catch {
+              return next();
+            }
+            if (!nome || nome.includes('..')) return next();
+            const sufixo = busca ? `?${busca}` : '';
+            const local = join(dist, nome);
+            if (existsSync(join(local, 'index.html'))) req.url = `${pasta}/index.html${sufixo}`;
+            else if (!(existsSync(local) && statSync(local).isFile())) req.url = `/app.html${sufixo}`;
             next();
           });
         }

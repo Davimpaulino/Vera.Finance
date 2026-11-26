@@ -1,11 +1,14 @@
-// Service worker da vera: deixa o app abrir mais rápido e mostrar a tela mesmo sem internet.
+// Service worker da vera: guarda a casca do app e os arquivos do build para abrir mais rápido.
+// Sem internet abre só a casca: os dados e o login vêm da API, que nunca entra no cache, então
+// quem está logado vê a tela de Entrar até a conexão voltar (o login não se perde).
 // Nunca guarda chamadas da API nem nada com Authorization: dados financeiros não ficam em cache.
 
 // O build troca a versão a cada deploy (scripts/prerender.mjs); no activate os caches antigos saem.
 const VERSAO = '__VERSAO_DO_BUILD__';
 const CACHE = `vera-${VERSAO}`;
-// Página usada quando a navegação falha sem internet (o app desenha a rota certa por cima).
-const PAGINA_OFFLINE = '/';
+// Casca do app (gerada por scripts/prerender.mjs), usada quando a navegação falha sem internet e
+// a página não está guardada. O app desenha a rota certa por cima.
+const PAGINA_OFFLINE = '/app.html';
 
 self.addEventListener('install', evento => {
   evento.waitUntil(
@@ -50,7 +53,7 @@ self.addEventListener('fetch', evento => {
   if (url.pathname.startsWith('/api')) return;
   if (pedido.headers.has('Authorization')) return;
 
-  // Páginas: rede primeiro (conteúdo sempre novo); sem internet, a última cópia ou a página base.
+  // Páginas: rede primeiro (conteúdo sempre novo); sem internet, a última cópia ou a casca do app.
   if (pedido.mode === 'navigate') {
     evento.respondWith(
       fetch(pedido)
