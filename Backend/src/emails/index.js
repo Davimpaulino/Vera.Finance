@@ -56,7 +56,7 @@ export const MODELOS = {
   },
   'alerta-preco': {
     assunto: 'Alerta de preço na sua lista',
-    previa: 'Veja os itens da sua lista que mudaram de preço.',
+    previa: 'Tem item da sua lista mais barato perto de você do que no {{mercadoHabitual}}.',
     rodape: CONTA
   },
   'resumo-semanal': {

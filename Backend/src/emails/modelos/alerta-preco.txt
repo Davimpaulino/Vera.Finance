@@ -1,12 +1,12 @@
-Mudou o preço de itens da sua lista
+Itens da sua lista mais baratos perto de você
 
-Oi, {{nome}}. Estes itens da sua lista mudaram de preço nos mercados perto do seu CEP:
+Oi, {{nome}}. Estes itens da sua lista estão mais baratos em outro mercado perto de você do que no {{mercadoHabitual}}, o seu mercado de sempre:
 {{#itens}}
-- {{produto}}: de {{precoAntes}} para {{precoAgora}} ({{variacao}})
-  {{mercado}} · {{origem}}, {{data}}
+- {{item}} está {{diferenca}} mais barato no {{mercado}} do que no {{mercadoHabitual}}.
+  {{preco}} lá e {{precoHabitual}} no {{mercadoHabitual}} ({{percentual}} a menos){{#distancia}}, a {{distancia}}{{/distancia}}.
 {{/itens}}
 Ver a lista: {{linkLista}}
 
-Preços do site de cada rede (para o seu CEP, quando a rede permite) ou de notas fiscais lidas perto de você, com a data de cada um. O preço pode mudar a qualquer momento e a loja física pode ter outro: o que vale é sempre o do caixa. A vera não tem vínculo com as redes citadas.
+Só entra o mesmo produto nas duas lojas, quando ele está pelo menos 5% e R$ 1,00 mais barato. Preços da comparação da sua lista em {{data}}, do site de cada rede (para o seu CEP, quando a rede permite) ou de notas fiscais lidas perto de você. O preço pode mudar a qualquer momento e a loja física pode ter outro: o que vale é sempre o do caixa. A vera não tem vínculo com as redes citadas.
 
 Não quer mais receber alertas de preço? Parar de receber: {{linkDescadastro}}

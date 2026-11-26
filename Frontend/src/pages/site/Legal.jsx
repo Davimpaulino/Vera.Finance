@@ -5,7 +5,7 @@ import './css/legal.css';
 // Textos legais. Cada bloco tem um título e parágrafos ou listas.
 // Atualize ATUALIZADO_EM sempre que o texto mudar (e avise quem usa, se a mudança for relevante).
 // Junto, troque VERSAO_DOS_TERMOS (Frontend/src/lib/termos.js e Backend/src/config/termos.js).
-const ATUALIZADO_EM = '24 de novembro de 2026';
+const ATUALIZADO_EM = '26 de novembro de 2026';
 const CONTATO = 'privacidade@vera.finance';
 
 const TEXTOS = {
@@ -28,7 +28,7 @@ const TEXTOS = {
       [
         '3. Preços e comparações',
         [
-          'Os preços vêm dos sites públicos das redes, para o CEP informado, e de notas fiscais lidas pelos usuários. Eles podem mudar a qualquer momento, e a loja física pode ter preços e promoções diferentes dos do site.',
+          'Os preços vêm dos sites públicos das redes (para o CEP informado, quando a rede permite) e de notas fiscais lidas pelos usuários. Eles podem mudar a qualquer momento, e a loja física pode ter preços e promoções diferentes dos do site.',
           'A comparação é uma estimativa para ajudar na decisão. O preço que vale é sempre o do caixa. A vera não garante que um produto esteja disponível, nem o valor final da compra.',
           'Marcas, nomes de redes e fotos de produtos pertencem aos seus donos e aparecem só para identificar onde está cada preço. A vera não tem vínculo com as redes citadas.'
         ]
@@ -114,7 +114,7 @@ const TEXTOS = {
           'Não vendemos dados pessoais. Para o app funcionar, alguns serviços recebem apenas o necessário:',
           [
             'Google Firebase (login e banco de dados) e Render (servidor da API), que podem guardar dados fora do Brasil, em empresas que oferecem garantias de proteção (art. 33 da LGPD).',
-            'Sites das redes de supermercado: recebem o CEP (não o seu nome) para devolver o preço daquela região.',
+            'Sites das redes de supermercado que mostram o preço por região: recebem o CEP (não o seu nome) para devolver o preço daquela região.',
             'OpenStreetMap e ViaCEP: recebem o CEP ou um ponto aproximado, para achar a região e os mercados.',
             'Portais da Secretaria da Fazenda: recebem o link da nota fiscal que você leu, para buscar os itens.',
             'Autoridades: quando a lei ou uma ordem judicial exigir.'

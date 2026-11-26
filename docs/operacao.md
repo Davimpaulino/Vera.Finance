@@ -39,8 +39,9 @@ chat ou print.
 
 ### Antes
 
-- [ ] O pull request passou no CI (testes do backend e build do frontend).
-- [ ] Rodou local: `cd Backend && npm test` e `cd Frontend && npm run build`.
+- [ ] O pull request passou no CI (testes do backend, testes e build do frontend).
+- [ ] Rodou local: `cd Backend && npm test`, `cd Frontend && npm test` e
+      `cd Frontend && npm run build`.
 - [ ] Variável de ambiente nova? Cadastre no Render **antes** do deploy que depende dela. As
       `VITE_*` só valem depois de um build novo do site.
 - [ ] Mudou `Backend/src/config/esquema.sql`? O esquema roda sozinho na primeira conexão e precisa
@@ -121,8 +122,8 @@ dado pessoal.
 
 ## Rodar um script como job
 
-Os scripts estão listados no readme ("Scripts de operação"). Todos têm simulação: rode primeiro
-sem gravar e leia o relatório.
+Os scripts estão listados no readme ("Scripts de operação"). Os que gravam têm simulação: rode
+primeiro sem gravar e leia o relatório.
 
 ### Opção 1: no seu computador, com o `.env`
 
@@ -163,7 +164,10 @@ serviço do tipo *Cron Job* no Render, com o mesmo repositório, `Backend` como 
 `npm ci` no build, o comando do script e o horário (em UTC). Para não repetir as variáveis, guarde-as
 num *Environment Group* ligado à API e ao Cron Job.
 
-Hoje nenhuma tarefa recorrente precisa disso: a exclusão de contas vencidas roda dentro da API.
+Hoje o único Cron Job é o do monitor de saúde das redes (`npm run saude:redes`), que é opcional:
+como criar está no readme, em
+[Monitor de saúde das redes](../readme.md#monitor-de-saúde-das-redes). A exclusão de contas
+vencidas não precisa de Cron Job: ela roda dentro da API.
 
 ---
 
@@ -171,12 +175,22 @@ Hoje nenhuma tarefa recorrente precisa disso: a exclusão de contas vencidas rod
 
 **Sintoma**: na comparação ou na lista, uma rede que tinha preço passa a mostrar "o site da rede não
 respondeu agora", ou some dos resultados para CEPs onde ela tem loja. A API não registra no log a
-falha de cada busca: o sinal vem do app ou de alguém do time testando.
+falha de cada busca: o sinal vem do Cron Job do monitor de saúde das redes (`npm run saude:redes`),
+que falha e faz o Render avisar, do app ou de alguém do time testando.
 
 ### 1. Confirmar
 
-Na pasta `Backend`, rode o leitor da rede direto, com um produto comum e um CEP perto de uma loja
-dela. Troque `atacadao`, `arroz` e o CEP; os ids estão em `src/models/RedeModel.js`:
+Primeiro, rode o monitor só para essa rede, com um CEP perto de uma loja dela (os ids estão em
+`Backend/src/models/RedeModel.js`):
+
+```bash
+cd Backend && npm run saude:redes -- --redes=<id> --cep=<cep>
+```
+
+Ele mostra a situação (`ok`, `sem entrega no CEP`, `sem produtos` ou `erro`), o número de produtos,
+o tempo e o detalhe do erro, e não grava nada. Para ver os produtos que o site devolveu, rode o
+leitor da rede direto, na pasta `Backend`, com um produto comum e o mesmo CEP. Troque `atacadao`,
+`arroz` e o CEP:
 
 ```bash
 BANCO=memoria NODE_ENV=test node --input-type=module -e "
@@ -209,8 +223,8 @@ process.exit(0);
 |---|---|
 | `HTTP 403` ou `HTTP 429` | O site está recusando ou limitando os pedidos. |
 | `The operation was aborted due to timeout` | O site demorou mais de 9 segundos. Pode ser passageiro. |
-| `ok · 0 produtos` com produto comum | O formato da resposta mudou: o leitor não acha mais os campos. |
-| `semEntrega` | A loja online não atende aquele CEP. Teste outro CEP antes de concluir que quebrou. |
+| `ok · 0 produtos` com produto comum (no monitor, `sem produtos`) | O formato da resposta mudou: o leitor não acha mais os campos. |
+| `semEntrega` (no monitor, `sem entrega no CEP`) | A loja online não atende aquele CEP. Teste outro CEP antes de concluir que quebrou. |
 | `fetch failed` com `ENOTFOUND` | O endereço do site mudou. |
 
 ### 3. Corrigir
@@ -221,9 +235,10 @@ process.exit(0);
 - **O site bloqueou a vera**: não contorne (nada de trocar de identificação, usar proxy ou tentar
   em massa). Tire a rede da lista até haver um caminho combinado ou público.
 - **Sem conserto rápido**: tire a rede de `REDES` (`Backend/src/models/RedeModel.js`), de
-  `REDES_COM_PRECO` (`Frontend/src/lib/site.js`) e de `Frontend/public/llms.txt`, para o site não
-  prometer uma rede que não funciona. O teste `test/redesSite.test.js` confere que as três listas
-  batem. Atualize a tabela de redes do readme e, depois do deploy, rode `npm run indexnow`.
+  `REDES_COM_PRECO` e, se for atacado, de `REDES_DE_ATACADO` (as duas em `Frontend/src/lib/site.js`)
+  e de `Frontend/public/llms.txt`, para o site não prometer uma rede que não funciona. O teste
+  `test/redesSite.test.js` confere que essas listas batem com o `RedeModel`. Atualize a tabela de
+  redes do readme e, depois do deploy, rode `npm run indexnow`.
 
 Os preços que a rede já tinha gravado continuam na base (com a data), e as notas fiscais de lojas
 dela continuam entrando normalmente.
@@ -372,7 +387,7 @@ Política: resposta em até **15 dias**. Encarregado de dados: [PREENCHER].
 | Ver ou levar os dados (acesso e portabilidade) | Configurações › Dados › *Baixar todos os meus dados* (JSON) e *Exportar lançamentos em planilha* (CSV) | [Exportar pelo time](#exportar-os-dados-pelo-time) |
 | Corrigir dados | Configurações (nome, ciclo, CEP, raio) | Depois de confirmar a identidade, corrija no banco e registre |
 | Apagar a conta | Configurações › Dados › *Apagar a conta* (apaga em 30 dias; até lá dá para desistir) | [Agendar a exclusão pelo time](#agendar-a-exclusão-pelo-time) |
-| Retirar consentimento | *Contribuir com preços anônimos*, em Configurações. A localização do aparelho não tem botão para apagar: trocar o CEP em Configurações substitui o CEP e o ponto salvos pelos do CEP digitado, se ele for encontrado | [Apagar a localização salva](#apagar-a-localização-salva) |
+| Retirar consentimento | *Contribuir com preços anônimos* e *Apagar localização* (ou o CEP salvo em branco), os dois em Configurações › Mercado e localização. Apagar a localização tira o CEP, o ponto aproximado, a cidade, os mercados escolhidos (com o mercado de sempre) e os alertas da lista | [Apagar a localização salva](#apagar-a-localização-salva) |
 | Saber com quem os dados são compartilhados | Política de privacidade, seção de compartilhamento | Responda com a lista da Política |
 
 A base anônima de preços continua depois da exclusão, porque não identifica ninguém (está na
@@ -443,9 +458,15 @@ se um backup for restaurado, siga o passo 4 de
 
 ### Apagar a localização salva
 
-O app ainda não tem botão para apagar a localização. Quando ela veio do aparelho (*Usar minha
-localização*, em Comparar), o CEP salvo também veio dele: é o da rua onde a pessoa estava. Por isso
-o trecho apaga o ponto e o CEP. Depois de confirmar a identidade:
+Primeiro, o app: em Configurações › Mercado e localização, o botão *Apagar localização* (ou salvar
+o CEP em branco) apaga o CEP, o ponto aproximado, a cidade, os mercados escolhidos (com o mercado de
+sempre) e os alertas da lista. Só o raio de busca fica. Os mercados e os alertas saem porque o id de
+um mercado no mapa mostra onde ele fica, e os alertas guardam o nome e a distância de cada mercado:
+com eles dá para saber a região de casa. Quando a localização veio do aparelho (*Usar minha
+localização*, em Comparar), o CEP salvo também veio dele, é o da rua onde a pessoa estava, e sai
+junto.
+
+Se a pessoa não consegue, o trecho abaixo faz o mesmo. Depois de confirmar a identidade:
 
 ```bash
 node --env-file=.env --input-type=module -e "
@@ -458,7 +479,12 @@ if (!conta || !(await UsuarioModel.buscar(conta.uid))) {
   console.error('Nenhuma conta com esse e-mail.');
   process.exit(1);
 }
-await banco.atualizar('usuarios/' + conta.uid + '/perfil/local', { lat: null, lng: null, cep: '' });
+// O mesmo que o app faz: null tira a chave do perfil. Saem o CEP, o ponto, a cidade, os mercados
+// escolhidos e os alertas da lista (nome e distância de cada mercado). Só o raio fica.
+await banco.atualizar('usuarios/' + conta.uid + '/perfil/local', {
+  cep: '', lat: null, lng: null, cidade: null, mercados: null, mercadoHabitual: null
+});
+await banco.remover('usuarios/' + conta.uid + '/perfil/alertasDaLista');
 console.log('Localização apagada:', conta.uid);
 process.exit(0);
 " pessoa@exemplo.com

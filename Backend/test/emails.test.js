@@ -81,10 +81,15 @@ test('modelo desconhecido dá erro (nada de ler arquivo por nome vindo de fora)'
 });
 
 test('lista repete o trecho por item e some quando vazia', () => {
-  const alerta = renderizarEmail('alerta-preco', EXEMPLOS['alerta-preco'], { site: SITE });
-  for (const item of EXEMPLOS['alerta-preco'].itens) {
-    assert.ok(alerta.html.includes(escaparHtml(item.produto)));
-    assert.ok(alerta.texto.includes(`- ${item.produto}: de ${item.precoAntes} para ${item.precoAgora}`));
+  const dados = EXEMPLOS['alerta-preco'];
+  const alerta = renderizarEmail('alerta-preco', dados, { site: SITE });
+  for (const item of dados.itens) {
+    assert.ok(alerta.html.includes(escaparHtml(item.item)));
+    assert.ok(
+      alerta.texto.includes(
+        `- ${item.item} está ${item.diferenca} mais barato no ${item.mercado} do que no ${dados.mercadoHabitual}.`
+      )
+    );
   }
   // O texto do modelo é nosso e sai como está; só o valor de cada item é escapado.
   assert.equal(
@@ -92,6 +97,56 @@ test('lista repete o trecho por item e some quando vazia', () => {
     '[<b>&lt;1&gt;</b><b>2</b>]'
   );
   assert.equal(preencher('[{{#itens}}{{x}}{{/itens}}]', { itens: [] }), '[]');
+});
+
+test('alerta de preço diz o mesmo que o aviso do sino (AlertaDaListaModel)', async () => {
+  await import('./apoio/ambiente.js');
+  const { AlertaDaListaModel } = await import('../src/models/AlertaDaListaModel.js');
+  const dados = EXEMPLOS['alerta-preco'];
+  const [item] = dados.itens;
+  // O primeiro item do exemplo, como o AlertaDaListaModel guarda no perfil.
+  const perfil = {
+    prefs: {},
+    local: { mercadoHabitual: 'habitual', raioKm: 5 },
+    alertasDaLista: {
+      em: new Date().toISOString(),
+      habitualId: 'habitual',
+      itens: [
+        {
+          itemId: 'arroz',
+          item: item.item,
+          qtd: 1,
+          mercadoId: 'outro',
+          mercado: item.mercado,
+          distanciaKm: 2.4,
+          preco: 21.9,
+          precoHabitual: 24.9,
+          mercadoHabitual: dados.mercadoHabitual
+        }
+      ]
+    }
+  };
+  const [aviso] = AlertaDaListaModel.notificacoes({ user: perfil, owner: perfil }, [
+    { id: 'arroz', nome: item.item, done: false }
+  ]);
+  assert.equal(aviso.titulo, `${item.item} está mais barato no ${item.mercado}`);
+  assert.equal(
+    aviso.texto,
+    `${item.preco} lá e ${item.precoHabitual} no ${dados.mercadoHabitual}: ` +
+      `${item.diferenca} a menos (${item.percentual}), a ${item.distancia}.`
+  );
+  const { texto } = renderizarEmail('alerta-preco', dados, { site: SITE });
+  assert.ok(
+    texto.includes(
+      `${item.preco} lá e ${item.precoHabitual} no ${dados.mercadoHabitual} (${item.percentual} a menos), a ${item.distancia}.`
+    )
+  );
+  // Sem distância conhecida, a linha termina no percentual, como no sino.
+  const semDistancia = { ...dados, itens: [{ ...item, distancia: undefined }] };
+  const outro = renderizarEmail('alerta-preco', semDistancia, { site: SITE });
+  assert.ok(outro.texto.includes(`(${item.percentual} a menos).`));
+  assert.ok(outro.html.includes(`(${item.percentual} a menos).`));
+  assert.doesNotMatch(outro.texto, /, a \d/);
 });
 
 test('trecho com valor simples aparece só quando o valor existe', () => {

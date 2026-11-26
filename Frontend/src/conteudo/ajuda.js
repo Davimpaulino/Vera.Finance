@@ -17,7 +17,7 @@
 // Nos textos, [rótulo](/caminho) vira link (veja formato.js).
 //
 // O funcionamento descrito aqui foi conferido no código (rotas da API, models e telas do app).
-// Preços e promessas de atendimento vêm de Backend/src/models/PlanoModel.js. Se o produto mudar,
+// Preços e limites dos planos vêm de Backend/src/models/PlanoModel.js. Se o produto mudar,
 // mude o artigo junto: o mesmo texto vai para os buscadores e para as IAs.
 
 export const ARTIGOS_DE_AJUDA = [
@@ -332,7 +332,7 @@ export const ARTIGOS_DE_AJUDA = [
         lista: [
           'Grátis (R$ 0, sem cartão): categorias e projeção do ciclo, lista de compras com total, comparação e histórico de preço, alerta de alta de preço, até 3 metas com simulador e 5 notas fiscais lidas por mês.',
           'vera+ mensal (R$ 12,90 por mês): tudo do grátis, com notas e metas ilimitadas e modo família com 2 pessoas.',
-          'vera+ anual (R$ 99,90 por ano, o equivalente a R$ 8,33 por mês): tudo do vera+ mensal, modo família com 5 pessoas e suporte por e-mail em 24 horas.'
+          'vera+ anual (R$ 99,90 por ano, o equivalente a R$ 8,33 por mês): tudo do vera+ mensal e modo família com 5 pessoas.'
         ]
       },
       'Em todos os planos, dá para baixar os lançamentos em planilha e todos os seus dados num arquivo só: veja [como baixar os dados](/ajuda/baixar-dados-e-apagar-conta). A tabela completa está em [planos e preços](/precos).',

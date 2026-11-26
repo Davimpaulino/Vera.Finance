@@ -137,7 +137,7 @@ export const POSTS_DO_BLOG = [
         ]
       },
       { titulo: 'Clubes de compra' },
-      'Alguns clubes de compra, como o Sam’s Club, funcionam com cadastro de sócio. Antes de ir, confira as regras e se o cadastro tem custo.',
+      'Alguns clubes de compra, como o Sam’s Club, funcionam com cadastro de sócio. Antes de ir, confira as regras e se o cadastro tem custo. A vera não tem vínculo com as redes citadas.',
       { titulo: 'Uma conta simples' },
       'Some o preço da mesma lista nos dois lugares e desconte o que você gasta a mais para chegar à loja mais longe. Se a diferença for pequena, a compra perto de casa pode valer mais pelo tempo que economiza.',
       { titulo: 'Como a vera ajuda' },

@@ -63,9 +63,10 @@ Tudo abaixo existe no código deste repositório.
   dura.
 - **Lançamentos**: entradas e saídas, com histórico e planilha (CSV) de todos os lançamentos.
 - **Leitura de nota fiscal**: a câmera lê o QR Code da NFC-e (cupom fiscal eletrônico); a API busca
-  os itens no portal da Secretaria da Fazenda do estado e separa cada item numa categoria. Lê o
-  layout do "Portal da NFC-e" usado pela maioria dos estados; quando o estado mostra outro formato,
-  o app pede para lançar à mão.
+  a nota no portal da Secretaria da Fazenda do estado, prepara um gasto com o valor e a loja para a
+  pessoa escolher a categoria e guarda os preços para comparar. Lê o layout do "Portal da NFC-e"
+  usado pela maioria dos estados; quando o estado mostra outro formato, o app pede para lançar à
+  mão.
 - **Metas**: valor-alvo, aportes e simulador de quantos ciclos faltam.
 - **Relatórios**: gastos dos últimos 6 ciclos e mês a mês no ano, limites estourados, a categoria
   que mais caiu e os lugares onde a pessoa mais gasta.
@@ -100,7 +101,9 @@ Tudo abaixo existe no código deste repositório.
   mercado perto.
 - **LGPD**: aceite dos Termos e da Política de privacidade com versão (`VERSAO_DOS_TERMOS`), baixar
   todos os dados em JSON, planilha dos lançamentos e exclusão da conta em 30 dias (com opção de
-  desistir). A localização do aparelho é guardada arredondada (~100 m).
+  desistir). A localização do aparelho é guardada arredondada (~100 m). O botão "Apagar
+  localização" (ou o CEP salvo em branco), em Configurações › Mercado e localização, apaga o CEP, o
+  ponto aproximado, a cidade, os mercados escolhidos e os alertas da lista; o raio de busca fica.
 - **Aparência**: superfície escura (tinta) ou clara (papel) e opção de esconder os valores.
 
 **Site**
@@ -128,8 +131,6 @@ Para ninguém prometer o que o produto não faz:
   hora, sem cobrança. A "próxima cobrança em ..." que o app mostra é só uma data calculada a partir
   do dia da troca. Cancelar marca até quando o vera+ continua; passada essa data, a conta é lida
   como grátis ([Planos](#planos)).
-- **Um benefício da página de planos** (`PlanoModel.js`) não existe como descrito: "Suporte por
-  e-mail em 24h", no vera+ anual. Nada no produto trata suporte por plano ou prazo.
 - **E-mails**: os modelos estão prontos em `Backend/src/emails/`, mas nenhum deles é enviado (o
   provedor ainda não foi escolhido). Hoje saem só dois e-mails, os dois pelo próprio Firebase
   Authentication: o de redefinir a senha ("Esqueci a senha") e o de
@@ -208,8 +209,9 @@ flowchart LR
   app em `dist/app.html`.
 - **PWA**: `public/manifest.webmanifest` e `public/sw.js` (detalhes no
   [deploy](#app-instalável-pwa)).
-- **Login no navegador**: Firebase Authentication (`src/services/firebase.js` e
-  `servicoDeLogin.js`), com o login próprio da API como plano B para as contas antigas.
+- **Login no navegador**: Firebase Authentication (`src/services/firebase.js`,
+  `configuracaoFirebase.js` e `servicoDeLogin.js`), com o login próprio da API como plano B para as
+  contas antigas.
 
 ---
 
@@ -300,9 +302,9 @@ npm run dev                   # http://localhost:5173, fala com a API em http://
 
 Para outra API, crie `Frontend/.env.local` com `VITE_API_URL=...`. Sem as variáveis
 `VITE_FIREBASE_*`, o site usa a configuração do projeto Firebase que está em
-`src/services/firebase.js`; para não criar contas de teste nele, aponte essas variáveis para um
-projeto Firebase de desenvolvimento e use o mesmo projeto em `FIREBASE_PROJECT_ID` na API (é com ele
-que a API confere o token de login).
+`src/services/configuracaoFirebase.js`; para não criar contas de teste nele, aponte essas variáveis
+para um projeto Firebase de desenvolvimento e use o mesmo projeto em `FIREBASE_PROJECT_ID` na API (é
+com ele que a API confere o token de login).
 
 `npm run preview` serve o `dist` do build do mesmo jeito que o Render (páginas pré-renderizadas e a
 regra `/* -> /app.html`).
@@ -392,7 +394,7 @@ Nunca coloque segredo numa variável `VITE_*`. Depois de mudar uma delas, faça 
 |---|---|---|---|
 | `VITE_API_URL` | Sim, em produção | Endereço da API. Padrão: `http://localhost:4000`. | `https://sua-api.onrender.com` |
 | `VITE_SITE_URL` | Não | Endereço público do site, sem `/` no fim. Vai para o `og:image`, o JSON-LD, os links absolutos e o canonical das páginas pré-renderizadas. Padrão: `https://vera-finance.onrender.com`. Ao trocar para um domínio próprio, atualize também `public/sitemap.xml`, `public/robots.txt` e `public/llms.txt`. | `https://vera-finance.onrender.com` |
-| `VITE_FIREBASE_API_KEY` | Não | Configuração Web do Firebase (pública). Padrão: a do projeto em `src/services/firebase.js`. | `AIza...` |
+| `VITE_FIREBASE_API_KEY` | Não | Configuração Web do Firebase (pública). Padrão: a do projeto em `src/services/configuracaoFirebase.js`. | `AIza...` |
 | `VITE_FIREBASE_AUTH_DOMAIN` | Não | Domínio de login do Firebase. Padrão: `<projeto>.firebaseapp.com`. | `meu-projeto.firebaseapp.com` |
 | `VITE_FIREBASE_PROJECT_ID` | Não | Projeto do Firebase do site. | `meu-projeto` |
 | `VITE_FIREBASE_APP_ID` | Não | Id do app Web no Firebase. | `1:000000000000:web:abc123` |
@@ -903,7 +905,8 @@ notificação usa esse preço, então um preço que sobe ou volta ao de antes n�
 já visto. Só um preço ainda menor chega como novo, e o texto mostra o preço de agora.
 
 O alerta respeita a preferência "Alerta de alta de preço". Ele some quando o item é comprado,
-quando o mercado de sempre muda ou depois de 2 dias sem a lista ser comparada de novo.
+quando o mercado de sempre muda, quando a pessoa apaga a localização ou depois de 2 dias sem a lista
+ser comparada de novo.
 
 ---
 
@@ -935,7 +938,10 @@ São páginas públicas, pré-renderizadas no build para os buscadores e as IAs:
      `dateModified` e para o "Atualizado em".
 2. Para pôr um link no texto, escreva `[rótulo](/caminho)`.
 3. Ponha a URL nova em `Frontend/public/sitemap.xml` e em `Frontend/public/llms.txt`. O teste
-   `Backend/test/conteudo.test.js` falha se faltar.
+   `Backend/test/conteudo.test.js` falha se faltar. O mesmo teste falha se o artigo citar uma rede
+   sem o aviso "A vera não tem vínculo com as redes citadas." ([docs/marca.md](docs/marca.md)). Se
+   o nome ali é a cidade, o bairro ou uma palavra comum (São Vicente, Zona Sul, Confiança), e não a
+   rede, ponha o caminho do artigo e o nome em `NAO_E_A_REDE`, no mesmo teste.
 4. Post do blog que deve aparecer no rodapé: ponha `[nome curto, caminho]` em
    `Frontend/src/conteudo/rodape.js`.
 5. Rode `cd Frontend && npm run build`. A rota, o título, o canonical, o `og:type` (article) e o
@@ -1180,12 +1186,13 @@ avisa.
    reconhecimento do nome (`RedeModel.identificar`) e a leitura de nome, preço, código de barras e
    disponibilidade.
 5. **Atualize o site**, na mesma ordem do `RedeModel`: `REDES_COM_PRECO` em
-   `Frontend/src/lib/site.js` (a landing e as perguntas usam essa lista) e a lista de redes de
-   `Frontend/public/llms.txt`. O teste `Backend/test/redesSite.test.js` falha se as listas não
-   baterem. Se quiser a rede entre os destaques da landing, ela vai em `MARCAS`
-   (`Frontend/src/pages/site/Landing.jsx`).
+   `Frontend/src/lib/site.js` (a landing e as perguntas usam essa lista), `REDES_DE_ATACADO` no
+   mesmo arquivo se a rede for de `tipo: 'atacado'` (a página Onde funciona separa supermercados e
+   atacados com ela) e a lista de redes de `Frontend/public/llms.txt`. O teste
+   `Backend/test/redesSite.test.js` falha se as listas não baterem. Se quiser a rede entre os
+   destaques da landing, ela vai em `MARCAS` (`Frontend/src/pages/site/Landing.jsx`).
 6. **Atualize este readme** (tabela de redes) e rode `cd Backend && npm test` e
-   `cd Frontend && npm run build`.
+   `cd Frontend && npm test && npm run build`.
 7. **Confira a rede de verdade** com `cd Backend && npm run saude:redes -- --redes=<id> --cep=<cep>`,
    usando um CEP perto de uma loja da rede ([monitor](#monitor-de-saúde-das-redes)).
 8. **Depois do deploy**, procure um produto em `/app/comparar` com um CEP perto de uma loja da rede

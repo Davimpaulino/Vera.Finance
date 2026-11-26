@@ -13,6 +13,7 @@
 ## Confira antes de pedir revisão
 
 - [ ] `cd Backend && npm test` passa
+- [ ] `cd Frontend && npm test` passa
 - [ ] `cd Frontend && npm run build` passa (se mexeu no frontend)
 - [ ] Teste novo ou ajustado para a regra que mudou
 - [ ] Nenhum segredo, dado pessoal ou export do banco no diff

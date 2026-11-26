@@ -50,8 +50,7 @@ export const PLANOS = [
     limites: { notasPorMes: null, metas: null, familia: 5 },
     itens: [
       ['Tudo do vera+ mensal', true],
-      ['Modo família com 5 pessoas', true],
-      ['Suporte por e-mail em 24h', true]
+      ['Modo família com 5 pessoas', true]
     ]
   }
 ];
