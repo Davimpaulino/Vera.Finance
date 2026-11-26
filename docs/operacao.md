@@ -387,7 +387,7 @@ Política: resposta em até **15 dias**. Encarregado de dados: [PREENCHER].
 | Ver ou levar os dados (acesso e portabilidade) | Configurações › Dados › *Baixar todos os meus dados* (JSON) e *Exportar lançamentos em planilha* (CSV) | [Exportar pelo time](#exportar-os-dados-pelo-time) |
 | Corrigir dados | Configurações (nome, ciclo, CEP, raio) | Depois de confirmar a identidade, corrija no banco e registre |
 | Apagar a conta | Configurações › Dados › *Apagar a conta* (apaga em 30 dias; até lá dá para desistir) | [Agendar a exclusão pelo time](#agendar-a-exclusão-pelo-time) |
-| Retirar consentimento | *Contribuir com preços anônimos*, em Configurações. A localização do aparelho não tem botão para apagar: trocar o CEP em Configurações substitui o CEP e o ponto salvos pelos do CEP digitado, se ele for encontrado | [Apagar a localização salva](#apagar-a-localização-salva) |
+| Retirar consentimento | *Contribuir com preços anônimos* e *Apagar localização* (ou o CEP salvo em branco), os dois em Configurações › Mercado e localização. Apagar a localização tira o CEP, o ponto aproximado e a cidade | [Apagar a localização salva](#apagar-a-localização-salva) |
 | Saber com quem os dados são compartilhados | Política de privacidade, seção de compartilhamento | Responda com a lista da Política |
 
 A base anônima de preços continua depois da exclusão, porque não identifica ninguém (está na
@@ -458,9 +458,12 @@ se um backup for restaurado, siga o passo 4 de
 
 ### Apagar a localização salva
 
-O app ainda não tem botão para apagar a localização. Quando ela veio do aparelho (*Usar minha
-localização*, em Comparar), o CEP salvo também veio dele: é o da rua onde a pessoa estava. Por isso
-o trecho apaga o ponto e o CEP. Depois de confirmar a identidade:
+Primeiro, o app: em Configurações › Mercado e localização, o botão *Apagar localização* (ou salvar
+o CEP em branco) apaga o CEP, o ponto aproximado e a cidade. O raio de busca e os mercados
+escolhidos ficam. Quando a localização veio do aparelho (*Usar minha localização*, em Comparar), o
+CEP salvo também veio dele, é o da rua onde a pessoa estava, e sai junto.
+
+Se a pessoa não consegue, o trecho abaixo faz o mesmo. Depois de confirmar a identidade:
 
 ```bash
 node --env-file=.env --input-type=module -e "
@@ -473,7 +476,8 @@ if (!conta || !(await UsuarioModel.buscar(conta.uid))) {
   console.error('Nenhuma conta com esse e-mail.');
   process.exit(1);
 }
-await banco.atualizar('usuarios/' + conta.uid + '/perfil/local', { lat: null, lng: null, cep: '' });
+// O mesmo que o app faz: null tira a chave do perfil; o raio e os mercados ficam.
+await banco.atualizar('usuarios/' + conta.uid + '/perfil/local', { cep: '', lat: null, lng: null, cidade: null });
 console.log('Localização apagada:', conta.uid);
 process.exit(0);
 " pessoa@exemplo.com

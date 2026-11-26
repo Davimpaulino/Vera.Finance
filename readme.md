@@ -101,7 +101,8 @@ Tudo abaixo existe no código deste repositório.
   mercado perto.
 - **LGPD**: aceite dos Termos e da Política de privacidade com versão (`VERSAO_DOS_TERMOS`), baixar
   todos os dados em JSON, planilha dos lançamentos e exclusão da conta em 30 dias (com opção de
-  desistir). A localização do aparelho é guardada arredondada (~100 m).
+  desistir). A localização do aparelho é guardada arredondada (~100 m). O botão "Apagar
+  localização" (ou o CEP salvo em branco), em Configurações, apaga o CEP, o ponto e a cidade.
 - **Aparência**: superfície escura (tinta) ou clara (papel) e opção de esconder os valores.
 
 **Site**
