@@ -1,6 +1,7 @@
 // Service worker da vera: guarda a casca do app e os arquivos do build para abrir mais rápido.
 // Sem internet abre só a casca: os dados e o login vêm da API, que nunca entra no cache, então
-// quem está logado vê a tela de Entrar até a conexão voltar (o login não se perde).
+// quem está logado vê "Sem conexão" (com "Tentar de novo") até a conexão voltar; o login não se
+// perde.
 // Nunca guarda chamadas da API nem nada com Authorization: dados financeiros não ficam em cache.
 
 // Todo build troca a versão (plugin vera-versao-do-sw no vite.config.js); no activate os caches
@@ -41,6 +42,7 @@ const podeGuardar = resposta =>
 
 // No Render, um /assets/ que não existe mais (aba aberta antes de um deploy) cai no rewrite e
 // volta 200 com o HTML da casca. Guardado com o nome do .js, o erro ficaria preso no cache.
+// A página, por sua vez, recarrega para pegar o build novo (src/lib/versaoNova.js).
 const ehHtml = resposta => (resposta.headers.get('content-type') || '').includes('text/html');
 
 const guardar = (pedido, resposta) => {
