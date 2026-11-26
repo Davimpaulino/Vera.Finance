@@ -32,26 +32,33 @@ export const EXEMPLOS = {
   'assinatura-cancelada': { nome: 'Ana', plano: 'vera+ mensal', ativaAte: '25/12/2026' },
   'exclusao-agendada': { nome: 'Ana', dataDaExclusao: '26/12/2026' },
   'conta-apagada': { nome: 'Ana' },
+  // O mesmo aviso do sino (AlertaDaListaModel.notificacoes): item ainda não comprado que está mais
+  // barato em outro mercado do raio do que no mercado de sempre. Os campos de cada item seguem os
+  // alertas guardados (item, mercado, preco, precoHabitual, distanciaKm), já formatados; diferenca
+  // e percentual são as contas do sino. O mercado de sempre é o mesmo para todos os itens. `data` é
+  // o dia da comparação, e cada item pode vir sem `distancia`.
   'alerta-preco': {
     nome: 'Ana',
+    mercadoHabitual: 'Mercado Exemplo Centro',
+    data: '26/11/2026',
     itens: [
       {
-        produto: 'Arroz tipo 1, 5 kg',
-        mercado: 'Mercado Exemplo Centro',
-        origem: 'site da rede',
-        data: '26/11',
-        precoAntes: 'R$ 24,90',
-        precoAgora: 'R$ 26,90',
-        variacao: '+8%'
+        item: 'Arroz tipo 1, 5 kg',
+        mercado: 'Atacado Exemplo',
+        preco: 'R$ 21,90',
+        precoHabitual: 'R$ 24,90',
+        diferenca: 'R$ 3,00',
+        percentual: '12%',
+        distancia: '2,4 km'
       },
       {
-        produto: 'Café torrado, 500 g',
-        mercado: 'Atacado Exemplo',
-        origem: 'nota fiscal',
-        data: '25/11',
-        precoAntes: 'R$ 19,90',
-        precoAgora: 'R$ 17,90',
-        variacao: '-10%'
+        item: 'Café torrado, 500 g',
+        mercado: 'Mercado Exemplo Bairro',
+        preco: 'R$ 17,90',
+        precoHabitual: 'R$ 19,90',
+        diferenca: 'R$ 2,00',
+        percentual: '10%',
+        distancia: '1,1 km'
       }
     ],
     linkDescadastro: 'https://vera-finance.onrender.com/app/configuracoes'
