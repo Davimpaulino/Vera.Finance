@@ -106,6 +106,8 @@ export const RAIO_MAXIMO_KM = 15;
 
 export function raioKm(valor, padrao = 5) {
   if (valor === undefined || valor === null || valor === '') return padrao;
+  // Só número ou texto: um objeto do JSON quebraria o Number() (erro 500).
+  if (typeof valor !== 'number' && typeof valor !== 'string') return padrao;
   const numero = Number(valor);
   if (!Number.isFinite(numero)) return padrao;
   return Math.min(RAIO_MAXIMO_KM, Math.max(RAIO_MINIMO_KM, Math.round(numero)));
@@ -135,7 +137,11 @@ export function localDoCorpo(corpo) {
     limpo.cep = cep;
   }
   if (local.cidade !== undefined) limpo.cidade = texto(local.cidade, 'A cidade', { max: 120 });
-  if (local.raioKm != null && local.raioKm !== '') limpo.raioKm = raioKm(local.raioKm);
+  if (local.raioKm != null && local.raioKm !== '') {
+    if (typeof local.raioKm !== 'number' && typeof local.raioKm !== 'string')
+      throw new HttpError(400, 'O raio precisa ser um número de km.');
+    limpo.raioKm = raioKm(local.raioKm);
+  }
   if (local.mercados !== undefined)
     limpo.mercados = lista(local.mercados, 'mercados', MAXIMO_DE_MERCADOS).map(id =>
       texto(id, 'O mercado', { max: TAMANHO_MAXIMO_DO_ID, obrigatorio: true })

@@ -13,7 +13,7 @@ const { UsuarioModel } = await import('../src/models/UsuarioModel.js');
 const { VERSAO_DOS_TERMOS } = await import('../src/config/termos.js');
 const { guardarComTeto } = await import('../src/utils/cache.js');
 const { toNumber } = await import('../src/utils/http.js');
-const { idValido } = await import('../src/utils/validacao.js');
+const { idValido, raioKm } = await import('../src/utils/validacao.js');
 const { GeoModel } = await import('../src/models/GeoModel.js');
 const { MercadoModel } = await import('../src/models/MercadoModel.js');
 const { PrecoRegionalModel } = await import('../src/models/PrecoRegionalModel.js');
@@ -423,6 +423,7 @@ test('perfil: preferência, ciclo e localização só aceitam o tipo e o tamanho
   // Objeto com toString próprio quebrava o Number() e virava 500.
   assert.equal((await mudar({ ciclo: { diaVirada: { toString: 1 } } })).status, 400);
   assert.equal((await mudar({ ciclo: { diaVirada: [3] } })).status, 400);
+  assert.equal((await mudar({ local: { raioKm: { toString: 1 } } })).status, 400);
   assert.equal((await mudar({ local: { lat: 1e308, lng: 0 } })).status, 400);
   assert.equal((await mudar({ local: { mercados: 'tudo' } })).status, 400);
   assert.equal((await mudar({ local: { cep: '<script>' } })).status, 400);
@@ -662,6 +663,8 @@ test('valores e ids: true, listas e caminhos não passam por número nem por id'
   assert.throws(() => toNumber(true, 'valor'), { status: 400 });
   assert.throws(() => toNumber([5], 'valor'), { status: 400 });
   assert.equal(toNumber('1.234,56', 'valor'), 1234.56);
+  assert.equal(raioKm({ toString: 1 }), 5, 'raio da query que não é número fica no padrão');
+  assert.equal(raioKm(true, 15), 15);
   assert.ok(idValido('-Nabc_123'));
   assert.ok(idValido('fixo_abc_20261105'));
   for (const id of ['', 'a/b', 'a.b', 'a#b', 'a$b', 'a[b', 'a]b', 'a\nb', '__proto__', 'x'.repeat(129), 5])
