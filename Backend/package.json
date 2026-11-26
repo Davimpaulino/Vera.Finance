@@ -11,7 +11,8 @@
     "test:pg": "BANCO_TESTE=postgres node --test --test-concurrency=1 \"test/**/*.test.js\"",
     "migrar:postgres": "node --env-file-if-exists=.env scripts/migrar-firebase-para-postgres.mjs",
     "regras:firebase": "node --env-file-if-exists=.env scripts/publicar-regras-firebase.mjs",
-    "saude:redes": "node --env-file-if-exists=.env scripts/saude-das-redes.mjs"
+    "saude:redes": "node --env-file-if-exists=.env scripts/saude-das-redes.mjs",
+    "emails:ver": "node scripts/ver-emails.mjs"
   },
   "engines": {
     "node": ">=22.9"

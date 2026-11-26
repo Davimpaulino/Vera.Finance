@@ -29,7 +29,7 @@ const FEATURES = [
 const MARCAS = ['Atacadão', 'Pão de Açúcar', 'Covabra', 'Savegnago', 'Tenda Atacado', 'Zaffari'];
 // Fatos do produto, não métricas de uso.
 const NUMEROS = [
-  [`${REDES_COM_PRECO.length} redes`, 'com preço online para o seu CEP'],
+  [`${REDES_COM_PRECO.length} redes`, 'com preço online'],
   ['2 a 15 km', 'de raio de busca a partir do seu CEP'],
   ['90 dias', 'de histórico de preço por produto']
 ];
@@ -66,7 +66,7 @@ const PERGUNTAS = [
   ],
   [
     'De onde vêm os preços?',
-    'Do site de cada rede, para o seu CEP, e das notas fiscais lidas por quem usa a vera.'
+    'Do site de cada rede (para o seu CEP, quando a rede permite) e das notas fiscais lidas por quem usa a vera.'
   ]
 ];
 
@@ -105,7 +105,7 @@ export default function Landing() {
               <div className="landing-proof">
                 <div className="landing-proof__num">
                   <span className="landing-proof__value">{REDES_COM_PRECO.length} redes</span>
-                  <span className="landing-proof__label">com preço online pelo seu CEP</span>
+                  <span className="landing-proof__label">com preço online</span>
                 </div>
                 <div className="landing-proof__num">
                   <span className="landing-proof__value">R$ 0</span>
@@ -155,8 +155,8 @@ export default function Landing() {
                 Preço do site da rede e da nota fiscal
               </h2>
               <p className="landing-lead landing-max-560">
-                Cada valor que a vera mostra vem do site da rede para o seu CEP ou de uma nota
-                fiscal lida perto de você, sempre com a data.
+                Cada valor que a vera mostra vem do site da rede (para o seu CEP, quando a rede
+                permite) ou de uma nota fiscal lida perto de você, sempre com a data.
               </p>
             </div>
             <div className="vera-grid vera-grid--3 landing-feats">

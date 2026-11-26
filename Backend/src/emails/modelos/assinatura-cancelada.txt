@@ -1,0 +1,9 @@
+Assinatura cancelada
+
+Oi, {{nome}}. O {{plano}} foi cancelado e não haverá cobrança nova.
+
+Você continua com o vera+ até {{ativaAte}}. Depois disso, a conta volta para o plano grátis. Nada é apagado: lançamentos, metas e listas continuam lá.
+
+Mudou de ideia? Dá para reativar em Configurações › Plano.
+
+Ver o meu plano: {{linkConfiguracoes}}
