@@ -128,8 +128,6 @@ Para ninguém prometer o que o produto não faz:
   hora, sem cobrança. A "próxima cobrança em ..." que o app mostra é só uma data calculada a partir
   do dia da troca. Cancelar marca até quando o vera+ continua; passada essa data, a conta é lida
   como grátis ([Planos](#planos)).
-- **Um benefício da página de planos** (`PlanoModel.js`) não existe como descrito: "Suporte por
-  e-mail em 24h", no vera+ anual. Nada no produto trata suporte por plano ou prazo.
 - **E-mails**: os modelos estão prontos em `Backend/src/emails/`, mas nenhum deles é enviado (o
   provedor ainda não foi escolhido). Hoje saem só dois e-mails, os dois pelo próprio Firebase
   Authentication: o de redefinir a senha ("Esqueci a senha") e o de
