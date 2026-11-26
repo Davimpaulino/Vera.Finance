@@ -116,7 +116,7 @@ export function localDoCorpo(corpo) {
     limpo.cep = cep;
   }
   if (local.cidade !== undefined) limpo.cidade = texto(local.cidade, 'A cidade', { max: 120 });
-  if (local.raioKm !== undefined) limpo.raioKm = raioKm(local.raioKm);
+  if (local.raioKm != null && local.raioKm !== '') limpo.raioKm = raioKm(local.raioKm);
   if (local.mercados !== undefined)
     limpo.mercados = lista(local.mercados, 'Os mercados', MAXIMO_DE_MERCADOS).map(id =>
       texto(id, 'O mercado', { max: TAMANHO_MAXIMO_DO_ID, obrigatorio: true })

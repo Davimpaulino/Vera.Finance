@@ -27,7 +27,15 @@ function dataDoCorpo(valor) {
 
 const csvCell = v => {
   const s = String(v ?? '');
-  return /[";\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  return /[";\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+};
+
+// Texto que a pessoa digitou (descrição, categoria, nome de quem lançou) e que começa com = + - @
+// vira fórmula ao abrir a planilha no Excel ou no Google Planilhas. No modo família, um membro
+// poderia pôr uma fórmula na planilha do dono. O apóstrofo na frente deixa o texto como texto.
+const textoDaPlanilha = v => {
+  const s = String(v ?? '');
+  return /^[=+\-@\t\r]/.test(s) ? `'${s}` : s;
 };
 
 export const lancamentoController = {
@@ -145,13 +153,13 @@ export const lancamentoController = {
     const visiveis = todos.filter(podeVerLancamento(ctx, categorias));
     const linhas = [['data', 'tipo', 'descricao', 'categoria', 'valor', 'origem', 'quem']].concat(
       visiveis.map(l => [
-        l.data.slice(0, 10),
-        l.tipo,
-        l.titulo,
-        l.categoriaNome,
+        String(l.data || '').slice(0, 10),
+        textoDaPlanilha(l.tipo),
+        textoDaPlanilha(l.titulo),
+        textoDaPlanilha(l.categoriaNome),
         String(l.valor).replace('.', ','),
-        l.origem,
-        l.quemNome
+        textoDaPlanilha(l.origem),
+        textoDaPlanilha(l.quemNome)
       ])
     );
     const csv = '﻿' + linhas.map(r => r.map(csvCell).join(';')).join('\n');

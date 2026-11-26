@@ -162,6 +162,20 @@ test('família: a planilha do membro não leva os gastos das categorias só do d
   assert.ok(daAna.includes('Presente surpresa'), 'a dona vê tudo');
 });
 
+test('planilha: descrição que começa com = + - @ não vira fórmula no Excel', async () => {
+  const formula = '=HYPERLINK("https://exemplo.invalid","clique")';
+  const criado = await pedir('POST', '/lancamentos', {
+    corpo: { titulo: formula, valor: 1, tipo: 'saida', categoriaId: 'comida' },
+    token: tokenDoBeto
+  });
+  assert.equal(criado.status, 201);
+  const csv = (await pedir('GET', '/lancamentos/export', { token: tokenDaAna })).texto;
+  const linha = csv.split('\n').find(l => l.includes('HYPERLINK'));
+  assert.ok(linha.includes(`"'=HYPERLINK(""https://exemplo.invalid"",""clique"")"`), linha);
+  assert.ok(!/;=HYPERLINK|;"=HYPERLINK/.test(linha), 'a célula não começa com =');
+  await banco.remover(`usuarios/ana/lancamentos/${criado.json.id}`);
+});
+
 test('família: o relatório do ano do membro não soma os gastos das categorias só do dono', async () => {
   const relatorio = (await pedir('GET', '/relatorios', { token: tokenDoBeto })).json;
   const totalDoMes = relatorio.meses[new Date().getMonth()].total;
