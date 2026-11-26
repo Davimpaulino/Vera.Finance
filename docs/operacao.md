@@ -99,10 +99,20 @@ O que procurar no log da API:
 | `[exclusão] falhou para <uid>` | Uma exclusão falhou; ela é tentada de novo na próxima rodada. Veja a mensagem. |
 | `[GET /api/...]` seguido de um erro | Erro inesperado numa rota (a pessoa recebeu "Algo deu errado do nosso lado"). |
 
-O Render guarda os logs por um tempo limitado, que depende do plano. A Política de privacidade diz
-que os registros de acesso ficam guardados por 6 meses (Marco Civil da Internet): confira se a
-retenção do Render cobre esse prazo ou configure um *Log Stream* para outro serviço
-([PREENCHER: onde ficam os registros de acesso]).
+O Render guarda os logs por um tempo limitado, que depende do plano.
+
+**Registros de acesso.** A Política de privacidade diz que os registros de acesso (data, hora e IP
+de cada uso) ficam guardados por 6 meses, como pede o Marco Civil da Internet. A API não escreve
+esses registros: o log dela tem o início, os erros inesperados e a rotina de exclusão, e o IP de
+quem chama só é usado em memória, pelo limite de tentativas. Por isso, um *Log Stream* da saída da
+API, sozinho, não guarda registro de acesso nenhum. Escolha um destes caminhos e guarde os registros
+por 6 meses fora do Render, com acesso restrito ([PREENCHER: o caminho escolhido e onde ficam]):
+
+- usar os registros de requisição HTTP do próprio Render, se o plano do serviço tiver (confira no
+  painel quais campos eles trazem e por quanto tempo ficam), e encaminhar esses registros para outro
+  serviço;
+- ou a API passar a escrever uma linha por pedido, com data, hora, IP e rota (nunca token, senha ou
+  o corpo do pedido), e um *Log Stream* levar esse log para outro serviço.
 
 Nunca copie para fora do Render (chat, issue, print) um trecho de log com e-mail, nome ou outro
 dado pessoal.
@@ -259,10 +269,37 @@ Backups têm dados pessoais: guarde só em lugar com acesso restrito e criptogra
 1. Suspenda a API (Render → serviço → *Suspend*) para ninguém gravar durante a restauração.
 2. Exporte o estado atual, mesmo quebrado: ele pode ter dados que o backup não tem.
 3. Restaure num banco novo e confira contagens e algumas contas de teste antes de trocar.
-4. **Exclusões feitas depois do backup**: quem apagou a conta entre a data do backup e hoje volta a
-   existir no banco restaurado. Compare os uids do banco restaurado com os do estado atual (passo 2):
-   quem existe no backup e não existe mais hoje pediu exclusão e precisa ser apagado de novo (veja
-   [Apagar a conta agora](#apagar-a-conta-agora)).
+4. **Exclusões depois do backup.** O banco restaurado volta ao dia do backup: quem apagou a conta
+   depois dele volta a existir, quem pediu a exclusão depois perde o pedido e quem desistiu depois
+   recebe o pedido antigo de volta (e a rotina diária apagaria a conta dessa pessoa). O script
+   `scripts/conferir-restauracao.mjs` acerta isso. Rode **antes** de a API usar o banco restaurado:
+   a rotina de exclusão roda um minuto depois de a API subir. Na pasta `Backend`:
+
+   ```bash
+   # a. .env apontando para o banco ATUAL: grava um retrato só com uids e pedidos, sem e-mail
+   node --env-file=.env scripts/conferir-restauracao.mjs retrato ~/vera-retrato-atual.json
+
+   # b. .env apontando para o banco RESTAURADO: simulação, só mostra o que faria
+   node --env-file=.env scripts/conferir-restauracao.mjs conferir ~/vera-retrato-atual.json
+
+   # c. conferiu o relatório? grava no banco restaurado
+   node --env-file=.env scripts/conferir-restauracao.mjs conferir ~/vera-retrato-atual.json --executar
+   ```
+
+   O banco muda pela `DATABASE_URL` (PostgreSQL) ou pela `FIREBASE_URL_BANCO` (Firebase). Deixe no
+   `.env` também a conta de serviço do Firebase: sem ela, o script não confere os logins. Cada
+   comando mostra no começo qual banco está usando (sem a senha): confira antes de seguir. O script:
+   - apaga de novo as contas que estão no backup e não existem mais hoje. O login do Firebase só sai
+     junto quando tem o mesmo uid da conta. Se o e-mail já tem um login com outro uid, ele pode ser de
+     uma conta nova: o script apaga só os dados e lista esse login para você conferir à mão
+     (Firebase Console → Authentication) antes de decidir;
+   - recria, com a data original, os pedidos de exclusão feitos depois do backup;
+   - tira o pedido de quem desistiu da exclusão depois do backup;
+   - lista as contas criadas depois do backup. Os dados delas não estão no banco restaurado, só no
+     estado atual (passo 2). Se alguma delas pediu a exclusão, apague o login dela no Firebase
+     Authentication e registre.
+
+   Apague o retrato quando terminar.
 5. Troque a `DATABASE_URL` (ou o banco do Firebase), reative a API e faça o
    [checklist de depois do deploy](#depois).
 
@@ -314,21 +351,28 @@ Política: resposta em até **15 dias**. Encarregado de dados: [PREENCHER].
 
 ### Regras
 
-- Confirme a identidade antes de qualquer coisa: o pedido precisa vir do e-mail da conta. Se vier de
-  outro endereço, responda pedindo que escreva do e-mail cadastrado. Nunca mande dados para um
-  endereço diferente do da conta.
-- Registre cada pedido ([PREENCHER: onde]): data, tipo de pedido, quem atendeu e data da resposta.
-  Não copie para o registro os dados da pessoa.
-- Primeiro, ofereça o caminho pelo app: quase tudo a própria pessoa faz em **Configurações › Dados**.
+- **Primeiro, o app.** Quase tudo a própria pessoa faz em **Configurações › Dados**, que já pede o
+  login. Responda com esse caminho antes de fazer qualquer coisa pelo time.
+- **Confirme a identidade antes de agir.** O remetente de um e-mail se falsifica com facilidade: um
+  pedido que parece vir do e-mail da conta não prova quem escreveu. Escreva uma mensagem nova (não
+  responda o pedido) para o e-mail cadastrado na conta, dizendo o que foi pedido e com um código que
+  você inventou na hora (por exemplo, 6 números). Só siga quando a resposta trouxer esse código: ele
+  só chega a quem tem acesso à caixa de e-mail da conta.
+- Nunca mande dados para um endereço diferente do da conta.
+- **Exclusão pedida por e-mail**: depois da confirmação, agende com os mesmos 30 dias do app e avise
+  a pessoa (veja [Agendar a exclusão pelo time](#agendar-a-exclusão-pelo-time)). Até a data, ela
+  pode desistir pelo app.
+- Registre cada pedido ([PREENCHER: onde]): data, tipo de pedido, como a identidade foi confirmada,
+  quem atendeu e data da resposta. Não copie para o registro os dados da pessoa.
 
 ### Direitos e onde cada um está
 
 | Pedido | Pelo app | Se a pessoa não consegue |
 |---|---|---|
 | Ver ou levar os dados (acesso e portabilidade) | Configurações › Dados › *Baixar todos os meus dados* (JSON) e *Exportar lançamentos em planilha* (CSV) | [Exportar pelo time](#exportar-os-dados-pelo-time) |
-| Corrigir dados | Configurações (nome, ciclo, CEP, raio) | Corrija no banco e registre |
-| Apagar a conta | Configurações › Dados › *Apagar a conta* (apaga em 30 dias; até lá dá para desistir) | [Apagar a conta agora](#apagar-a-conta-agora) |
-| Retirar consentimento | Configurações: *Contribuir com preços anônimos* e localização do aparelho | Ajuste no perfil e registre |
+| Corrigir dados | Configurações (nome, ciclo, CEP, raio) | Depois de confirmar a identidade, corrija no banco e registre |
+| Apagar a conta | Configurações › Dados › *Apagar a conta* (apaga em 30 dias; até lá dá para desistir) | [Agendar a exclusão pelo time](#agendar-a-exclusão-pelo-time) |
+| Retirar consentimento | *Contribuir com preços anônimos*, em Configurações. A localização do aparelho não tem botão para apagar: trocar o CEP em Configurações substitui o CEP e o ponto salvos pelos do CEP digitado, se ele for encontrado | [Apagar a localização salva](#apagar-a-localização-salva) |
 | Saber com quem os dados são compartilhados | Política de privacidade, seção de compartilhamento | Responda com a lista da Política |
 
 A base anônima de preços continua depois da exclusão, porque não identifica ninguém (está na
@@ -338,8 +382,9 @@ mudança pede um novo aceite (`VERSAO_DOS_TERMOS`).
 
 ### Exportar os dados pelo time
 
-Na pasta `Backend`, com o `.env` de produção (veja [Rodar um script como job](#rodar-um-script-como-job)).
-Gera o mesmo arquivo do botão *Baixar todos os meus dados*, fora da pasta do projeto:
+Depois de confirmar a identidade, na pasta `Backend`, com o `.env` de produção (veja
+[Rodar um script como job](#rodar-um-script-como-job)). Gera o mesmo arquivo do botão *Baixar todos
+os meus dados*, fora da pasta do projeto:
 
 ```bash
 node --env-file=.env --input-type=module -e "
@@ -361,28 +406,66 @@ process.exit(0);
 Mande o arquivo só para o e-mail da conta, por um canal seguro ([PREENCHER: qual]), e apague a cópia
 local depois.
 
-### Apagar a conta agora
+### Agendar a exclusão pelo time
 
-Faz o mesmo que a rotina diária faz quando a exclusão vence: perfil e dados, login (no Firebase
-Auth, quando a API tem a conta de serviço) e a participação em família. Não dá para desfazer.
+Para quem pediu por e-mail e já teve a identidade confirmada. Marca a exclusão com os mesmos 30 dias
+do botão *Apagar a conta*: até a data, a pessoa pode desistir pelo app; na data, a rotina diária da
+API apaga perfil e dados, login e a participação em família. Se a exclusão já estiver marcada, o
+trecho só mostra a data e não muda nada.
 
 ```bash
 node --env-file=.env --input-type=module -e "
 const email = process.argv[1];
 const { ContaModel } = await import('./src/models/ContaModel.js');
+const { UsuarioModel } = await import('./src/models/UsuarioModel.js');
 const { ExclusaoModel } = await import('./src/models/ExclusaoModel.js');
 const conta = await ContaModel.buscar(email);
-if (!conta) { console.error('Nenhuma conta com esse e-mail.'); process.exit(1); }
-await ExclusaoModel.apagar(conta.uid);
-console.log('Conta apagada:', conta.uid);
+const perfil = conta && (await UsuarioModel.buscar(conta.uid));
+if (!perfil) { console.error('Nenhuma conta com esse e-mail.'); process.exit(1); }
+if (perfil.exclusaoAgendadaPara) {
+  console.log('A exclusão já está marcada para', perfil.exclusaoAgendadaPara);
+  process.exit(0);
+}
+// Os mesmos 30 dias do botão do app (userController.agendarExclusao).
+const quando = new Date(Date.now() + 30 * 86400000).toISOString();
+await ExclusaoModel.agendar(conta.uid, quando);
+console.log('Exclusão marcada para', new Date(quando).toLocaleDateString('pt-BR'), '·', conta.uid);
 process.exit(0);
 " pessoa@exemplo.com
 ```
 
-Depois, confirme por e-mail à pessoa (o modelo `conta-apagada` em `Backend/src/emails/` serve de
-texto). Dados apagados ainda podem existir nos backups até eles vencerem
-([PREENCHER: prazo dos backups]); se um backup for restaurado, apague a conta de novo (veja
-[Restaurar sem perder ninguém](#restaurar-sem-perder-ninguém-passo-a-passo)).
+Avise a pessoa com a data e o caminho para desistir (o modelo `exclusao-agendada`, em
+`Backend/src/emails/`, serve de texto). Depois da data, rode o trecho de novo: "Nenhuma conta com
+esse e-mail" confirma que a conta foi apagada, e o modelo `conta-apagada` serve de texto para avisar.
+Dados apagados ainda podem existir nos backups até eles vencerem ([PREENCHER: prazo dos backups]);
+se um backup for restaurado, siga o passo 4 de
+[Restaurar sem perder ninguém](#restaurar-sem-perder-ninguém-passo-a-passo).
+
+### Apagar a localização salva
+
+O app ainda não tem botão para apagar a localização. Quando ela veio do aparelho (*Usar minha
+localização*, em Comparar), o CEP salvo também veio dele: é o da rua onde a pessoa estava. Por isso
+o trecho apaga o ponto e o CEP. Depois de confirmar a identidade:
+
+```bash
+node --env-file=.env --input-type=module -e "
+const email = process.argv[1];
+const { banco } = await import('./src/config/banco.js');
+const { ContaModel } = await import('./src/models/ContaModel.js');
+const { UsuarioModel } = await import('./src/models/UsuarioModel.js');
+const conta = await ContaModel.buscar(email);
+if (!conta || !(await UsuarioModel.buscar(conta.uid))) {
+  console.error('Nenhuma conta com esse e-mail.');
+  process.exit(1);
+}
+await banco.atualizar('usuarios/' + conta.uid + '/perfil/local', { lat: null, lng: null, cep: '' });
+console.log('Localização apagada:', conta.uid);
+process.exit(0);
+" pessoa@exemplo.com
+```
+
+Registre o pedido e avise a pessoa: a comparação volta a funcionar quando ela informar um CEP em
+Configurações.
 
 ---
 
