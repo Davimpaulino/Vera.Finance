@@ -4,7 +4,7 @@ import { ContaModel } from '../models/ContaModel.js';
 import { UsuarioModel } from '../models/UsuarioModel.js';
 import { assinarToken } from '../middlewares/auth.js';
 import { HttpError, requireFields } from '../utils/http.js';
-import { VERSAO_DOS_TERMOS, lerAceite } from '../config/termos.js';
+import { VERSAO_DOS_TERMOS, aceiteOpcional, exigirAceite } from '../config/termos.js';
 
 const emailValido = email => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email || ''));
 
@@ -16,6 +16,8 @@ export const authController = {
     if (!emailValido(body.email)) throw new HttpError(400, 'E-mail inválido.');
     if (String(body.senha).length < 8)
       throw new HttpError(400, 'A senha precisa ter pelo menos 8 caracteres.');
+    // Sem o aceite dos termos e da idade mínima, a conta não é criada (não basta a caixa da tela).
+    const termosAceitos = exigirAceite(body);
     if (await ContaModel.buscar(body.email))
       throw new HttpError(
         409,
@@ -31,7 +33,7 @@ export const authController = {
     await UsuarioModel.criarSeNaoExistir(credencial.uid, {
       nome: body.nome,
       email: credencial.email,
-      termosAceitos: lerAceite(body)
+      termosAceitos
     });
     return {
       status: 201,
@@ -73,7 +75,7 @@ export const authController = {
   },
 
   async sessao({ user, body }) {
-    const termosAceitos = lerAceite(body);
+    const termosAceitos = aceiteOpcional(body);
     const perfil = await UsuarioModel.criarSeNaoExistir(user.uid, {
       nome: body.nome || user.name,
       email: user.email,

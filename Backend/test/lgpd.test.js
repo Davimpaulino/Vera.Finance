@@ -110,7 +110,7 @@ test('cadastro com aceite grava a versão dos termos e a data no perfil', async 
   assert.ok(Math.abs(Date.now() - new Date(me.termosAceitos.em).getTime()) < 60000);
 });
 
-test('cadastro sem aceite não inventa um aceite', async () => {
+test('cadastro sem aceite é recusado e não cria a conta', async () => {
   const r = await pedir(
     'POST',
     '/auth/cadastrar',
@@ -118,9 +118,31 @@ test('cadastro sem aceite não inventa um aceite', async () => {
     null,
     '10.9.1.2'
   );
-  const me = json(await pedir('GET', '/me', null, json(r).token));
-  assert.equal(me.termosAceitos, null);
-  assert.equal(me.versaoDosTermos, VERSAO_DOS_TERMOS);
+  assert.equal(r.status, 400);
+  assert.match(json(r).erro, /18 anos/);
+  const emUso = json(await pedir('POST', '/auth/email-em-uso', { email: 'bia-sem-aceite@email.com' }, null));
+  assert.equal(emUso.emUso, false);
+});
+
+test('cadastro com uma versão dos termos que não está em vigor é recusado', async () => {
+  const r = await pedir(
+    'POST',
+    '/auth/cadastrar',
+    { nome: 'Rui', email: 'rui-versao@email.com', senha: 'senha-boa-1', aceite: { versao: 'qualquer' } },
+    null,
+    '10.9.1.3'
+  );
+  assert.equal(r.status, 400);
+  assert.match(json(r).erro, /Recarregue a página/);
+});
+
+test('sessão com uma versão que não está em vigor não grava aceite', async () => {
+  const tk = assinarToken({ uid: 'google-versao-falsa', email: 'falsa@gmail.com', nome: 'Davi' });
+  const r = await pedir('POST', '/auth/sessao', { aceite: { versao: 'v1999-01-01' } }, tk);
+  assert.equal(r.status, 400);
+  assert.equal(await UsuarioModel.buscar('google-versao-falsa'), null);
+  const semAceite = json(await pedir('POST', '/auth/sessao', {}, tk));
+  assert.equal(semAceite.termosAceitos, undefined);
 });
 
 test('sessão (Google/Apple) com aceite grava o aceite no perfil novo', async () => {

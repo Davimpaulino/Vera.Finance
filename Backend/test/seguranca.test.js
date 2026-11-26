@@ -14,6 +14,7 @@ const { configuracao } = await import('../src/config/env.js');
 const { assinarToken } = await import('../src/middlewares/auth.js');
 const { ExclusaoModel } = await import('../src/models/ExclusaoModel.js');
 const { UsuarioModel } = await import('../src/models/UsuarioModel.js');
+const { VERSAO_DOS_TERMOS } = await import('../src/config/termos.js');
 
 let server;
 let base;
@@ -73,7 +74,7 @@ test('login por senha é limitado por IP (força bruta)', async () => {
 });
 
 test('exclusão de conta: agenda, pode desistir e, vencida, apaga dados, login e família', async () => {
-  const cadastro = await pedir('POST', '/auth/cadastrar', { nome: 'Bia', email: 'bia@x.com', senha: '12345678' }, null, '10.1.1.1');
+  const cadastro = await pedir('POST', '/auth/cadastrar', { nome: 'Bia', email: 'bia@x.com', senha: '12345678', aceite: { versao: VERSAO_DOS_TERMOS } }, null, '10.1.1.1');
   const { token } = await cadastro.json();
   const { uid } = JSON.parse(Buffer.from(token.split('.')[0], 'base64url'));
   await banco.gravar(`usuarios/${uid}/lancamentos/l1`, { valor: 10 });
