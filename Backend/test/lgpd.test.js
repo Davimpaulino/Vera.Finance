@@ -82,17 +82,72 @@ test('exportar não leva dados de outras pessoas: só nome e papel dos membros',
   // E-mails de convidados e lançamentos da outra pessoa ficam de fora.
   assert.doesNotMatch(JSON.stringify(dados), /lucas@email\.com/);
   assert.equal(dados.lancamentosNaFamilia.length, 0);
+  assert.equal(dados.notasNaFamilia.length + dados.listaNaFamilia.length + dados.aportesNaFamilia.length, 0);
 });
 
+const MARINA = { uid: 'marina-serra', email: 'marina@email.com', nome: 'Marina Serra' };
+const tokenDaMarina = () => assinarToken(MARINA);
+
 test('membro da família recebe os próprios lançamentos feitos no ciclo do dono', async () => {
-  await UsuarioModel.criarSeNaoExistir('marina-serra', { nome: 'Marina Serra', email: 'marina@email.com' });
-  await UsuarioModel.atualizar('marina-serra', { familiaId: 'casa-serra' });
-  const tk = assinarToken({ uid: 'marina-serra', email: 'marina@email.com', nome: 'Marina Serra' });
-  const dados = json(await pedir('GET', '/me/exportar', null, tk));
-  assert.equal(dados.perfil.email, 'marina@email.com');
+  await UsuarioModel.criarSeNaoExistir(MARINA.uid, {
+    nome: MARINA.nome,
+    email: MARINA.email,
+    termosAceitos: { versao: VERSAO_DOS_TERMOS, em: new Date().toISOString() }
+  });
+  await UsuarioModel.atualizar(MARINA.uid, { familiaId: 'casa-serra' });
+  const dados = json(await pedir('GET', '/me/exportar', null, tokenDaMarina()));
+  assert.equal(dados.perfil.email, MARINA.email);
   assert.ok(dados.lancamentosNaFamilia.length > 0);
-  assert.ok(dados.lancamentosNaFamilia.every(l => l.quemId === 'marina-serra'));
+  assert.ok(dados.lancamentosNaFamilia.every(l => l.quemId === MARINA.uid));
   assert.equal(dados.lancamentos.length, 0);
+});
+
+// Página mínima da Sefaz, para a leitura da nota não sair para a internet.
+const QR_DA_MARINA =
+  'https://www.nfce.fazenda.sp.gov.br/qrcode?p=35261012345678000190650010000999991000099999|2|1|1|ABC';
+const PAGINA_DA_NOTA = `<div id="u20" class="txtTopo">FEIRA DA MARINA LTDA</div>
+<div class="text">CNPJ: 12.345.678/0001-90</div>
+<table id="tabResult"><tr id="Item + 1"><td><span class="txtTit">PAO DE FORMA 500G</span>
+<span class="Rqtd"><strong>Qtde.:</strong>1</span><span class="RvlUnit"><strong>Vl. Unit.:</strong>&nbsp;9,90</span></td>
+<td><span class="valor">9,90</span></td></tr></table>
+<span class="totalNumb txtMax">9,90</span>`;
+
+test('no modo família, nota lida, item da lista e aporte vão para a exportação de quem fez', async () => {
+  const fetchDeVerdade = globalThis.fetch;
+  globalThis.fetch = (endereco, opcoes) =>
+    String(endereco) === QR_DA_MARINA
+      ? Promise.resolve(new Response(PAGINA_DA_NOTA, { headers: { 'content-type': 'text/html' } }))
+      : /^https?:\/\/localhost[:/]/.test(String(endereco))
+        ? fetchDeVerdade(endereco, opcoes)
+        : Promise.reject(new Error('sem internet nos testes'));
+  try {
+    const tk = tokenDaMarina();
+    assert.equal((await pedir('POST', '/notas/ler', { endereco: QR_DA_MARINA }, tk)).status, 201);
+    assert.equal((await pedir('POST', '/lista', { nome: 'pão de forma da Marina' }, tk)).status, 201);
+    assert.equal((await pedir('POST', '/metas/viagem/aportes', { valor: 50 }, tk)).status, 200);
+  } finally {
+    globalThis.fetch = fetchDeVerdade;
+  }
+
+  // Tudo fica no espaço do dono, mas o dono não leva o que a Marina fez.
+  const doDono = json(await pedir('GET', '/me/exportar'));
+  assert.ok(doDono.notas.length > 0 && doDono.notas.every(n => !n.quemId || n.quemId === CONTA_DE_TESTE.uid));
+  assert.ok(!doDono.notas.some(n => n.estabelecimento === 'FEIRA DA MARINA LTDA'));
+  assert.ok(doDono.lista.length > 0 && !doDono.lista.some(i => i.nome === 'pão de forma da Marina'));
+  const viagem = doDono.metas.find(m => m.id === 'viagem');
+  assert.ok(viagem.aportes.length > 0 && viagem.aportes.every(a => a.quemId !== MARINA.uid));
+
+  // A Marina leva a nota, o item e o aporte que fez no espaço do dono.
+  const daMarina = json(await pedir('GET', '/me/exportar', null, tokenDaMarina()));
+  assert.deepEqual(
+    daMarina.notasNaFamilia.map(n => [n.estabelecimento, n.valor, n.quemId]),
+    [['FEIRA DA MARINA LTDA', 9.9, MARINA.uid]]
+  );
+  assert.deepEqual(daMarina.listaNaFamilia.map(i => i.nome), ['pão de forma da Marina']);
+  assert.equal(daMarina.aportesNaFamilia.length, 1);
+  assert.equal(daMarina.aportesNaFamilia[0].meta, 'Viagem em janeiro');
+  assert.equal(daMarina.aportesNaFamilia[0].valor, 50);
+  assert.equal(daMarina.metas.length + daMarina.lista.length + daMarina.notas.length, 0);
 });
 
 test('cadastro com aceite grava a versão dos termos e a data no perfil', async () => {

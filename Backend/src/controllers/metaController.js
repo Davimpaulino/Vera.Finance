@@ -75,7 +75,13 @@ export const metaController = {
       aportePorCiclo: toNumber(body.aportePorCiclo || 0, 'aportePorCiclo'),
       sobraNaVirada: !!body.sobraNaVirada,
       aportes: body.guardado
-        ? [{ data: new Date().toISOString(), valor: toNumber(body.guardado, 'guardado') }]
+        ? [
+            {
+              data: new Date().toISOString(),
+              valor: toNumber(body.guardado, 'guardado'),
+              quemId: user.uid
+            }
+          ]
         : []
     });
     const resumo = await CicloModel.resumo(ctx);
@@ -112,7 +118,11 @@ export const metaController = {
     const guardado = sum(atual.aportes || [], a => a.valor);
     if (guardado + valor < 0)
       throw new HttpError(400, `Só há R$ ${guardado.toFixed(2).replace('.', ',')} guardados nesta meta.`);
-    const aportes = [...(atual.aportes || []), { data: new Date().toISOString(), valor }];
+    // quemId: no modo família, cada aporte é de quem guardou (vai na exportação dessa pessoa).
+    const aportes = [
+      ...(atual.aportes || []),
+      { data: new Date().toISOString(), valor, quemId: user.uid }
+    ];
     const meta = await MetaModel.atualizar(ctx.ownerUid, params.id, { aportes });
     const resumo = await CicloModel.resumo(ctx);
     return apresentarMeta(meta, resumo.ciclo);

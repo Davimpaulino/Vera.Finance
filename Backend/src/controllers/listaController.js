@@ -107,7 +107,8 @@ export const listaController = {
       nome: String(body.nome).trim(),
       produto: produtoEscolhido(body.produto),
       qtd: 1,
-      done: false
+      done: false,
+      quemId: user.uid
     });
     return { status: 201, body: await montar(ctx) };
   },
