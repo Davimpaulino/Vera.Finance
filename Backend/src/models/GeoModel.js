@@ -11,6 +11,9 @@ const TETO_DO_CACHE = 5000;
 // Nominatim pede no máximo uma consulta por segundo: a resposta fica guardada por um dia.
 const enderecosDosCeps = new Map();
 const VALIDADE_DO_CEP_MS = 24 * 60 * 60 * 1000;
+// O cadastro guiado pede os mercados e o raio do mesmo CEP ao mesmo tempo: os pedidos do mesmo
+// CEP esperam a mesma consulta e gastam uma vez só a fila do Nominatim.
+const cepsEmAndamento = new Map();
 
 const radianos = graus => (graus * Math.PI) / 180;
 
@@ -58,6 +61,7 @@ export const GeoModel = {
   limparCache() {
     cepsAchados.clear();
     enderecosDosCeps.clear();
+    cepsEmAndamento.clear();
   },
 
   temCoordenadas,
@@ -128,24 +132,36 @@ export const GeoModel = {
     if (digitos.length !== 8) return { erro: 'invalido' };
     const guardado = enderecosDosCeps.get(digitos);
     if (guardado && Date.now() - guardado.em < VALIDADE_DO_CEP_MS) return guardado.resultado;
-    const guardar = resultado =>
-      guardarComTeto(enderecosDosCeps, digitos, { em: Date.now(), resultado }, TETO_DO_CACHE);
-
-    const dados = await buscarJson(`https://viacep.com.br/ws/${digitos}/json/`);
-    // Sem resposta (fora do ar) não fica guardado: a próxima pergunta tenta de novo.
-    if (!dados) return { erro: 'falhou' };
-    if (dados.erro) {
-      const naoExiste = { erro: 'naoExiste' };
-      guardar(naoExiste);
-      return naoExiste;
+    if (!cepsEmAndamento.has(digitos)) {
+      const consulta = buscarEnderecoDoCep(digitos).finally(() => {
+        // Depois de um limparCache(), outra consulta do mesmo CEP pode já estar no lugar desta.
+        if (cepsEmAndamento.get(digitos) === consulta) cepsEmAndamento.delete(digitos);
+      });
+      cepsEmAndamento.set(digitos, consulta);
     }
-    const cidade = `${dados.localidade} - ${dados.uf}`;
-    const coordenadas =
-      (await this.geocodificar(
-        [dados.logradouro, dados.bairro, dados.localidade, dados.uf].filter(Boolean).join(', ')
-      )) || (await this.geocodificar(`${dados.localidade}, ${dados.uf}`));
-    const resultado = { cidade, ...(coordenadas || {}) };
-    if (coordenadas) guardar(resultado);
-    return resultado;
+    return cepsEmAndamento.get(digitos);
   }
 };
+
+/** A consulta de consultarCep, sem o cache: ViaCEP e depois o Nominatim. `digitos` tem 8 números. */
+async function buscarEnderecoDoCep(digitos) {
+  const guardar = resultado =>
+    guardarComTeto(enderecosDosCeps, digitos, { em: Date.now(), resultado }, TETO_DO_CACHE);
+
+  const dados = await buscarJson(`https://viacep.com.br/ws/${digitos}/json/`);
+  // Sem resposta (fora do ar) não fica guardado: a próxima pergunta tenta de novo.
+  if (!dados) return { erro: 'falhou' };
+  if (dados.erro) {
+    const naoExiste = { erro: 'naoExiste' };
+    guardar(naoExiste);
+    return naoExiste;
+  }
+  const cidade = `${dados.localidade} - ${dados.uf}`;
+  const coordenadas =
+    (await GeoModel.geocodificar(
+      [dados.logradouro, dados.bairro, dados.localidade, dados.uf].filter(Boolean).join(', ')
+    )) || (await GeoModel.geocodificar(`${dados.localidade}, ${dados.uf}`));
+  const resultado = { cidade, ...(coordenadas || {}) };
+  if (coordenadas) guardar(resultado);
+  return resultado;
+}
