@@ -265,7 +265,7 @@ test('família: o membro guarda na meta do dono, mas não muda nem apaga a meta'
     nome: 'Viagem',
     icon: 'plane',
     alvo: 1000,
-    aportes: [],
+    aportes: [{ data: hoje, valor: 800, quemId: 'ana' }],
     quemId: 'ana'
   });
   assert.equal(
@@ -274,11 +274,21 @@ test('família: o membro guarda na meta do dono, mas não muda nem apaga a meta'
   );
   assert.equal((await pedir('DELETE', '/metas/viagem', { token: tokenDoBeto })).status, 403);
   assert.ok(await banco.ler('usuarios/ana/metas/viagem'), 'a meta continua lá');
-  assert.equal(
-    (await pedir('POST', '/metas/viagem/aportes', { corpo: { valor: 20 }, token: tokenDoBeto }))
-      .status,
-    200
-  );
+  const aportar = (valor, token = tokenDoBeto) =>
+    pedir('POST', '/metas/viagem/aportes', { corpo: { valor }, token });
+  assert.equal((await aportar(20)).status, 200);
+
+  // Retirar também é mudar a meta: o Beto retira só o que ele mesmo guardou.
+  const zerar = await aportar(-800);
+  assert.equal(zerar.status, 403, 'o membro não zera a meta da dona com um aporte negativo');
+  assert.equal((await aportar(-21)).status, 403);
+  const guardadoDepois = async () =>
+    (await banco.ler('usuarios/ana/metas/viagem')).aportes.reduce((t, a) => t + a.valor, 0);
+  assert.equal(await guardadoDepois(), 820);
+  assert.equal((await aportar(-20)).status, 200, 'o que ele guardou ele retira');
+  assert.equal((await aportar(-1)).status, 403);
+  assert.equal(await guardadoDepois(), 800);
+  assert.equal((await aportar(-100, tokenDaAna)).status, 200, 'a dona retira');
 
   // A meta que o próprio membro criou ele muda e apaga.
   const criada = await pedir('POST', '/metas', {
@@ -292,6 +302,30 @@ test('família: o membro guarda na meta do dono, mas não muda nem apaga a meta'
     200
   );
   assert.equal((await pedir('DELETE', `/metas/${criada.json.id}`, { token: tokenDoBeto })).status, 204);
+
+  // Meta gravada antes do campo quemId: quem criou é quem fez o aporte junto com a criação.
+  const antiga = (id, dataDoAporte) =>
+    banco.gravar(`usuarios/ana/metas/${id}`, {
+      nome: 'Antiga',
+      alvo: 300,
+      criadoEm: '2026-01-10T12:00:00.000Z',
+      aportes: [{ data: dataDoAporte, valor: 50, quemId: 'beto' }]
+    });
+  await antiga('antiga-do-beto', '2026-01-10T12:00:00.001Z');
+  assert.equal(
+    (await pedir('PATCH', '/metas/antiga-do-beto', { corpo: { alvo: 400 }, token: tokenDoBeto }))
+      .status,
+    200
+  );
+  // Um aporte dias depois não diz quem criou: aí só a dona muda.
+  await antiga('antiga-sem-dono', '2026-01-15T12:00:00.000Z');
+  assert.equal(
+    (await pedir('PATCH', '/metas/antiga-sem-dono', { corpo: { alvo: 400 }, token: tokenDoBeto }))
+      .status,
+    403
+  );
+  for (const id of ['viagem', 'antiga-do-beto', 'antiga-sem-dono'])
+    await banco.remover(`usuarios/ana/metas/${id}`);
 });
 
 test('meta com valor negativo, ícone que não é nome de ícone ou nome enorme é recusada', async () => {

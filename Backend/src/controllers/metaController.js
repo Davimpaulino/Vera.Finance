@@ -22,13 +22,50 @@ function valorPositivo(valor, campo, mensagem) {
   return numero;
 }
 
+// Aporte feito junto com a criação da meta (o "já guardado" do formulário): mesma data da meta.
+const JUNTO_COM_A_CRIACAO_MS = 2000;
+const reais = valor => `R$ ${valor.toFixed(2).replace('.', ',')}`;
+
+/**
+ * Quem criou a meta. As metas gravadas antes do campo quemId não o têm: nelas vale quem fez o
+ * aporte junto com a criação. Sem esse aporte, não dá para saber, e só o dono muda a meta.
+ */
+function criadorDaMeta(meta) {
+  if (meta.quemId) return meta.quemId;
+  const primeiro = (meta.aportes || [])[0];
+  if (!primeiro?.quemId || !meta.criadoEm) return null;
+  const distancia = Math.abs(new Date(primeiro.data) - new Date(meta.criadoEm));
+  return distancia <= JUNTO_COM_A_CRIACAO_MS ? primeiro.quemId : null;
+}
+
 /**
  * No modo família as metas ficam no espaço do dono e todos guardam nelas (cada aporte leva quem
  * guardou). Mudar o nome, o valor ou apagar a meta é do dono ou de quem a criou.
  */
+const podeMudarMeta = (ctx, meta) => ctx.isDono || criadorDaMeta(meta) === ctx.uid;
+
 function exigirQuemPodeMudar(ctx, meta) {
-  if (!ctx.isDono && meta.quemId !== ctx.uid)
+  if (!podeMudarMeta(ctx, meta))
     throw new HttpError(403, 'Só o dono do ciclo ou quem criou a meta pode mudar ou apagar.');
+}
+
+/**
+ * Retirar dinheiro da meta também muda a meta: os outros da família retiram só o que eles mesmos
+ * guardaram nela (senão um aporte negativo zeraria a meta de outra pessoa).
+ */
+function exigirQuemPodeRetirar(ctx, meta, valor) {
+  if (valor >= 0 || podeMudarMeta(ctx, meta)) return;
+  const doProprio = sum((meta.aportes || []).filter(a => a.quemId === ctx.uid), a => a.valor);
+  if (doProprio <= 0)
+    throw new HttpError(
+      403,
+      'Só o dono do ciclo ou quem criou a meta pode retirar dinheiro dela.'
+    );
+  if (round2(doProprio + valor) < 0)
+    throw new HttpError(
+      403,
+      `Você pode retirar só o que guardou nesta meta: ${reais(doProprio)}.`
+    );
 }
 
 export function apresentarMeta(m, ciclo) {
@@ -154,8 +191,9 @@ export const metaController = {
     const valor = toNumber(body.valor, 'valor');
     if (!valor) throw new HttpError(400, 'Digite um valor.');
     const guardado = sum(atual.aportes || [], a => a.valor);
-    if (guardado + valor < 0)
-      throw new HttpError(400, `Só há R$ ${guardado.toFixed(2).replace('.', ',')} guardados nesta meta.`);
+    if (round2(guardado + valor) < 0)
+      throw new HttpError(400, `Só há ${reais(guardado)} guardados nesta meta.`);
+    exigirQuemPodeRetirar(ctx, atual, valor);
     // quemId: no modo família, cada aporte é de quem guardou (vai na exportação dessa pessoa).
     const aportes = [
       ...(atual.aportes || []),
