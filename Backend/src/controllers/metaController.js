@@ -3,8 +3,33 @@ import { MetaModel } from '../models/MetaModel.js';
 import { CicloModel } from '../models/CicloModel.js';
 import { PlanoModel } from '../models/PlanoModel.js';
 import { HttpError, requireFields, toNumber } from '../utils/http.js';
+import { texto } from '../utils/validacao.js';
 import { inRange } from '../utils/dates.js';
 import { round2, sum } from '../utils/money.js';
+
+const nomeDaMeta = valor => texto(valor, 'O nome da meta', { max: 80, obrigatorio: true });
+
+// Nome de ícone (lucide): letras minúsculas, números e hífen.
+function iconeDaMeta(valor) {
+  if (typeof valor !== 'string' || !/^[a-z0-9-]{1,40}$/.test(valor))
+    throw new HttpError(400, 'Ícone desconhecido.');
+  return valor;
+}
+
+function valorPositivo(valor, campo, mensagem) {
+  const numero = toNumber(valor, campo);
+  if (numero < 0) throw new HttpError(400, mensagem);
+  return numero;
+}
+
+/**
+ * No modo família as metas ficam no espaço do dono e todos guardam nelas (cada aporte leva quem
+ * guardou). Mudar o nome, o valor ou apagar a meta é do dono ou de quem a criou.
+ */
+function exigirQuemPodeMudar(ctx, meta) {
+  if (!ctx.isDono && meta.quemId !== ctx.uid)
+    throw new HttpError(403, 'Só o dono do ciclo ou quem criou a meta pode mudar ou apagar.');
+}
 
 export function apresentarMeta(m, ciclo) {
   const aportes = m.aportes || [];
@@ -68,20 +93,25 @@ export const metaController = {
           `O plano grátis permite até ${limite} metas. Assine o vera+ para ter metas ilimitadas.`
         );
     }
+    const nome = nomeDaMeta(body.nome);
+    const alvo = toNumber(body.alvo, 'alvo');
+    if (alvo <= 0) throw new HttpError(400, 'O valor da meta precisa ser maior que zero.');
+    const guardado = body.guardado
+      ? valorPositivo(body.guardado, 'guardado', 'O valor guardado não pode ser negativo.')
+      : 0;
     const meta = await MetaModel.criar(ctx.ownerUid, {
-      nome: String(body.nome).trim(),
-      icon: body.icon || 'target',
-      alvo: toNumber(body.alvo, 'alvo'),
-      aportePorCiclo: toNumber(body.aportePorCiclo || 0, 'aportePorCiclo'),
+      nome,
+      icon: body.icon ? iconeDaMeta(body.icon) : 'target',
+      alvo,
+      aportePorCiclo: valorPositivo(
+        body.aportePorCiclo || 0,
+        'aportePorCiclo',
+        'O aporte por ciclo não pode ser negativo.'
+      ),
       sobraNaVirada: !!body.sobraNaVirada,
-      aportes: body.guardado
-        ? [
-            {
-              data: new Date().toISOString(),
-              valor: toNumber(body.guardado, 'guardado'),
-              quemId: user.uid
-            }
-          ]
+      quemId: user.uid,
+      aportes: guardado
+        ? [{ data: new Date().toISOString(), valor: guardado, quemId: user.uid }]
         : []
     });
     const resumo = await CicloModel.resumo(ctx);
@@ -92,14 +122,22 @@ export const metaController = {
     const ctx = await contexto(user.uid);
     const atual = await MetaModel.buscar(ctx.ownerUid, params.id);
     if (!atual) throw new HttpError(404, 'Meta não encontrada.');
+    exigirQuemPodeMudar(ctx, atual);
     const data = {};
-    if (body.nome !== undefined) data.nome = String(body.nome).trim();
-    if (body.icon !== undefined) data.icon = body.icon;
+    if (body.nome !== undefined) {
+      if (typeof body.nome === 'string' && !body.nome.trim())
+        throw new HttpError(400, 'Dê um nome para a meta.');
+      data.nome = nomeDaMeta(body.nome);
+    }
+    if (body.icon !== undefined) data.icon = iconeDaMeta(body.icon);
     if (body.alvo !== undefined) data.alvo = toNumber(body.alvo, 'alvo');
     if (body.aportePorCiclo !== undefined)
-      data.aportePorCiclo = toNumber(body.aportePorCiclo, 'aportePorCiclo');
+      data.aportePorCiclo = valorPositivo(
+        body.aportePorCiclo,
+        'aportePorCiclo',
+        'O aporte por ciclo não pode ser negativo.'
+      );
     if (body.sobraNaVirada !== undefined) data.sobraNaVirada = !!body.sobraNaVirada;
-    if (data.nome === '') throw new HttpError(400, 'Dê um nome para a meta.');
     if (data.alvo !== undefined && data.alvo <= 0)
       throw new HttpError(400, 'O valor da meta precisa ser maior que zero.');
     const meta = await MetaModel.atualizar(ctx.ownerUid, params.id, data);
@@ -140,6 +178,9 @@ export const metaController = {
 
   async remove({ user, params }) {
     const ctx = await contexto(user.uid);
+    const atual = await MetaModel.buscar(ctx.ownerUid, params.id);
+    if (!atual) return { status: 204 };
+    exigirQuemPodeMudar(ctx, atual);
     await MetaModel.remover(ctx.ownerUid, params.id);
     return { status: 204 };
   }

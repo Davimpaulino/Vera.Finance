@@ -1,6 +1,7 @@
-import { contexto } from '../models/ContextoModel.js';
+import { contexto, podeVerLancamento } from '../models/ContextoModel.js';
 import { CicloModel } from '../models/CicloModel.js';
 import { LancamentoModel } from '../models/LancamentoModel.js';
+import { CategoriaModel } from '../models/CategoriaModel.js';
 import { round2, sum } from '../utils/money.js';
 
 function estabelecimentos(lancs) {
@@ -43,7 +44,12 @@ export const relatorioController = {
     const maior = base.reduce((a, b) => (!a || b.saidas > a.saidas ? b : a), null);
     const menor = base.reduce((a, b) => (!a || b.saidas < a.saidas ? b : a), null);
 
-    const todos = await LancamentoModel.listar(ctx.ownerUid);
+    // No modo família, os totais do ano contam só o que a pessoa enxerga (como os ciclos acima).
+    const [lancamentos, cats] = await Promise.all([
+      LancamentoModel.listar(ctx.ownerUid),
+      CategoriaModel.listar(ctx.ownerUid)
+    ]);
+    const todos = lancamentos.filter(podeVerLancamento(ctx, cats));
     const meses = Array.from({ length: new Date().getMonth() + 1 }, (_, m) => ({
       mes: new Date(ano, m, 1).toISOString(),
       total: sum(

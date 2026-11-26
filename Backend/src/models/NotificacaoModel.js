@@ -20,7 +20,7 @@ const caminhoDasVistas = uid => `usuarios/${uid}/perfil/notificacoesVistas`;
 export const NotificacaoModel = {
   async montar(ctx) {
     const [notas, resumo, metas, familias, mercados, vistas] = await Promise.all([
-      NotaModel.pendentes(ctx.ownerUid),
+      NotaModel.pendentesVisiveis(ctx),
       CicloModel.resumo(ctx),
       MetaModel.listar(ctx.ownerUid),
       ctx.user.email ? FamiliaModel.listar() : [],
