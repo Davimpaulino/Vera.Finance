@@ -11,7 +11,7 @@ export default defineConfig(({ mode }) => {
     plugins: [
       react(),
       {
-        // Troca __SITE_URL__ no index.html (canonical, og:url, JSON-LD, imagens de compartilhamento).
+        // Troca __SITE_URL__ no index.html (JSON-LD e imagens de compartilhamento).
         name: 'vera-site-url',
         transformIndexHtml: html => html.replaceAll('__SITE_URL__', site)
       }

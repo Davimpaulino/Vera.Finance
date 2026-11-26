@@ -35,6 +35,16 @@ const APP_PAGES = {
   '/app/configuracoes': Configuracoes
 };
 
+/** Acha a tag no <head> ou cria uma (canonical e og:url só existem depois que o JS roda). */
+function tagNoHead(seletor, tag, atributos) {
+  let el = document.head.querySelector(seletor);
+  if (!el) {
+    el = document.createElement(tag);
+    document.head.appendChild(el);
+  }
+  for (const [nome, valor] of Object.entries(atributos)) el.setAttribute(nome, valor);
+}
+
 function Carregando() {
   return (
     <div className="vera-center" aria-busy="true">
@@ -83,8 +93,12 @@ export default function App() {
     const [titulo, descricao] = paginas[path] || ['vera.finance', paginas['/'][1]];
     document.title = titulo;
     document.querySelector('meta[name="description"]')?.setAttribute('content', descricao);
-    // Canonical sempre no endereço público, mesmo abrindo por outro domínio.
-    document.querySelector('link[rel="canonical"]')?.setAttribute('href', urlDoSite(path));
+    // Canonical e og:url sempre no endereço público, mesmo abrindo por outro domínio.
+    // Ficam só aqui, não no index.html: sem pré-renderização, um valor fixo lá diria a quem
+    // não roda JavaScript que /precos e /perguntas são cópias da home.
+    const endereco = urlDoSite(path);
+    tagNoHead('link[rel="canonical"]', 'link', { rel: 'canonical', href: endereco });
+    tagNoHead('meta[property="og:url"]', 'meta', { property: 'og:url', content: endereco });
     // Área logada não entra no Google.
     document
       .querySelector('meta[name="robots"]')

@@ -169,7 +169,7 @@ Frontend (build do site estático no Render → Environment):
 | Variável | Para quê |
 |---|---|
 | `VITE_API_URL` | Endereço da API (ex.: `https://sua-api.onrender.com`). |
-| `VITE_SITE_URL` | Endereço público do site, sem `/` no fim. Padrão: `https://vera-finance.onrender.com`. Vai para o canonical, `og:url`, `og:image` e JSON-LD do `index.html` e para os links absolutos das páginas (`src/lib/site.js`). Ao trocar para um domínio próprio, atualize também as URLs de `public/sitemap.xml`, `public/robots.txt` e `public/llms.txt`. |
+| `VITE_SITE_URL` | Endereço público do site, sem `/` no fim. Padrão: `https://vera-finance.onrender.com`. Vai para o `og:image` e o JSON-LD do `index.html` e para os links absolutos das páginas (`src/lib/site.js`). O canonical e o `og:url` de cada página são definidos em `src/App.jsx`, não no `index.html`, para que `/precos` e `/perguntas` não apareçam como cópias da home a robôs que não rodam JavaScript. Ao trocar para um domínio próprio, atualize também as URLs de `public/sitemap.xml`, `public/robots.txt` e `public/llms.txt`. |
 
 Regras do banco: o arquivo `database.rules.json` fecha o Realtime Database para leitura e escrita
 diretas (só a API, com a conta de serviço, acessa). Publique com `firebase deploy --only database`
