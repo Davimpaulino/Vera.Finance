@@ -1,26 +1,35 @@
-import {
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  signInWithPopup,
-  signInWithRedirect,
-  getRedirectResult,
-  GoogleAuthProvider,
-  OAuthProvider,
-  EmailAuthProvider,
-  reauthenticateWithCredential,
-  updatePassword,
-  signOut,
-  updateProfile,
-  sendPasswordResetEmail,
-  sendEmailVerification,
-  reload,
-  setPersistence,
-  browserLocalPersistence,
-  browserSessionPersistence,
-  onIdTokenChanged
-} from 'firebase/auth';
-import { autenticacaoFirebase, firebaseHabilitado } from './firebase.js';
-import { api, setTokenProvider } from './api.js';
+import { firebaseHabilitado } from './configuracaoFirebase.js';
+import { api, ApiError, SEM_CONEXAO, setTokenProvider } from './api.js';
+import { recarregarParaVersaoNova } from '../lib/versaoNova.js';
+
+// O SDK do Firebase (services/firebase.js) só é baixado quando alguém precisa do login: na tela
+// Entrar, no cadastro ou no app. As páginas do site não pagam esse peso. Depois de carregado,
+// o módulo fica guardado aqui e as funções o usam sem esperar de novo.
+let firebase = null;
+let carregando = null;
+
+/**
+ * Baixa o SDK uma vez só. Se não vier com a internet ligada, quase sempre é a aba aberta antes
+ * de um deploy (o arquivo antigo sumiu): a página recarrega e a promessa fica esperando, com o
+ * "Carregando" na tela. Sem internet (ou se já recarregou há pouco) vira "Sem conexão", e o
+ * erro leva `recarregar`, para o "Tentar de novo" recarregar a página em vez de pedir o mesmo
+ * arquivo outra vez.
+ */
+function carregarFirebase() {
+  if (!firebaseHabilitado) return Promise.resolve(null);
+  if (firebase) return Promise.resolve(firebase);
+  carregando ??= import('./firebase.js').then(
+    modulo => (firebase = modulo),
+    () => {
+      carregando = null;
+      if (recarregarParaVersaoNova()) return new Promise(() => {});
+      const erro = new ApiError(0, SEM_CONEXAO);
+      erro.recarregar = true;
+      throw erro;
+    }
+  );
+  return carregando;
+}
 
 const CHAVE_DO_TOKEN = 'vera.token';
 
@@ -43,6 +52,28 @@ const armazenamento = {
     try {
       localStorage.removeItem(CHAVE_DO_TOKEN);
       sessionStorage.removeItem(CHAVE_DO_TOKEN);
+    } catch {
+      return;
+    }
+  }
+};
+
+// Marca de "sessão aberta neste aparelho": só um "1", nada da conta. As páginas do site não
+// ligam o login (nem baixam o Firebase), então o "Ver o painel" decide por ela se manda para o
+// app ou para o cadastro. O AuthContext põe a marca quando a sessão abre e tira quando ela fecha.
+const CHAVE_DA_SESSAO = 'vera.sessao';
+const marcaDeSessao = {
+  ler() {
+    try {
+      return localStorage.getItem(CHAVE_DA_SESSAO) === '1';
+    } catch {
+      return false;
+    }
+  },
+  gravar(aberta) {
+    try {
+      if (aberta) localStorage.setItem(CHAVE_DA_SESSAO, '1');
+      else localStorage.removeItem(CHAVE_DA_SESSAO);
     } catch {
       return;
     }
@@ -100,7 +131,9 @@ async function abrirSessao(corpo = {}) {
   }
 }
 
-const usuarioFirebase = () => (firebaseHabilitado ? autenticacaoFirebase.currentUser : null);
+// Sem o SDK carregado ninguém entrou pelo Firebase nesta aba: as rotas que usam o login
+// (e as chamadas com token) só acontecem depois que ele carrega.
+const usuarioFirebase = () => (firebase ? firebase.autenticacaoFirebase.currentUser : null);
 
 // O endereço de volta do e-mail precisa estar em Authentication → Settings → Authorized domains.
 // Se não estiver, o e-mail vai sem o botão "Continuar" (o link de confirmação funciona igual).
@@ -132,13 +165,14 @@ const envioDaConfirmacao = {
 };
 
 /** E-mail de confirmação do Firebase, em português, com o botão que volta para o app. */
+// Só é chamada com uma conta do Firebase na mão, ou seja, com o SDK já carregado.
 async function enviarConfirmacao(usuario) {
-  autenticacaoFirebase.languageCode = 'pt-BR';
+  firebase.autenticacaoFirebase.languageCode = 'pt-BR';
   try {
-    await sendEmailVerification(usuario, { url: `${window.location.origin}/app` });
+    await firebase.sendEmailVerification(usuario, { url: `${window.location.origin}/app` });
   } catch (erro) {
     if (!VOLTA_RECUSADA.includes(erro.code)) throw erro;
-    await sendEmailVerification(usuario);
+    await firebase.sendEmailVerification(usuario);
   }
   envioDaConfirmacao.marcar(usuario.uid);
 }
@@ -177,6 +211,10 @@ const MENSAGENS_DE_ERRO = {
   'auth/account-exists-with-different-credential':
     'Este e-mail já entra de outro jeito. Use o mesmo método da primeira vez.',
   'auth/invalid-api-key': 'A chave do Firebase (VITE_FIREBASE_API_KEY) está errada.',
+  'auth/network-request-failed': SEM_CONEXAO,
+  // A janela do Google depende de scripts do Google; sem rede (ou com bloqueador) o SDK devolve isto.
+  'auth/internal-error':
+    'Não deu para abrir o login agora. Confira a internet (ou o bloqueador de anúncios) e tente de novo.',
   'auth/configuration-not-found':
     'O login pelo Firebase ainda não foi ativado no projeto (Firebase › Authentication › Começar).'
 };
@@ -201,15 +239,33 @@ export const servicoDeLogin = {
   firebaseHabilitado,
   abrirSessao,
 
-  observar(aoMudar) {
-    if (!firebaseHabilitado) {
-      aoMudar(!!armazenamento.ler());
-      return () => {};
-    }
-    getRedirectResult(autenticacaoFirebase).catch(() => {});
-    return onIdTokenChanged(autenticacaoFirebase, usuario =>
-      aoMudar(!!usuario || !!armazenamento.ler())
+  /**
+   * Avisa `aoMudar(logado)` a cada troca de sessão. Baixa o SDK do Firebase na primeira vez.
+   * Se o SDK não baixar (sem internet), chama `aoFalhar(erro)`; quem chamou decide tentar de novo.
+   */
+  observar(aoMudar, aoFalhar = () => {}) {
+    let cancelado = false;
+    let desligar = () => {};
+    carregarFirebase().then(
+      modulo => {
+        if (cancelado) return;
+        if (!modulo) {
+          aoMudar(!!armazenamento.ler());
+          return;
+        }
+        modulo.getRedirectResult(modulo.autenticacaoFirebase).catch(() => {});
+        desligar = modulo.onIdTokenChanged(modulo.autenticacaoFirebase, usuario =>
+          aoMudar(!!usuario || !!armazenamento.ler())
+        );
+      },
+      erro => {
+        if (!cancelado) aoFalhar(erro);
+      }
     );
+    return () => {
+      cancelado = true;
+      desligar();
+    };
   },
 
   /** Login com e-mail: tenta o Firebase e, se a conta não estiver lá, o login próprio do backend. */
@@ -217,13 +273,14 @@ export const servicoDeLogin = {
     // Login de quem já tem conta: nenhum aceite que sobrou na aba vai junto.
     aceitePendente.apagar();
     try {
-      if (firebaseHabilitado) {
+      const fb = await carregarFirebase();
+      if (fb) {
         try {
-          await setPersistence(
-            autenticacaoFirebase,
-            lembrar ? browserLocalPersistence : browserSessionPersistence
+          await fb.setPersistence(
+            fb.autenticacaoFirebase,
+            lembrar ? fb.browserLocalPersistence : fb.browserSessionPersistence
           );
-          await signInWithEmailAndPassword(autenticacaoFirebase, email, senha);
+          await fb.signInWithEmailAndPassword(fb.autenticacaoFirebase, email, senha);
           armazenamento.apagar();
         } catch (erroDoFirebase) {
           if (
@@ -263,14 +320,15 @@ export const servicoDeLogin = {
         const { token } = await api.post('/auth/cadastrar', { nome, email, senha, aceite });
         armazenamento.guardar(token, true);
       };
-      if (firebaseHabilitado) {
+      const fb = await carregarFirebase();
+      if (fb) {
         try {
-          const credencial = await createUserWithEmailAndPassword(
-            autenticacaoFirebase,
+          const credencial = await fb.createUserWithEmailAndPassword(
+            fb.autenticacaoFirebase,
             email,
             senha
           );
-          await updateProfile(credencial.user, { displayName: nome });
+          await fb.updateProfile(credencial.user, { displayName: nome });
           // Confirmação do e-mail: não segura o cadastro. Se não sair agora, o aviso do app
           // tem o botão "Enviar link".
           await enviarConfirmacao(credencial.user).catch(() => {});
@@ -293,9 +351,17 @@ export const servicoDeLogin = {
   /** Google ou Apple. No cadastro, `aceite` é { versao } dos termos aceitos; na tela Entrar, nada. */
   async entrarComProvedor(provedor, aceite) {
     if (!firebaseHabilitado) throw new Error(SEM_FIREBASE);
+    // Nas telas Entrar e Cadastro o SDK já carregou junto com a página. Usar o módulo direto,
+    // sem esperar, mantém a janela do Google no mesmo clique (senão o navegador bloqueia o pop-up).
+    let fb = firebase;
+    try {
+      fb ??= await carregarFirebase();
+    } catch (erro) {
+      throw traduzirErro(erro);
+    }
     aceitePendente.guardar(aceite);
     const provedorFirebase =
-      provedor === 'apple' ? new OAuthProvider('apple.com') : new GoogleAuthProvider();
+      provedor === 'apple' ? new fb.OAuthProvider('apple.com') : new fb.GoogleAuthProvider();
     if (provedor === 'apple') {
       provedorFirebase.addScope('email');
       provedorFirebase.addScope('name');
@@ -303,10 +369,10 @@ export const servicoDeLogin = {
     provedorFirebase.setCustomParameters({ locale: 'pt_BR', prompt: 'select_account' });
     try {
       try {
-        await signInWithPopup(autenticacaoFirebase, provedorFirebase);
+        await fb.signInWithPopup(fb.autenticacaoFirebase, provedorFirebase);
       } catch (erro) {
         if (erro.code === 'auth/popup-blocked' && ehCelular()) {
-          await signInWithRedirect(autenticacaoFirebase, provedorFirebase);
+          await fb.signInWithRedirect(fb.autenticacaoFirebase, provedorFirebase);
           return null;
         }
         throw erro;
@@ -322,7 +388,8 @@ export const servicoDeLogin = {
   async redefinirSenha(email) {
     if (!firebaseHabilitado) throw new Error(SEM_FIREBASE);
     try {
-      await sendPasswordResetEmail(autenticacaoFirebase, email);
+      const fb = await carregarFirebase();
+      await fb.sendPasswordResetEmail(fb.autenticacaoFirebase, email);
     } catch (erro) {
       throw traduzirErro(erro);
     }
@@ -343,7 +410,7 @@ export const servicoDeLogin = {
     const usuario = usuarioFirebase();
     if (!usuario) return null;
     try {
-      await reload(usuario);
+      await firebase.reload(usuario);
     } catch {
       // Sem internet agora: fica valendo o que já se sabia.
     }
@@ -373,11 +440,11 @@ export const servicoDeLogin = {
     const usuario = usuarioFirebase();
     try {
       if (usuario) {
-        await reauthenticateWithCredential(
+        await firebase.reauthenticateWithCredential(
           usuario,
-          EmailAuthProvider.credential(usuario.email, atual)
+          firebase.EmailAuthProvider.credential(usuario.email, atual)
         );
-        await updatePassword(usuario, nova);
+        await firebase.updatePassword(usuario, nova);
       } else {
         await api.post('/me/senha', { atual, nova });
       }
@@ -388,8 +455,24 @@ export const servicoDeLogin = {
     }
   },
 
+  /** Põe (sessão aberta) ou tira (sessão fechada) a marca usada pelo "Ver o painel". */
+  lembrarSessao: aberta => marcaDeSessao.gravar(aberta),
+
+  /** A sessão estava aberta da última vez que o login ligou neste aparelho? */
+  lembraDeSessao: () => marcaDeSessao.ler(),
+
+  /**
+   * Tem alguém conectado neste aparelho? Vale o que dá para saber sem a API: a conta do Firebase
+   * (se o SDK já carregou) ou o token do login próprio. A tela "Sem conexão" usa isto para
+   * mostrar "Sair da conta" só para quem tem de onde sair.
+   */
+  temSessao() {
+    return !!usuarioFirebase() || !!armazenamento.ler();
+  },
+
+  // Sair não depende da rede: o signOut do Firebase e o token do login próprio são locais.
   async sair() {
-    if (usuarioFirebase()) await signOut(autenticacaoFirebase);
+    if (usuarioFirebase()) await firebase.signOut(firebase.autenticacaoFirebase);
     armazenamento.apagar();
   }
 };

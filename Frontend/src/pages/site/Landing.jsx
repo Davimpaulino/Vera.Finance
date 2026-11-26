@@ -1,6 +1,5 @@
 import { Button, Icon } from '../../components/ds/index.js';
 import { SiteLayout } from '../../components/site/SiteLayout.jsx';
-import { SiteFooter } from '../../components/site/SiteFooter.jsx';
 import { PhonePainel, PhoneComparar, PhonesLista } from '../../components/site/Phones.jsx';
 import { useVerPainel } from '../../components/site/useVerPainel.js';
 import { Link, useRouter } from '../../lib/router.jsx';
@@ -453,8 +452,6 @@ export default function Landing() {
             </div>
           </div>
         </section>
-
-        <SiteFooter />
       </div>
     </SiteLayout>
   );

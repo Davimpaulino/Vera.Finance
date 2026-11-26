@@ -29,6 +29,11 @@
   color:var(--text-2);
   margin:0
 }
+.legal__p a,
+.legal__lista a{
+  text-decoration:underline;
+  text-underline-offset:3px
+}
 .legal__data{
   margin:-16px 0 0;
   font-size:var(--fs-meta);

@@ -26,7 +26,7 @@
   --warning-wash:rgba(232, 185, 58, 0.14);
   --danger:var(--vermelho-400);
   --danger-wash:rgba(232, 105, 92, 0.14);
-  --data:var(--ardosia-400);
+  --data:var(--ardosia-300);
   --data-wash:rgba(93, 125, 136, 0.2);
   --meter-track:var(--tinta-500);
   --meter-fill:var(--ardosia-600);
@@ -54,7 +54,7 @@
   --text-muted:var(--cinza-600);
   --text-placeholder:var(--cinza-500);
   --accent:var(--ambar-700);
-  --accent-text:var(--ambar-700);
+  --accent-text:var(--ambar-800);
   --accent-hover:#8f3f0e;
   --accent-wash:rgba(168, 77, 20, 0.12);
   --on-accent:var(--papel-000);

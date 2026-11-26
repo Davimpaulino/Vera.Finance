@@ -93,6 +93,9 @@ export function AppShell({ children }) {
   return (
     <ShellContext.Provider value={{ abrirGasto, abrirLeitor, versao, recarregar, ocultar }}>
       <div className="app">
+        <a href="#conteudo" className="vera-pular">
+          Pular para o conteúdo
+        </a>
         <div
           className={cx('app__scrim', mobile && drawer && 'app__scrim--open')}
           onClick={() => setDrawer(false)}
@@ -192,7 +195,7 @@ export function AppShell({ children }) {
               />
             </div>
           </header>
-          <main className="vera-shell__body">
+          <main id="conteudo" tabIndex={-1} className="vera-shell__body">
             <ConfirmarEmail />
             {children}
           </main>

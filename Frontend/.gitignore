@@ -3,3 +3,6 @@ dist
 .env
 .env.local
 .ssr
+# Saída dos testes de ponta a ponta (npm run test:e2e).
+test-results
+playwright-report

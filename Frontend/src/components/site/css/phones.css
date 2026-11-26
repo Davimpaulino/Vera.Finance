@@ -8,15 +8,6 @@
   width:100%;
   height:auto
 }
-.phone__img--papel{
-  display:none
-}
-[data-theme='papel'] .phone__img--tinta{
-  display:none
-}
-[data-theme='papel'] .phone__img--papel{
-  display:block
-}
 .phone--painel{
   width:300px;
   transform:rotate(-6deg) translateY(-16px);
