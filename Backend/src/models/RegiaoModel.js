@@ -1,6 +1,7 @@
 import { banco } from '../config/banco.js';
 import { GeoModel } from './GeoModel.js';
 import { RedeModel } from './RedeModel.js';
+import { guardarComTeto } from '../utils/cache.js';
 
 // Mercados de verdade perto de um ponto, pelo OpenStreetMap (API Overpass, gratuita).
 // A resposta fica guardada por 7 dias por região para não repetir a consulta a cada busca.
@@ -12,6 +13,7 @@ const SERVIDORES = [
 ];
 const VALIDADE_MS = 7 * 24 * 60 * 60 * 1000;
 const RAIO_MAXIMO_KM = 15;
+const TETO_DO_CACHE = 2000;
 const emCache = new Map();
 const emAndamento = new Map();
 const esperar = ms => new Promise(resolver => setTimeout(resolver, ms));
@@ -85,7 +87,8 @@ export const RegiaoModel = {
    */
   async mercadosPerto(origem, raioKm) {
     if (!GeoModel.temCoordenadas(origem)) return [];
-    const raio = Math.min(RAIO_MAXIMO_KM, Math.max(1, Number(raioKm) || 5));
+    // Raio em km inteiros: 5 e 5,0001 são a mesma região (e a mesma consulta ao mapa).
+    const raio = Math.min(RAIO_MAXIMO_KM, Math.max(1, Math.round(Number(raioKm) || 5)));
     const chave = chaveDaRegiao(origem, raio);
     let mercados = emCache.get(chave);
     if (!mercados || Date.now() - mercados.em > VALIDADE_MS) {
@@ -115,7 +118,7 @@ export const RegiaoModel = {
       mercados = { em: Date.now(), lista };
       banco.gravar(`regioes/${chave}`, { em: new Date().toISOString(), lista }).catch(() => {});
     }
-    emCache.set(chave, mercados);
+    guardarComTeto(emCache, chave, mercados, TETO_DO_CACHE);
     return mercados;
   }
 };

@@ -1,7 +1,7 @@
 import { Router } from '../utils/router.js';
 import { exigirLogin } from '../middlewares/auth.js';
 import { exigirAceiteDosTermos } from '../middlewares/termos.js';
-import { limitar } from '../middlewares/limite.js';
+import { limitar, porConta } from '../middlewares/limite.js';
 import { authController } from '../controllers/authController.js';
 import { userController } from '../controllers/userController.js';
 import { onboardingController } from '../controllers/onboardingController.js';
@@ -32,6 +32,18 @@ const limiteDeCadastro = limitar('cadastro', 5, 60 * MINUTO);
 const limiteDeConsulta = limitar('email', 20, 15 * MINUTO);
 const limiteDeLeads = limitar('leads', 5, 60 * MINUTO);
 const limiteDeNotas = limitar('notas', 30, 60 * MINUTO);
+// Rotas que consultam o mapa (OpenStreetMap), o CEP e os sites das redes: cada pedido pode virar
+// várias consultas lá fora. As públicas contam por IP; as do app, por conta e também por IP
+// (várias contas no mesmo endereço não multiplicam o limite).
+const limiteDoMapa = limitar('mapa', 60, 15 * MINUTO);
+const limiteDoRaio = limitar('raio', 60, 15 * MINUTO);
+const limiteDeComparar = limitar('comparar', 60, 15 * MINUTO, porConta);
+const limiteDeBuscaDeProdutos = limitar('produtos', 200, 15 * MINUTO, porConta);
+const limiteDeOpcoes = limitar('opcoes', 200, 15 * MINUTO, porConta);
+const limiteDaLista = limitar('lista', 300, 15 * MINUTO, porConta);
+const limiteDePrecosPorIp = limitar('precos-ip', 1200, 15 * MINUTO);
+const limiteDoPerfil = limitar('perfil', 60, 15 * MINUTO, porConta);
+const limiteDoCadastroGuiado = limitar('cadastro-guiado', 20, 60 * MINUTO, porConta);
 
 // Públicas
 r.get('/api/saude', publicoController.saude);
@@ -41,14 +53,14 @@ r.get('/api/auth/configuracao', authController.configuracao);
 r.post('/api/auth/cadastrar', limiteDeCadastro, authController.cadastrar);
 r.post('/api/auth/entrar', limiteDeLogin, authController.entrar);
 r.post('/api/auth/email-em-uso', limiteDeConsulta, authController.emailEmUso);
-r.get('/api/mercados', mercadoController.list);
-r.get('/api/onboarding/raio', onboardingController.raio);
+r.get('/api/mercados', limiteDoMapa, mercadoController.list);
+r.get('/api/onboarding/raio', limiteDoRaio, onboardingController.raio);
 
 // Sessão e perfil
 r.post('/api/auth/sessao', auth, authController.sessao);
 r.get('/api/me', auth, userController.me);
 r.get('/api/me/exportar', auth, userController.exportar);
-r.patch('/api/me', app, userController.update);
+r.patch('/api/me', app, limiteDoPerfil, userController.update);
 r.patch('/api/me/plano', app, userController.trocarPlano);
 r.post('/api/me/cancelar-assinatura', auth, userController.cancelarAssinatura);
 r.delete('/api/me', auth, userController.agendarExclusao);
@@ -57,7 +69,7 @@ r.post('/api/me/senha', limiteDeLogin, auth, authController.trocarSenha);
 
 // Cadastro guiado
 r.post('/api/onboarding/sugestao', app, onboardingController.sugestao);
-r.post('/api/onboarding', app, onboardingController.concluir);
+r.post('/api/onboarding', app, limiteDoCadastroGuiado, onboardingController.concluir);
 
 // App
 r.get('/api/dashboard', app, dashboardController.get);
@@ -82,16 +94,18 @@ r.get('/api/metas/:id/simular', app, metaController.simular);
 
 r.get('/api/relatorios', app, relatorioController.get);
 
-r.get('/api/mercados/produtos', app, mercadoController.produtos);
-r.get('/api/mercados/comparar', app, mercadoController.comparar);
+const precos = (...limites) => [limiteDePrecosPorIp, app, ...limites];
+r.get('/api/mercados/produtos', ...precos(limiteDeBuscaDeProdutos), mercadoController.produtos);
+r.get('/api/mercados/comparar', ...precos(limiteDeComparar), mercadoController.comparar);
 
-r.get('/api/lista', app, listaController.get);
-r.get('/api/lista/opcoes', app, listaController.opcoes);
-r.post('/api/lista', app, listaController.add);
-r.delete('/api/lista/comprados', app, listaController.limparComprados);
-r.post('/api/lista/finalizar', app, listaController.finalizar);
-r.patch('/api/lista/:id', app, listaController.update);
-r.delete('/api/lista/:id', app, listaController.remove);
+// Toda resposta da lista refaz a comparação dos itens nos sites das redes.
+r.get('/api/lista', ...precos(limiteDaLista), listaController.get);
+r.get('/api/lista/opcoes', ...precos(limiteDeOpcoes), listaController.opcoes);
+r.post('/api/lista', ...precos(limiteDaLista), listaController.add);
+r.delete('/api/lista/comprados', ...precos(limiteDaLista), listaController.limparComprados);
+r.post('/api/lista/finalizar', ...precos(limiteDaLista), listaController.finalizar);
+r.patch('/api/lista/:id', ...precos(limiteDaLista), listaController.update);
+r.delete('/api/lista/:id', ...precos(limiteDaLista), listaController.remove);
 
 r.get('/api/notas', app, notaController.pendentes);
 r.post('/api/notas/ler', limiteDeNotas, app, notaController.ler);

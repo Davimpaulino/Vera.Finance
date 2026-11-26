@@ -1,9 +1,12 @@
+import { guardarComTeto } from '../utils/cache.js';
+
 // Localização: distância entre dois pontos e endereço → coordenadas.
 // Endereços viram coordenadas pelo Nominatim (OpenStreetMap) e CEPs pelo ViaCEP, ambos gratuitos.
 const RAIO_DA_TERRA_KM = 6371;
 const IDENTIFICACAO = 'vera.finance/1.0 (https://github.com/veragroupia/vera-finances)';
 
 const cepsAchados = new Map();
+const TETO_DO_CACHE = 5000;
 
 const radianos = graus => (graus * Math.PI) / 180;
 
@@ -65,7 +68,7 @@ export const GeoModel = {
     );
     const cep = String(dados?.address?.postcode || '').replace(/\D/g, '');
     const valido = cep.length === 8 ? cep : '';
-    cepsAchados.set(chave, valido);
+    guardarComTeto(cepsAchados, chave, valido, TETO_DO_CACHE);
     return valido;
   },
 

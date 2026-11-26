@@ -1,5 +1,6 @@
 import { banco } from '../config/banco.js';
 import { matchScore, normalize } from '../utils/text.js';
+import { guardarComTeto } from '../utils/cache.js';
 import { CatalogoVtexModel } from './CatalogoVtexModel.js';
 import { CatalogoGpaModel } from './CatalogoGpaModel.js';
 import { CatalogoPagueMenosModel } from './CatalogoPagueMenosModel.js';
@@ -10,6 +11,7 @@ import { CatalogoSfccModel } from './CatalogoSfccModel.js';
 // Busca de produtos no site de cada rede, já filtrada pelo CEP de quem pergunta.
 // Cada plataforma tem o seu leitor; aqui ficam a pontuação, o cache e o histórico.
 const VALIDADE_MS = 30 * 60 * 1000;
+const TETO_DO_CACHE = 5000;
 const emCache = new Map();
 const DE_BICHO = /\b(racao|caes|cao|gatos?|pet|petisco|filhotes?)\b/;
 
@@ -57,7 +59,7 @@ export const CatalogoModel = {
     } catch {
       resultado = { situacao: 'falhou', produtos: [] };
     }
-    emCache.set(chave, { em: Date.now(), resultado });
+    guardarComTeto(emCache, chave, { em: Date.now(), resultado }, TETO_DO_CACHE);
     if (resultado.produtos.length) this.guardarHistorico(rede, resultado.produtos.slice(0, 8));
     return resultado;
   },
