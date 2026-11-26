@@ -740,3 +740,23 @@ test('lista: produto, quantidade e itens de outro tipo dão 400, não 500', asyn
   });
   await banco.remover('usuarios/ana/lista');
 });
+
+test('cadastro guiado: o total de categorias, contando as dos gastos fixos, fica em 40', async () => {
+  const token = await criarPessoa('hugo', 'hugo@x.com', 'Hugo');
+  const categorias = Array.from({ length: 30 }, (_, i) => ({ nome: `Cat ${i}`, limite: 1 }));
+  const fixos = quantos =>
+    Array.from({ length: quantos }, (_, i) => ({ nome: `Fixo ${i}`, valor: 1, categoria: `F${i}` }));
+  const concluir = corpo =>
+    pedir('POST', '/onboarding', {
+      corpo: { renda: { rendaFixa: 3000 }, plano: 'gratis', categorias, ...corpo },
+      token
+    });
+  // Antes: 30 categorias e 50 fixos de categorias diferentes davam 80 categorias.
+  const demais = await concluir({ fixos: fixos(11) });
+  assert.equal(demais.status, 400);
+  assert.match(demais.json.erro, /até 40 categorias/);
+  // Fixo numa categoria que já veio na lista não conta de novo.
+  const comRepetido = fixos(10).concat({ nome: 'Luz', valor: 1, categoria: 'Cat 0' });
+  assert.equal((await concluir({ fixos: comRepetido })).status, 201);
+  assert.equal(Object.keys(await banco.ler('usuarios/hugo/categorias')).length, 40);
+});

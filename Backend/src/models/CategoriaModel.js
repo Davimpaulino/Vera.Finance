@@ -19,6 +19,10 @@ class Categorias extends ColecaoDoUsuario {
 
 export const CategoriaModel = new Categorias();
 
+// Teto de categorias por conta, igual na tela de categorias e no cadastro guiado: cada uma entra
+// no resumo do ciclo, recalculado a cada tela do app.
+export const MAXIMO_DE_CATEGORIAS = 40;
+
 export const ICONES_CATEGORIA = [
   'shopping-basket',
   'car',

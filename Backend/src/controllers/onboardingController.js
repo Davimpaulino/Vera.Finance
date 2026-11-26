@@ -1,5 +1,9 @@
 import { UsuarioModel } from '../models/UsuarioModel.js';
-import { CategoriaModel, ICONES_CATEGORIA } from '../models/CategoriaModel.js';
+import {
+  CategoriaModel,
+  ICONES_CATEGORIA,
+  MAXIMO_DE_CATEGORIAS
+} from '../models/CategoriaModel.js';
 import { FixoModel } from '../models/FixoModel.js';
 import { MercadoModel } from '../models/MercadoModel.js';
 import { PlanoModel } from '../models/PlanoModel.js';
@@ -19,7 +23,7 @@ import {
 import { cicloDoCorpo } from './userController.js';
 
 // O cadastro guiado grava tudo de uma vez: cada lista tem teto e cada campo, tipo e tamanho.
-const MAXIMO_DE_CATEGORIAS = 30;
+const MAXIMO_DE_CATEGORIAS_ENVIADAS = 30;
 const MAXIMO_DE_FIXOS = 50;
 
 function valorNaoNegativo(valor, campo) {
@@ -45,7 +49,7 @@ function fixosDoCorpo(corpo) {
 }
 
 function categoriasDoCorpo(corpo) {
-  return lista(corpo, 'categorias', MAXIMO_DE_CATEGORIAS).map(item => {
+  return lista(corpo, 'categorias', MAXIMO_DE_CATEGORIAS_ENVIADAS).map(item => {
     const categoria = objeto(item, 'A categoria');
     return {
       nome: texto(categoria.nome, 'O nome da categoria', { max: 40, obrigatorio: true }),
@@ -127,6 +131,15 @@ export const onboardingController = {
     const fixos = fixosDoCorpo(body.fixos);
     const categorias = categoriasDoCorpo(body.categorias);
     const local = localDoCorpo(body.local);
+    // Cada fixo com uma categoria que não veio na lista ganha a sua: o total precisa caber no
+    // mesmo teto da tela de categorias. Confere antes de apagar o que a conta já tinha.
+    const nomesEnviados = new Set(categorias.map(c => c.nome));
+    const novasDosFixos = new Set(fixos.map(f => f.categoria).filter(n => !nomesEnviados.has(n)));
+    if (categorias.length + novasDosFixos.size > MAXIMO_DE_CATEGORIAS)
+      throw new HttpError(
+        400,
+        `Dá para ter até ${MAXIMO_DE_CATEGORIAS} categorias, contando as dos gastos fixos.`
+      );
 
     await UsuarioModel.criarSeNaoExistir(user.uid, { nome: user.name, email: user.email });
     await Promise.all([CategoriaModel.removerTodos(user.uid), FixoModel.removerTodos(user.uid)]);

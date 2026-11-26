@@ -1,11 +1,14 @@
 import { contexto } from '../models/ContextoModel.js';
 import { CicloModel } from '../models/CicloModel.js';
-import { CategoriaModel, ICONES_CATEGORIA } from '../models/CategoriaModel.js';
+import {
+  CategoriaModel,
+  ICONES_CATEGORIA,
+  MAXIMO_DE_CATEGORIAS
+} from '../models/CategoriaModel.js';
 import { LancamentoModel } from '../models/LancamentoModel.js';
 import { HttpError, requireFields, toNumber } from '../utils/http.js';
 import { texto } from '../utils/validacao.js';
 
-const MAXIMO_DE_CATEGORIAS = 40;
 const nomeDaCategoria = valor => texto(valor, 'O nome da categoria', { max: 40, obrigatorio: true });
 
 function limiteDoCorpo(valor) {
