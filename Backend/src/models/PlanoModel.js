@@ -1,6 +1,7 @@
 // Planos são estáticos: vivem no código, não no banco.
 // Comparação e histórico de preço valem para todos os planos (mercadoController.comparar
-// não olha o plano). Se isso mudar, mude também o texto aqui, em Perguntas.jsx e no llms.txt.
+// não olha o plano). Se isso mudar, mude também o texto aqui, em Perguntas.jsx, no llms.txt e no
+// artigo de ajuda "planos-e-cancelamento" (Frontend/src/conteudo/ajuda.js).
 export const PLANOS = [
   {
     id: 'gratis',
