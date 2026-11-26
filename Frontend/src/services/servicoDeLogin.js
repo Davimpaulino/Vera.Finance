@@ -349,6 +349,16 @@ export const servicoDeLogin = {
     }
   },
 
+  /**
+   * Tem alguém conectado neste aparelho? Vale o que dá para saber sem a API: a conta do Firebase
+   * (se o SDK já carregou) ou o token do login próprio. A tela "Sem conexão" usa isto para
+   * mostrar "Sair da conta" só para quem tem de onde sair.
+   */
+  temSessao() {
+    return !!usuarioFirebase() || !!armazenamento.ler();
+  },
+
+  // Sair não depende da rede: o signOut do Firebase e o token do login próprio são locais.
   async sair() {
     if (usuarioFirebase()) await firebase.signOut(firebase.autenticacaoFirebase);
     armazenamento.apagar();

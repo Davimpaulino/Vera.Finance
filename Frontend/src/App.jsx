@@ -66,8 +66,8 @@ function Carregando() {
 }
 
 export default function App() {
-  const { path } = useRouter();
-  const { status, user, tentarDeNovo } = useAuth();
+  const { path, navigate } = useRouter();
+  const { status, user, tentarDeNovo, temSessao, logout } = useAuth();
   const { setTheme } = useUi();
 
   // A superfície escolhida em Configurações vem junto com o perfil.
@@ -99,7 +99,14 @@ export default function App() {
   // Endereço que não existe vai para a home sem esperar o login (que nem liga fora destas rotas).
   if (!precisaDeLogin(path)) return <Redirect to="/" />;
   if (status === 'loading') return <Carregando />;
-  if (status === 'offline') return <SemConexao onTentar={tentarDeNovo} />;
+  if (status === 'offline') {
+    // Sair não precisa de rede: num computador emprestado, a pessoa sai mesmo com a API fora.
+    const sair = async () => {
+      await logout();
+      navigate('/');
+    };
+    return <SemConexao onTentar={tentarDeNovo} onSair={temSessao() ? sair : null} />;
+  }
   const logado = status === 'in';
   // Sem o aceite da versão em vigor dos termos nada abre, nem o cadastro guiado: vale para
   // quem entrou pelo Google ou pela Apple na tela Entrar e para quem tem um aceite antigo.

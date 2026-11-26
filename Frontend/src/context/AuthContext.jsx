@@ -113,6 +113,7 @@ export function AuthProvider({ children }) {
         setUser(null);
         setStatus('out');
       },
+      temSessao: servicoDeLogin.temSessao,
       resetPassword: servicoDeLogin.redefinirSenha,
       trocarSenha: servicoDeLogin.trocarSenha,
       jeitoDeTrocarSenha: servicoDeLogin.jeitoDeTrocarSenha,

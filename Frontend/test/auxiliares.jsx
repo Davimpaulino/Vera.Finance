@@ -15,6 +15,7 @@ export const authDeTeste = (campos = {}) => ({
   register: async () => null,
   social: async () => null,
   logout: async () => {},
+  temSessao: () => false,
   resetPassword: async () => {},
   trocarSenha: async () => {},
   jeitoDeTrocarSenha: () => 'backend',

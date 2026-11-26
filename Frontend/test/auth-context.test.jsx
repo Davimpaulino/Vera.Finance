@@ -19,6 +19,7 @@ vi.mock('../src/services/servicoDeLogin.js', () => ({
     cadastrar: vi.fn(),
     entrarComProvedor: vi.fn(),
     sair: vi.fn(),
+    temSessao: vi.fn(() => false),
     redefinirSenha: vi.fn(),
     trocarSenha: vi.fn(),
     jeitoDeTrocarSenha: () => 'backend',
@@ -185,6 +186,40 @@ describe('App sem conexão', () => {
     expect(window.location.pathname).toBe('/app/lista');
     fireEvent.click(screen.getByRole('button', { name: 'Tentar de novo' }));
     expect(tentarDeNovo).toHaveBeenCalledOnce();
+  });
+
+  const semConexao = auth => {
+    window.history.replaceState({}, '', '/app');
+    render(
+      <RouterProvider>
+        <UiProvider>
+          <AuthContext.Provider value={authDeTeste({ status: 'offline', ...auth })}>
+            <App />
+          </AuthContext.Provider>
+        </UiProvider>
+      </RouterProvider>
+    );
+  };
+
+  it('o logotipo leva para o site, mesmo sem conexão', () => {
+    semConexao();
+    fireEvent.click(screen.getByRole('link', { name: 'vera.finance — início' }));
+    expect(window.location.pathname).toBe('/');
+    expect(screen.getByRole('heading', { level: 1, name: /O melhor jeito de saber/ })).toBeInTheDocument();
+  });
+
+  it('quem tem sessão neste aparelho pode sair da conta sem rede e volta para o site', async () => {
+    const logout = vi.fn(async () => {});
+    semConexao({ temSessao: () => true, logout });
+    fireEvent.click(screen.getByRole('button', { name: 'Sair da conta' }));
+    await waitFor(() => expect(window.location.pathname).toBe('/'));
+    expect(logout).toHaveBeenCalledOnce();
+  });
+
+  it('sem sessão neste aparelho, não aparece "Sair da conta"', () => {
+    semConexao({ temSessao: () => false });
+    expect(screen.queryByRole('button', { name: 'Sair da conta' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Tentar de novo' })).toBeInTheDocument();
   });
 
   it('as páginas do site abrem normalmente, mesmo sem conexão', () => {

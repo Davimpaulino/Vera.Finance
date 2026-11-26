@@ -27,6 +27,7 @@ const authDoVisitante = {
   register: semLogin,
   social: semLogin,
   logout: async () => {},
+  temSessao: () => false,
   resetPassword: semLogin,
   trocarSenha: semLogin,
   jeitoDeTrocarSenha: () => 'backend',
