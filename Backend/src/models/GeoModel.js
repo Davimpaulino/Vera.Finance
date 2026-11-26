@@ -7,6 +7,10 @@ const IDENTIFICACAO = 'vera.finance/1.0 (https://github.com/veragroupia/vera-fin
 
 const cepsAchados = new Map();
 const TETO_DO_CACHE = 5000;
+// CEP → cidade e coordenadas. O cadastro guiado pergunta o mesmo CEP a cada mudança do raio, e o
+// Nominatim pede no máximo uma consulta por segundo: a resposta fica guardada por um dia.
+const enderecosDosCeps = new Map();
+const VALIDADE_DO_CEP_MS = 24 * 60 * 60 * 1000;
 
 const radianos = graus => (graus * Math.PI) / 180;
 
@@ -86,13 +90,25 @@ export const GeoModel = {
   async porCep(cep) {
     const digitos = String(cep || '').replace(/\D/g, '');
     if (digitos.length !== 8) return null;
+    const guardado = enderecosDosCeps.get(digitos);
+    if (guardado && Date.now() - guardado.em < VALIDADE_DO_CEP_MS) return guardado.resultado;
+    const guardar = resultado =>
+      guardarComTeto(enderecosDosCeps, digitos, { em: Date.now(), resultado }, TETO_DO_CACHE);
+
     const dados = await buscarJson(`https://viacep.com.br/ws/${digitos}/json/`);
-    if (!dados || dados.erro) return null;
+    // Sem resposta (fora do ar) não fica guardado: a próxima pergunta tenta de novo.
+    if (!dados) return null;
+    if (dados.erro) {
+      guardar(null);
+      return null;
+    }
     const cidade = `${dados.localidade} - ${dados.uf}`;
     const coordenadas =
       (await this.geocodificar(
         [dados.logradouro, dados.bairro, dados.localidade, dados.uf].filter(Boolean).join(', ')
       )) || (await this.geocodificar(`${dados.localidade}, ${dados.uf}`));
-    return { cidade, ...(coordenadas || {}) };
+    const resultado = { cidade, ...(coordenadas || {}) };
+    if (coordenadas) guardar(resultado);
+    return resultado;
   }
 };

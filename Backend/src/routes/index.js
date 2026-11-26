@@ -35,13 +35,15 @@ const limiteDeNotas = limitar('notas', 30, 60 * MINUTO);
 // Rotas que consultam o mapa (OpenStreetMap), o CEP e os sites das redes: cada pedido pode virar
 // várias consultas lá fora. As públicas contam por IP; as do app, por conta e também por IP
 // (várias contas no mesmo endereço não multiplicam o limite).
-const limiteDoMapa = limitar('mapa', 60, 15 * MINUTO);
-const limiteDoRaio = limitar('raio', 60, 15 * MINUTO);
-const limiteDeComparar = limitar('comparar', 60, 15 * MINUTO, porConta);
-const limiteDeBuscaDeProdutos = limitar('produtos', 200, 15 * MINUTO, porConta);
-const limiteDeOpcoes = limitar('opcoes', 200, 15 * MINUTO, porConta);
+// Os números deixam folga para o uso normal (a busca de sugestões dispara a cada pausa na
+// digitação) e para várias pessoas atrás do mesmo IP de operadora de celular.
+const limiteDoMapa = limitar('mapa', 120, 15 * MINUTO);
+const limiteDoRaio = limitar('raio', 120, 15 * MINUTO);
+const limiteDeComparar = limitar('comparar', 90, 15 * MINUTO, porConta);
+const limiteDeBuscaDeProdutos = limitar('produtos', 400, 15 * MINUTO, porConta);
+const limiteDeOpcoes = limitar('opcoes', 300, 15 * MINUTO, porConta);
 const limiteDaLista = limitar('lista', 300, 15 * MINUTO, porConta);
-const limiteDePrecosPorIp = limitar('precos-ip', 1200, 15 * MINUTO);
+const limiteDePrecosPorIp = limitar('precos-ip', 1500, 15 * MINUTO);
 const limiteDoPerfil = limitar('perfil', 60, 15 * MINUTO, porConta);
 const limiteDoCadastroGuiado = limitar('cadastro-guiado', 20, 60 * MINUTO, porConta);
 

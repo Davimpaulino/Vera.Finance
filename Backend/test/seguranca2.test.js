@@ -14,6 +14,7 @@ const { VERSAO_DOS_TERMOS } = await import('../src/config/termos.js');
 const { guardarComTeto } = await import('../src/utils/cache.js');
 const { toNumber } = await import('../src/utils/http.js');
 const { idValido } = await import('../src/utils/validacao.js');
+const { GeoModel } = await import('../src/models/GeoModel.js');
 
 // Nada sai para a internet: mapa, CEP e sites das redes ficam indisponíveis aqui.
 const fetchDeVerdade = globalThis.fetch;
@@ -338,7 +339,7 @@ test('lista: tem teto de itens, para uma lista não virar milhares de buscas nos
 test('comparar preços tem limite por conta (cada busca consulta os sites das redes)', async () => {
   const token = await criarPessoa('dani', 'dani@x.com', 'Dani');
   let ultima;
-  for (let i = 0; i < 61; i++)
+  for (let i = 0; i < 91; i++)
     ultima = await pedir('GET', `/mercados/comparar?produto=arroz${i}`, {
       token,
       // Trocar o IP não engana o limite por conta.
@@ -359,7 +360,7 @@ test('rotas públicas do mapa têm limite por IP e não aceitam raio nem coorden
   assert.equal(chamadasLaFora.length, 0, 'coordenada fora do planeta não vira consulta ao mapa');
 
   let ultima;
-  for (let i = 0; i < 61; i++)
+  for (let i = 0; i < 121; i++)
     ultima = await pedir('GET', '/onboarding/raio', { cabecalhos: { 'X-Forwarded-For': '10.70.0.3' } });
   assert.equal(ultima.status, 429);
 });
@@ -431,6 +432,27 @@ test('a configuração pública não diz qual banco a API usa', async () => {
   const configuracao = (await pedir('GET', '/auth/configuracao')).json;
   assert.equal(configuracao.versaoDosTermos, VERSAO_DOS_TERMOS);
   assert.equal(configuracao.modoBanco, undefined);
+});
+
+test('o mesmo CEP não vira uma consulta nova ao ViaCEP e ao Nominatim a cada pedido', async () => {
+  const anterior = globalThis.fetch;
+  const pedidos = [];
+  globalThis.fetch = async endereco => {
+    pedidos.push(String(endereco));
+    if (String(endereco).includes('viacep'))
+      return Response.json({ logradouro: 'Rua A', bairro: 'Centro', localidade: 'Itu', uf: 'SP' });
+    return Response.json([{ lat: '-23.26', lon: '-47.29' }]);
+  };
+  try {
+    const primeiro = await GeoModel.porCep('13300-000');
+    const segundo = await GeoModel.porCep('13300000');
+    assert.deepEqual(segundo, primeiro);
+    assert.equal(primeiro.cidade, 'Itu - SP');
+    assert.equal(pedidos.filter(p => p.includes('viacep')).length, 1);
+    assert.equal(pedidos.length, 2, 'uma ida ao ViaCEP e uma ao Nominatim');
+  } finally {
+    globalThis.fetch = anterior;
+  }
 });
 
 test('cache com teto: passou do limite, sai a entrada mais antiga', () => {
