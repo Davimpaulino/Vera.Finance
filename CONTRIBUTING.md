@@ -5,7 +5,8 @@ Obrigado por ajudar a vera. Este guia é curto de propósito: o resto está no [
 
 ## Antes de começar
 
-- Node.js 22.9 ou mais novo. Rode `npm ci` em `Backend` e em `Frontend`.
+- Node.js 22.12 ou mais novo (o Vite do `Frontend` pede 22.12; a API sozinha roda a partir do
+  22.9). Rode `npm ci` em `Backend` e em `Frontend`.
 - Para rodar a API sem banco de verdade: `cd Backend && BANCO=memoria npm run dev`.
 - Nunca coloque segredo (chave, senha, `DATABASE_URL`, arquivo da conta de serviço) em código,
   commit, issue ou print. O repositório é público.

@@ -74,7 +74,8 @@ Tudo abaixo existe no código deste repositório.
   (legado), usado pelas contas antigas; veja
   [como levar essas contas para o Firebase](#levar-as-contas-do-login-por-senha-para-o-firebase-authentication).
 - **Planos**: Grátis (não expira; até 3 metas e 5 notas lidas por mês), vera+ mensal e vera+ anual.
-  Os planos e limites ficam em `Backend/src/models/PlanoModel.js`.
+  Os planos e limites ficam em `Backend/src/models/PlanoModel.js`. A cobrança ainda não existe
+  (veja [O que ainda não existe](#o-que-ainda-não-existe)).
 - **Modo família** (vera+): o dono do ciclo convida pessoas pelo e-mail delas (o convite aparece
   no app quando a pessoa entra com esse e-mail) e escolhe quais categorias são compartilhadas.
 - **Avisos no app** (sino): notas para confirmar, categoria perto do limite ou estourada, convites
@@ -100,13 +101,27 @@ Para ninguém prometer o que o produto não faz:
 - **Contas bancárias e Open Finance**: a vera não se conecta a banco nem a cartão. Os gastos entram
   à mão, pela nota fiscal ou pela lista de compras.
 - **Pagamento**: ainda não há provedor de pagamento integrado. Os planos e os limites existem no
-  código (`PlanoModel.js`); a cobrança entra quando o provedor for escolhido.
-- **E-mails**: os modelos estão prontos em `Backend/src/emails/`, mas nada é enviado (o provedor
-  ainda não foi escolhido). Avisos só aparecem dentro do app; não há notificação push.
+  código (`PlanoModel.js`), mas nada é cobrado: escolher o vera+ no cadastro ou nos botões de
+  Configurações ("Assinar mensal · R$ 12,90", "Trocar para anual · R$ 99,90") ativa o plano na
+  hora, sem cobrança. A "próxima cobrança em ..." que o app mostra é só uma data calculada a partir
+  do dia da troca. Cancelar marca até quando o vera+ continua, mas nada volta a conta para o grátis
+  nessa data.
+- **Dois benefícios da página de planos** (`PlanoModel.js`) não existem como descritos: "Alerta de
+  preço por produto" (o aviso de alta de preço que existe vale para todos os planos e não deixa
+  escolher produto) e "Suporte por e-mail em 24h" (nada no produto trata suporte por plano ou
+  prazo).
+- **E-mails**: os modelos estão prontos em `Backend/src/emails/`, mas nenhum deles é enviado (o
+  provedor ainda não foi escolhido). O único e-mail que sai hoje é o de redefinir a senha ("Esqueci
+  a senha"), enviado pelo próprio Firebase Authentication. Avisos só aparecem dentro do app; não há
+  notificação push.
 - **Preço de todas as redes**: só as [redes listadas](#redes-de-supermercado) têm preço do site.
   Outros mercados aparecem quando alguém lê uma nota fiscal de lá.
-- **Duas opções de Configurações** ainda só ficam guardadas, sem efeito: "Zerar categorias na
-  virada" e "Resumo antes de fechar o ciclo".
+- **Três opções de Configurações** não fazem o que a descrição diz. "Zerar categorias na virada" e
+  "Resumo antes de fechar o ciclo" só ficam guardadas, sem efeito. "Alerta de alta de preço" promete
+  avisar quando um item que a pessoa compra sempre sobe mais de 5% no mercado dela; o aviso do sino
+  (`ComparacaoModel.dica`) mostra o produto da base de preços que mais subiu no mercado habitual,
+  com qualquer alta, quando outro mercado do raio está mais barato. Não olha o que a pessoa compra
+  nem o limite de 5%. A mesma dica aparece no painel mesmo com a opção desligada.
 
 ---
 
@@ -222,7 +237,8 @@ vera.finance/
 
 ## Como rodar localmente
 
-Precisa do **Node.js 22.9 ou mais novo** e do npm.
+Precisa do **Node.js 22.12 ou mais novo** e do npm. A API sozinha roda a partir do 22.9; o Vite, que
+faz o build do site, pede 22.12.
 
 ### API
 
@@ -289,7 +305,7 @@ formato.
 |---|---|---|---|
 | `SEGREDO_LOGIN` | Sim, em produção | Assina as sessões do login próprio. Precisa de 32 caracteres ou mais. Sem ela, a API sorteia um segredo a cada início e as sessões do login por senha caem a cada reinício (a API avisa no log). Gere com `openssl rand -base64 48`. | `<48 bytes aleatórios em base64>` |
 | `CORS_ORIGIN` | Sim, em produção | Endereços do site que podem chamar a API, separados por vírgula. Nunca `*`. Padrão: `http://localhost:5173`. | `https://vera-finance.onrender.com` |
-| `NODE_ENV` | Sim, em produção | `production` no Render. `test` desliga o aviso do `SEGREDO_LOGIN` nos testes. | `production` |
+| `NODE_ENV` | Não | Só o valor `test` muda algo: desliga o aviso do `SEGREDO_LOGIN` (os testes usam). Outros valores, como `production`, não mudam nada na API. | `test` |
 | `FIREBASE_PROJECT_ID` | Sim, com Firebase | Projeto do Firebase: conta de serviço e conferência dos tokens de login. | `meu-projeto` |
 | `FIREBASE_CLIENT_EMAIL` | Sim, com Firebase | E-mail da conta de serviço (Admin SDK). | `firebase-adminsdk-xxxx@meu-projeto.iam.gserviceaccount.com` |
 | `FIREBASE_PRIVATE_KEY` | Sim, com Firebase | Chave privada da conta de serviço. Pode vir numa linha só, com `\n` no lugar das quebras. | `-----BEGIN PRIVATE KEY-----\n...` |
@@ -360,6 +376,7 @@ Regras.
 | Campo | Valor |
 |---|---|
 | Root Directory | `Frontend` |
+| Node | 22.12 ou mais nova (o Vite pede). Se o build reclamar da versão, defina `NODE_VERSION=22` no Environment |
 | Build Command | `npm ci && npm run build` |
 | Publish Directory | `dist` (relativo ao Root Directory, ou seja, `Frontend/dist`) |
 | Redirects/Rewrites | **Source** `/*` → **Destination** `/app.html`, **Action** `Rewrite` |
@@ -428,6 +445,7 @@ job, está em [docs/operacao.md](docs/operacao.md#rodar-um-script-como-job).
 |---|---|---|---|
 | `Backend/scripts/migrar-firebase-para-postgres.mjs` | `npm run migrar:postgres -- <export.json> --simular` e depois sem `--simular` | Leva o export JSON do Realtime Database para o PostgreSQL de `DATABASE_URL`, em lotes, e confere as contagens no fim. Opções: `--lote=500`, `--continuar`. | Uma vez, na troca do Firebase pelo PostgreSQL ([passo a passo](#postgresql-dados)). |
 | `Backend/scripts/importar-usuarios-firebase.mjs` | `node --env-file=.env scripts/importar-usuarios-firebase.mjs` (simulação) e depois com `--executar` | Leva as contas do login próprio para o Firebase Authentication sem trocar a senha de ninguém. | Uma vez, antes de desligar o login próprio ([passo a passo](#levar-as-contas-do-login-por-senha-para-o-firebase-authentication)). |
+| `Backend/scripts/conferir-restauracao.mjs` | `node --env-file=.env scripts/conferir-restauracao.mjs retrato <arquivo>` no banco atual; depois `conferir <arquivo>` (simulação) e `conferir <arquivo> --executar` no banco restaurado | Depois de restaurar um backup, apaga de novo as contas apagadas depois dele, recria os pedidos de exclusão feitos depois e tira os de quem desistiu. O login do Firebase só sai quando tem o mesmo uid da conta. | Em toda restauração de backup, antes de a API usar o banco restaurado ([passo a passo](docs/operacao.md#restaurar-sem-perder-ninguém-passo-a-passo)). |
 | `Backend/scripts/ver-emails.mjs` | `npm run emails:ver` (ou `npm run emails:ver -- ./pasta`) | Grava os modelos de e-mail com dados de exemplo para ver no navegador. Não envia nada. | Ao mudar um modelo de e-mail. |
 | `Frontend/scripts/prerender.mjs` | parte do `npm run build` | Grava o HTML das páginas públicas e a casca `app.html`. | Sozinho, em todo build. |
 | `Frontend/scripts/indexnow.mjs` | `npm run indexnow` (com `--teste` só mostra) | Avisa os buscadores do IndexNow das URLs do sitemap. | Depois de um deploy que muda páginas públicas. |
@@ -558,8 +576,8 @@ B em `Frontend/src/services/servicoDeLogin.js` deixam de ser necessários.
 
 Os modelos ficam em `Backend/src/emails/` (HTML com estilos inline e versão em texto, em português):
 boas-vindas, confirme seu e-mail, recibo de pagamento, cobrança que falhou, assinatura cancelada,
-exclusão agendada, conta apagada, alerta de preço da lista e resumo semanal. **Nada é enviado
-ainda**: falta escolher o provedor.
+exclusão agendada, conta apagada, alerta de preço da lista e resumo semanal. **Nenhum deles é
+enviado ainda**: falta escolher o provedor.
 
 ```js
 import { renderizarEmail } from './src/emails/index.js';
@@ -577,6 +595,9 @@ const { assunto, html, texto } = renderizarEmail('boas-vindas', { nome: 'Ana' })
 - `npm run emails:ver` grava todos os modelos com os dados de exemplo para ver no navegador.
 - Antes de ligar o alerta de preço e o resumo semanal, crie o jeito de parar de receber: os dois
   modelos pedem `linkDescadastro`.
+- Recibo, cobrança que falhou e assinatura cancelada dependem da cobrança, que ainda não existe. O
+  modelo `assinatura-cancelada` diz que a conta volta para o grátis na data de fim: essa volta
+  precisa existir antes de ligar esse e-mail.
 
 ---
 
