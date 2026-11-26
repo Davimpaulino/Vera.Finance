@@ -131,6 +131,9 @@ const MENSAGENS_DE_ERRO = {
     'Este e-mail já entra de outro jeito. Use o mesmo método da primeira vez.',
   'auth/invalid-api-key': 'A chave do Firebase (VITE_FIREBASE_API_KEY) está errada.',
   'auth/network-request-failed': SEM_CONEXAO,
+  // A janela do Google depende de scripts do Google; sem rede (ou com bloqueador) o SDK devolve isto.
+  'auth/internal-error':
+    'Não deu para abrir o login agora. Confira a internet (ou o bloqueador de anúncios) e tente de novo.',
   'auth/configuration-not-found':
     'O login pelo Firebase ainda não foi ativado no projeto (Firebase › Authentication › Começar).'
 };

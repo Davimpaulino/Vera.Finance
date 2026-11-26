@@ -13,10 +13,13 @@
   },
   "dependencies": {
     "bootstrap-icons": "^1.11.3",
-    "firebase": "^12.3.0",
+    "firebase": "^13.2.0",
     "jsqr": "^1.4.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
+  },
+  "overrides": {
+    "@grpc/grpc-js": "1.14.7"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.14.0",
