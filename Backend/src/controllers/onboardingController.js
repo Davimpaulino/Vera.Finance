@@ -31,7 +31,7 @@ function valorNaoNegativo(valor, campo) {
 const iconeDaCategoria = (icon, padrao) => (ICONES_CATEGORIA.includes(icon) ? icon : padrao);
 
 function fixosDoCorpo(corpo) {
-  return lista(corpo, 'Os gastos fixos', MAXIMO_DE_FIXOS).map(item => {
+  return lista(corpo, 'gastos fixos', MAXIMO_DE_FIXOS).map(item => {
     const fixo = objeto(item, 'O gasto fixo');
     return {
       nome: texto(fixo.nome, 'O nome do gasto fixo', { max: 60 }),
@@ -45,7 +45,7 @@ function fixosDoCorpo(corpo) {
 }
 
 function categoriasDoCorpo(corpo) {
-  return lista(corpo, 'As categorias', MAXIMO_DE_CATEGORIAS).map(item => {
+  return lista(corpo, 'categorias', MAXIMO_DE_CATEGORIAS).map(item => {
     const categoria = objeto(item, 'A categoria');
     return {
       nome: texto(categoria.nome, 'O nome da categoria', { max: 40, obrigatorio: true }),
@@ -86,7 +86,7 @@ export const onboardingController = {
     const renda =
       valorNaoNegativo(body.rendaFixa || 0, 'rendaFixa') +
       valorNaoNegativo(body.rendaVariavel || 0, 'rendaVariavel');
-    const fixos = sum(lista(body.fixos, 'Os gastos fixos', MAXIMO_DE_FIXOS), f =>
+    const fixos = sum(lista(body.fixos, 'gastos fixos', MAXIMO_DE_FIXOS), f =>
       valorNaoNegativo(objeto(f, 'O gasto fixo').valor, 'valor')
     );
     const disponivel = round2(renda - fixos);

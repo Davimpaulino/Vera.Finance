@@ -321,6 +321,9 @@ test('perfil: preferência, ciclo e localização só aceitam o tipo e o tamanho
   assert.equal((await mudar({ nome: 'x'.repeat(101) })).status, 400);
   assert.equal((await mudar({ ciclo: { frequencia: { a: 1 } } })).status, 400);
   assert.equal((await mudar({ ciclo: { diaVirada: 2.5 } })).status, 400);
+  // Objeto com toString próprio quebrava o Number() e virava 500.
+  assert.equal((await mudar({ ciclo: { diaVirada: { toString: 1 } } })).status, 400);
+  assert.equal((await mudar({ ciclo: { diaVirada: [3] } })).status, 400);
   assert.equal((await mudar({ local: { lat: 1e308, lng: 0 } })).status, 400);
   assert.equal((await mudar({ local: { mercados: 'tudo' } })).status, 400);
   assert.equal((await mudar({ local: { cep: '<script>' } })).status, 400);
@@ -430,6 +433,10 @@ test('cadastro guiado: listas sem teto e campos de outro tipo são recusados', a
   assert.equal((await concluir({ categorias: [{ nome: { a: 1 } }] })).status, 400);
   assert.equal((await concluir({ fixos: 'aluguel' })).status, 400);
   assert.equal((await concluir({ fixos: [{ nome: 'Aluguel', valor: -1 }] })).status, 400);
+  assert.equal(
+    (await concluir({ fixos: [{ nome: 'Aluguel', valor: 1, dia: { toString: 1 } }] })).status,
+    400
+  );
   assert.equal((await concluir({ plano: ['anual'] })).status, 400);
 
   // Nome de categoria como "__proto__" ou "constructor" é só um nome.
@@ -502,4 +509,28 @@ test('cache com teto: passou do limite, sai a entrada mais antiga', () => {
   assert.deepEqual([...mapa.keys()], ['k7', 'k8', 'k9']);
   guardarComTeto(mapa, 'k7', 70, 3);
   assert.deepEqual([...mapa.keys()], ['k8', 'k9', 'k7'], 'regravar conta como recente');
+});
+
+test('mensagens de erro em português correto (aparecem no aviso do app)', async () => {
+  const lancar = await pedir('POST', '/lancamentos', {
+    corpo: { titulo: '   ', valor: 10, categoriaId: 'comida' },
+    token: tokenDaAna
+  });
+  assert.equal(lancar.json.erro, 'Preencha a descrição.');
+  const token = await criarPessoa('gabi', 'gabi@x.com', 'Gabi');
+  const concluir = corpo =>
+    pedir('POST', '/onboarding', {
+      corpo: { renda: { rendaFixa: 3000 }, plano: 'gratis', ...corpo },
+      token
+    });
+  const fixos = await concluir({ fixos: 'aluguel' });
+  assert.equal(fixos.json.erro, 'Gastos fixos precisam vir numa lista.');
+  const muitas = Array.from({ length: 31 }, (_, i) => ({ nome: `Cat ${i}` }));
+  const categorias = await concluir({ categorias: muitas });
+  assert.equal(categorias.json.erro, 'Dá para enviar até 30 categorias.');
+  const mudar = corpo => pedir('PATCH', '/me', { corpo, token: tokenDaAna });
+  const prefs = await mudar({ prefs: 'escuro' });
+  assert.equal(prefs.json.erro, 'O grupo de preferências está num formato inválido.');
+  const mercados = await mudar({ local: { mercados: 'x' } });
+  assert.equal(mercados.json.erro, 'Mercados precisam vir numa lista.');
 });

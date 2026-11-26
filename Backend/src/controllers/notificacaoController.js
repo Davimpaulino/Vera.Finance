@@ -11,7 +11,7 @@ export const notificacaoController = {
   },
 
   async marcarVistas({ user, body }) {
-    const ids = lista(body.ids, 'A lista de notificações', MAXIMO_DE_IDS)
+    const ids = lista(body.ids, 'notificações', MAXIMO_DE_IDS)
       .map(id => texto(id, 'A notificação', { max: 200 }))
       .filter(Boolean);
     await NotificacaoModel.marcarVistas(user.uid, ids);

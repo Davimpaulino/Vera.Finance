@@ -39,7 +39,7 @@ export function cicloDoCorpo(corpo) {
 }
 
 function prefsDoCorpo(corpo) {
-  const prefs = objeto(corpo, 'As preferências');
+  const prefs = objeto(corpo, 'O grupo de preferências');
   const limpo = {};
   if (prefs.tema !== undefined) {
     if (!TEMAS.includes(prefs.tema)) throw new HttpError(400, 'Tema desconhecido.');

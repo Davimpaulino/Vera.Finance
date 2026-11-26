@@ -167,7 +167,7 @@ export const listaController = {
     const escolhidos =
       body.itemIds === undefined || body.itemIds === null
         ? null
-        : new Set(listaDoCorpo(body.itemIds, 'Os itens', MAXIMO_DE_ITENS_NA_LISTA).map(String));
+        : new Set(listaDoCorpo(body.itemIds, 'itens', MAXIMO_DE_ITENS_NA_LISTA).map(String));
     const comprados = atual.itens.filter(
       i => !i.done && i.precos[alvo.mercadoId] != null && (!escolhidos || escolhidos.has(i.id))
     );

@@ -22,19 +22,24 @@ export function exigirId(id, mensagem = 'Identificador inválido.') {
   return id;
 }
 
+// "O nome da meta" vira "o nome da meta" no meio da frase ("Preencha o nome da meta.").
+const noMeioDaFrase = rotulo => rotulo.charAt(0).toLowerCase() + rotulo.slice(1);
+
 /**
  * Texto do corpo: aceita texto ou número, tira os espaços das pontas e limita o tamanho.
- * `rotulo` entra na mensagem de erro ("O nome pode ter até 120 caracteres.").
+ * `rotulo` é o nome do campo no singular, com o artigo ("O nome", "A descrição"), e entra nas
+ * mensagens de erro: "Preencha a descrição.", "O nome pode ter até 120 caracteres.".
  */
 export function texto(valor, rotulo, { max = 120, obrigatorio = false } = {}) {
+  const faltou = () => new HttpError(400, `Preencha ${noMeioDaFrase(rotulo)}.`);
   if (valor === undefined || valor === null) {
-    if (obrigatorio) throw new HttpError(400, `${rotulo} é obrigatório.`);
+    if (obrigatorio) throw faltou();
     return '';
   }
   if (typeof valor !== 'string' && typeof valor !== 'number')
     throw new HttpError(400, `${rotulo} precisa ser um texto.`);
   const limpo = String(valor).trim();
-  if (obrigatorio && !limpo) throw new HttpError(400, `${rotulo} é obrigatório.`);
+  if (obrigatorio && !limpo) throw faltou();
   if (limpo.length > max) throw new HttpError(400, `${rotulo} pode ter até ${max} caracteres.`);
   return limpo;
 }
@@ -51,33 +56,46 @@ export function email(valor, mensagem = 'E-mail inválido.') {
   return limpo;
 }
 
+/** Sim ou não (true ou false no JSON). `rotulo` como em texto(): "A preferência". */
 export function booleano(valor, rotulo) {
-  if (typeof valor !== 'boolean') throw new HttpError(400, `${rotulo} precisa ser verdadeiro ou falso.`);
+  if (typeof valor !== 'boolean') throw new HttpError(400, `${rotulo} aceita só sim ou não.`);
   return valor;
 }
 
 /** Número inteiro dentro da faixa; fora dela (ou não número) dá 400. */
 export function inteiroEntre(valor, minimo, maximo, mensagem) {
+  // O tipo vem antes do Number(): um objeto do JSON como {"toString": 1} quebra a conversão
+  // (erro 500), e true ou [3] viram número sem ser número nenhum.
+  if (typeof valor !== 'number' && typeof valor !== 'string') throw new HttpError(400, mensagem);
   const numero = Number(valor);
-  if ((typeof valor !== 'number' && typeof valor !== 'string') || !Number.isInteger(numero))
+  if (!Number.isInteger(numero) || numero < minimo || numero > maximo)
     throw new HttpError(400, mensagem);
-  if (numero < minimo || numero > maximo) throw new HttpError(400, mensagem);
   return numero;
 }
 
-/** Lista do corpo com no máximo `maximo` itens. Ausente vira lista vazia. */
-export function lista(valor, rotulo, maximo) {
+const comMaiuscula = nome => nome.charAt(0).toUpperCase() + nome.slice(1);
+
+/**
+ * Lista do corpo com no máximo `maximo` itens. Ausente vira lista vazia.
+ * `nome` é o que vai na lista, no plural e sem artigo ("categorias", "gastos fixos"), e entra nas
+ * mensagens: "Categorias precisam vir numa lista.", "Dá para enviar até 30 categorias.".
+ */
+export function lista(valor, nome, maximo) {
   if (valor === undefined || valor === null) return [];
-  if (!Array.isArray(valor)) throw new HttpError(400, `${rotulo} precisa ser uma lista.`);
-  if (valor.length > maximo) throw new HttpError(400, `${rotulo} pode ter até ${maximo} itens.`);
+  if (!Array.isArray(valor))
+    throw new HttpError(400, `${comMaiuscula(nome)} precisam vir numa lista.`);
+  if (valor.length > maximo) throw new HttpError(400, `Dá para enviar até ${maximo} ${nome}.`);
   return valor;
 }
 
-/** Objeto simples do corpo (nem lista, nem texto). Ausente vira objeto vazio. */
+/**
+ * Objeto simples do corpo (nem lista, nem texto). Ausente vira objeto vazio.
+ * `rotulo` no singular, com o artigo: "A localização está num formato inválido.".
+ */
 export function objeto(valor, rotulo) {
   if (valor === undefined || valor === null) return {};
   if (typeof valor !== 'object' || Array.isArray(valor))
-    throw new HttpError(400, `${rotulo} precisa ser um objeto.`);
+    throw new HttpError(400, `${rotulo} está num formato inválido.`);
   return valor;
 }
 
@@ -119,7 +137,7 @@ export function localDoCorpo(corpo) {
   if (local.cidade !== undefined) limpo.cidade = texto(local.cidade, 'A cidade', { max: 120 });
   if (local.raioKm != null && local.raioKm !== '') limpo.raioKm = raioKm(local.raioKm);
   if (local.mercados !== undefined)
-    limpo.mercados = lista(local.mercados, 'Os mercados', MAXIMO_DE_MERCADOS).map(id =>
+    limpo.mercados = lista(local.mercados, 'mercados', MAXIMO_DE_MERCADOS).map(id =>
       texto(id, 'O mercado', { max: TAMANHO_MAXIMO_DO_ID, obrigatorio: true })
     );
   if (local.mercadoHabitual !== undefined)
