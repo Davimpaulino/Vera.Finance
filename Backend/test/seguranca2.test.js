@@ -17,6 +17,7 @@ const { idValido } = await import('../src/utils/validacao.js');
 const { GeoModel } = await import('../src/models/GeoModel.js');
 const { MercadoModel } = await import('../src/models/MercadoModel.js');
 const { PrecoRegionalModel } = await import('../src/models/PrecoRegionalModel.js');
+const { RegiaoModel } = await import('../src/models/RegiaoModel.js');
 
 // Nada sai para a internet: mapa, CEP e sites das redes ficam indisponíveis aqui.
 const fetchDeVerdade = globalThis.fetch;
@@ -460,6 +461,8 @@ test('lançamento: data inválida, descrição enorme e valor absurdo dão 400, 
   assert.equal((await lancar({ valor: 1e300 })).status, 400);
   assert.equal((await lancar({ valor: true })).status, 400);
   assert.equal((await lancar({ categoriaId: 'a/b' })).status, 400);
+  // "comida/nome" desceria até o nome da categoria (um texto) e criaria um lançamento quebrado.
+  assert.equal((await lancar({ categoriaId: 'comida/nome' })).status, 400);
   const ciclo = await pedir('GET', '/lancamentos?ciclo=99999999999', { token: tokenDaAna });
   assert.equal(ciclo.status, 200, 'deslocamento absurdo do ciclo não derruba a rota');
 });
@@ -505,6 +508,97 @@ test('rotas públicas do mapa têm limite por IP e não aceitam raio nem coorden
   for (let i = 0; i < 121; i++)
     ultima = await pedir('GET', '/onboarding/raio', { cabecalhos: { 'X-Forwarded-For': '10.70.0.3' } });
   assert.equal(ultima.status, 429);
+});
+
+// Faz o mesmo pedido `vezes` vezes e devolve as duas últimas respostas: a do limite e a seguinte.
+async function ateOLimite(vezes, fazer) {
+  const respostas = [];
+  for (let i = 0; i < vezes + 1; i++) respostas.push(await fazer(i));
+  return { noLimite: respostas.at(-2), depois: respostas.at(-1) };
+}
+
+test('raio do mapa em km inteiros: 5,4 km é a mesma região que 5 km', async () => {
+  const raio = km =>
+    pedir('GET', `/onboarding/raio?km=${km}`, { cabecalhos: { 'X-Forwarded-For': '10.71.0.1' } });
+  assert.equal((await raio(5.4)).json.raioKm, 5);
+  assert.equal((await raio(5.6)).json.raioKm, 6);
+  const perfil = await pedir('PATCH', '/me', {
+    corpo: { local: { raioKm: 5.4 } },
+    token: tokenDaAna
+  });
+  assert.equal(perfil.json.local.raioKm, 5);
+
+  // O modelo também arredonda: um raio quebrado não vira uma consulta nova ao Overpass.
+  const anterior = globalThis.fetch;
+  const consultas = [];
+  globalThis.fetch = async endereco => {
+    consultas.push(String(endereco));
+    return Response.json({ elements: [] });
+  };
+  try {
+    const origem = { lat: -10.123, lng: -40.456 };
+    for (const km of [5, 5.4, 4.6, 5.0001]) await RegiaoModel.mercadosPerto(origem, km);
+    assert.equal(consultas.length, 1, consultas.join('\n'));
+  } finally {
+    globalThis.fetch = anterior;
+  }
+});
+
+test('lista pública de mercados (GET /mercados) tem limite por IP', async () => {
+  const { noLimite, depois } = await ateOLimite(120, () =>
+    pedir('GET', '/mercados', { cabecalhos: { 'X-Forwarded-For': '10.72.0.1' } })
+  );
+  assert.equal(noLimite.status, 200);
+  assert.equal(depois.status, 429);
+});
+
+test('perfil e cadastro guiado têm limite por conta (trocar o IP não engana)', async () => {
+  const token = await criarPessoa('kaio', 'kaio@x.com', 'Kaio');
+  const ip = i => ({ 'X-Forwarded-For': `10.73.${Math.floor(i / 250)}.${i % 250}` });
+  const perfil = await ateOLimite(60, i =>
+    pedir('PATCH', '/me', { corpo: { nome: `Kaio ${i}` }, token, cabecalhos: ip(i) })
+  );
+  assert.equal(perfil.noLimite.status, 200);
+  assert.equal(perfil.depois.status, 429);
+
+  // Plano desconhecido dá 400 logo, mas o pedido conta no limite.
+  const guiado = await ateOLimite(20, i =>
+    pedir('POST', '/onboarding', { corpo: { plano: 'nenhum' }, token, cabecalhos: ip(i) })
+  );
+  assert.equal(guiado.noLimite.status, 400);
+  assert.equal(guiado.depois.status, 429);
+});
+
+test('lista, opções da lista e sugestões de produto têm limite por conta', async () => {
+  const token = await criarPessoa('lia', 'lia@x.com', 'Lia');
+  const ip = i => ({ 'X-Forwarded-For': `10.74.${Math.floor(i / 250)}.${i % 250}` });
+  const casos = [
+    ['/lista', 300],
+    ['/lista/opcoes?q=a', 300],
+    ['/mercados/produtos?q=a', 400]
+  ];
+  for (const [caminho, maximo] of casos) {
+    const { noLimite, depois } = await ateOLimite(maximo, i =>
+      pedir('GET', caminho, { token, cabecalhos: ip(i) })
+    );
+    assert.equal(noLimite.status, 200, caminho);
+    assert.equal(depois.status, 429, caminho);
+  }
+});
+
+test('as rotas de preço somadas têm limite por IP, contado antes do login', async () => {
+  // Várias contas (ou nenhuma) no mesmo IP não multiplicam as consultas aos sites das redes.
+  const rotas = [
+    '/lista',
+    '/lista/opcoes?q=a',
+    '/mercados/produtos?q=a',
+    '/mercados/comparar?produto=a'
+  ];
+  const { noLimite, depois } = await ateOLimite(1500, i =>
+    pedir('GET', rotas[i % rotas.length], { cabecalhos: { 'X-Forwarded-For': '10.75.0.1' } })
+  );
+  assert.equal(noLimite.status, 401);
+  assert.equal(depois.status, 429);
 });
 
 test('no Render, o IP do limite vem do CF-Connecting-IP: trocar o X-Forwarded-For não escapa', async () => {
@@ -781,4 +875,63 @@ test('sessão: nome longo é cortado em 100 caracteres, não recusa o login nem 
   assert.equal(perfil.termosAceitos.versao, VERSAO_DOS_TERMOS, 'o aceite ficou gravado');
   const estranho = await pedir('POST', '/auth/sessao', { corpo: { nome: { a: 1 } }, token });
   assert.equal(estranho.status, 400);
+});
+
+test('confirmar nota: categoriaId que muda o caminho do banco dá 400 e a nota continua pendente', async () => {
+  await banco.gravar('usuarios/ana/notas/nota-caminho', {
+    chave: '2'.repeat(44),
+    estabelecimento: 'Mercado da Esquina',
+    valor: 30,
+    itens: 1,
+    status: 'pendente',
+    lidaEm: hoje,
+    quemId: 'ana'
+  });
+  try {
+    // "comida/nome" desceria até o nome da categoria e viraria um lançamento sem categoria certa.
+    for (const categoriaId of ['comida/nome', 'a/b', { id: 'comida' }]) {
+      const resposta = await pedir('POST', '/notas/nota-caminho/confirmar', {
+        corpo: { categoriaId },
+        token: tokenDaAna
+      });
+      assert.equal(resposta.status, 400, JSON.stringify(categoriaId));
+    }
+    assert.equal((await banco.ler('usuarios/ana/notas/nota-caminho')).status, 'pendente');
+  } finally {
+    await banco.remover('usuarios/ana/notas/nota-caminho');
+  }
+});
+
+test('cancelar a assinatura sem perfil dá 404, não 500', async () => {
+  const token = assinarToken({ uid: 'sem-perfil', email: 'sem-perfil@x.com', nome: 'Sem perfil' });
+  const resposta = await pedir('POST', '/me/cancelar-assinatura', { token });
+  assert.equal(resposta.status, 404);
+});
+
+test('comparar: a opção escolhida vai cortada em 200 caracteres para os sites das redes', async () => {
+  const originais = {
+    daRegiao: MercadoModel.daRegiao,
+    comparar: PrecoRegionalModel.comparar,
+    cepParaPrecos: GeoModel.cepParaPrecos
+  };
+  let recebida;
+  MercadoModel.daRegiao = async () => ({ modo: 'real', mercados: [], mapaFalhou: false });
+  GeoModel.cepParaPrecos = async () => '';
+  PrecoRegionalModel.comparar = async (produto, _mercados, _habitual, opcoes) => {
+    recebida = opcoes.opcao;
+    return { produto, opcoes: [], mercados: [] };
+  };
+  try {
+    const caminho = `/mercados/comparar?produto=arroz&opcao=${'x'.repeat(500)}`;
+    const resposta = await pedir('GET', caminho, {
+      token: tokenDaAna,
+      cabecalhos: { 'X-Forwarded-For': '10.76.0.1' }
+    });
+    assert.equal(resposta.status, 200);
+    assert.equal(recebida, 'x'.repeat(200));
+  } finally {
+    Object.assign(MercadoModel, { daRegiao: originais.daRegiao });
+    Object.assign(PrecoRegionalModel, { comparar: originais.comparar });
+    Object.assign(GeoModel, { cepParaPrecos: originais.cepParaPrecos });
+  }
 });

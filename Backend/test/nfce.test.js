@@ -70,3 +70,16 @@ test('nota: página da Sefaz grande demais é recusada sem ficar inteira na mem�
   fetchFalso({ [QR]: { corpo: 'x'.repeat(TAMANHO_MAXIMO_DA_PAGINA + 1) } });
   await assert.rejects(NfceModel.ler(QR), { status: 502, message: /grande demais/ });
 });
+
+test('nota: página que avisa no Content-Length que é grande demais é recusada antes de ler', async () => {
+  // O corpo é pequeno: só a conferência do tamanho avisado recusa (lido, daria "não mostrou").
+  globalThis.fetch = async () =>
+    new Response('<html>pequena</html>', {
+      status: 200,
+      headers: {
+        'content-type': 'text/html',
+        'content-length': String(TAMANHO_MAXIMO_DA_PAGINA + 1)
+      }
+    });
+  await assert.rejects(NfceModel.ler(QR), { status: 502, message: /grande demais/ });
+});
