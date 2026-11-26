@@ -256,6 +256,66 @@ test('atualizarVarios é uma transação: se uma parte falha, nada é gravado', 
   assert.deepEqual(await postgres.ler('precos'), { p1: { produto: 'Arroz' } });
 });
 
+test('atualizarVarios: erro do banco no meio da transação desfaz o que já foi escrito', comBanco, async () => {
+  await postgres.remover('');
+  await postgres.gravar('precos/p1', { produto: 'Arroz' });
+  // Gatilho só deste teste: recusa o mercado, que é escrito depois dos preços.
+  await cliente.query(`create function recusar_mercado() returns trigger language plpgsql as $$
+    begin raise exception 'mercado recusado'; end $$`);
+  await cliente.query(`create trigger recusar_mercado before insert on mercados
+    for each row execute function recusar_mercado()`);
+  try {
+    await assert.rejects(
+      postgres.atualizarVarios({
+        'precos/p1': null,
+        'precos/p2': { produto: 'Café' },
+        'mercados/m1': { nome: 'Mercado A' }
+      }),
+      /mercado recusado/
+    );
+  } finally {
+    await cliente.query('drop trigger recusar_mercado on mercados');
+    await cliente.query('drop function recusar_mercado()');
+  }
+  assert.deepEqual(await postgres.ler('precos'), { p1: { produto: 'Arroz' } });
+  assert.equal(await postgres.ler('mercados'), null);
+});
+
+test('escritas parciais ao mesmo tempo no mesmo documento não se perdem', comBanco, async () => {
+  await postgres.remover('');
+  // Documentos que ainda não existem: não há linha para o FOR UPDATE travar.
+  const caminhos = [
+    'usuarios/ana/perfil',
+    'usuarios/ana/lista/novo',
+    'familias/nova',
+    'configuracoes/geral'
+  ];
+  const campos = Array.from({ length: 20 }, (_, i) => `c${i}`);
+  await Promise.all(
+    caminhos.flatMap(caminho =>
+      campos.map((campo, i) =>
+        i % 2
+          ? postgres.atualizar(caminho, { [campo]: i })
+          : postgres.mesclar(caminho, { [campo]: i })
+      )
+    )
+  );
+  const esperado = Object.fromEntries(campos.map((campo, i) => [campo, i]));
+  for (const caminho of caminhos) assert.deepEqual(await postgres.ler(caminho), esperado, caminho);
+
+  // Várias transações com os mesmos documentos em ordens diferentes terminam todas.
+  await Promise.all(
+    campos.map((campo, i) =>
+      postgres.atualizarVarios(
+        i % 2
+          ? { [`mercados/a/${campo}`]: i, [`mercados/b/${campo}`]: i }
+          : { [`mercados/b/${campo}`]: i, [`mercados/a/${campo}`]: i }
+      )
+    )
+  );
+  assert.deepEqual(await postgres.ler('mercados'), { a: esperado, b: esperado });
+});
+
 test('caminho sem tabela própria vai para a reserva sem perder dado', comBanco, async () => {
   await nosDois(async banco => {
     await banco.gravar('configuracoes/geral', { versao: 3, ligado: true });

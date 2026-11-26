@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import pg from 'pg';
 import {
@@ -308,6 +309,48 @@ async function removerGalho(cliente, alvo) {
   return cliente.query('delete from documentos');
 }
 
+/**
+ * Desdobra [caminho, valor] em passos: escrever num documento ({ doc, sub, valor }) ou limpar
+ * um galho ({ galho }). Não usa o banco: caminho ou valor inválido falha antes de começar.
+ */
+function planejar(entradas) {
+  const passos = [];
+  function desdobrar(partes, valor) {
+    const alvo = localizar(partes);
+    if (alvo.doc) {
+      passos.push({ doc: alvo.doc, sub: alvo.sub, valor });
+      return;
+    }
+    // Gravar num galho substitui tudo o que há embaixo dele.
+    const podado = podar(limparValor(valor));
+    if (!vazio(podado) && typeof podado !== 'object')
+      throw new Error(`Não dá para gravar um valor simples em /${partes.join('/')}.`);
+    passos.push({ galho: alvo });
+    for (const [chave, filho] of Object.entries(podado || {})) desdobrar([...partes, chave], filho);
+  }
+  for (const [caminho, valor] of entradas) desdobrar(partesDoCaminho(caminho), valor);
+  return passos;
+}
+
+// Trava de um documento: 64 bits do sha256 da identidade, no formato do pg_advisory_xact_lock.
+const chaveDaTrava = doc =>
+  createHash('sha256').update(identidade(doc)).digest().readBigInt64BE(0);
+
+/**
+ * Trava, até o fim da transação, cada documento que ela vai escrever. O FOR UPDATE sozinho não
+ * basta: com a linha ainda inexistente não há o que travar, e duas escritas parciais ao mesmo
+ * tempo partiriam do vazio e só a última ficaria.
+ */
+async function travarDocs(cliente, docs) {
+  const chaves = [...new Set(docs.map(chaveDaTrava))];
+  if (!chaves.length) return;
+  // Sempre em ordem crescente: duas transações com documentos em comum não se travam.
+  chaves.sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
+  await cliente.query('select pg_advisory_xact_lock(chave) from unnest($1::bigint[]) as chave', [
+    chaves.map(String)
+  ]);
+}
+
 // --- O banco ---------------------------------------------------------------------------------
 
 export function criarBancoPostgres({ url, ssl } = {}) {
@@ -345,38 +388,31 @@ export function criarBancoPostgres({ url, ssl } = {}) {
 
   /** Aplica uma lista de [caminho, valor] numa transação, na ordem, como o bancoMemoria faria. */
   async function aplicarTudo(entradas) {
+    const passos = planejar(entradas);
     await pronto();
     return emTransacao(async cliente => {
+      await travarDocs(cliente, passos.filter(passo => passo.doc).map(passo => passo.doc));
       const pendentes = new Map();
       const descarregar = async () => {
         if (pendentes.size) await salvarDocs(cliente, [...pendentes.values()]);
         pendentes.clear();
       };
-      async function aplicar(partes, valor) {
-        const alvo = localizar(partes);
-        if (alvo.doc) {
-          const id = identidade(alvo.doc);
-          let atual = pendentes.get(id);
-          if (!atual) {
-            // Só precisa ler a linha quando a escrita é num trecho dela.
-            const valorAtual = alvo.sub.length ? await carregarDoc(cliente, alvo.doc, true) : null;
-            atual = { doc: alvo.doc, valor: valorAtual };
-            pendentes.set(id, atual);
-          }
-          atual.valor = aplicarNoValor(atual.valor, alvo.sub, valor);
-          return;
+      for (const passo of passos) {
+        if (passo.galho) {
+          await descarregar();
+          await removerGalho(cliente, passo.galho);
+          continue;
         }
-        // Gravar num galho substitui tudo o que há embaixo dele.
-        await descarregar();
-        await removerGalho(cliente, alvo);
-        const podado = podar(limparValor(valor));
-        if (vazio(podado)) return;
-        if (typeof podado !== 'object')
-          throw new Error(`Não dá para gravar um valor simples em /${partes.join('/')}.`);
-        for (const [chave, filho] of Object.entries(podado))
-          await aplicar([...partes, chave], filho);
+        const id = identidade(passo.doc);
+        let atual = pendentes.get(id);
+        if (!atual) {
+          // Só precisa ler a linha quando a escrita é num trecho dela.
+          const valorAtual = passo.sub.length ? await carregarDoc(cliente, passo.doc, true) : null;
+          atual = { doc: passo.doc, valor: valorAtual };
+          pendentes.set(id, atual);
+        }
+        atual.valor = aplicarNoValor(atual.valor, passo.sub, passo.valor);
       }
-      for (const [caminho, valor] of entradas) await aplicar(partesDoCaminho(caminho), valor);
       await descarregar();
     });
   }
