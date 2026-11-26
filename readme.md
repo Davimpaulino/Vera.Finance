@@ -939,7 +939,9 @@ São páginas públicas, pré-renderizadas no build para os buscadores e as IAs:
 2. Para pôr um link no texto, escreva `[rótulo](/caminho)`.
 3. Ponha a URL nova em `Frontend/public/sitemap.xml` e em `Frontend/public/llms.txt`. O teste
    `Backend/test/conteudo.test.js` falha se faltar. O mesmo teste falha se o artigo citar uma rede
-   sem o aviso "A vera não tem vínculo com as redes citadas." ([docs/marca.md](docs/marca.md)).
+   sem o aviso "A vera não tem vínculo com as redes citadas." ([docs/marca.md](docs/marca.md)). Se
+   o nome ali é a cidade, o bairro ou uma palavra comum (São Vicente, Zona Sul, Confiança), e não a
+   rede, ponha o caminho do artigo e o nome em `NAO_E_A_REDE`, no mesmo teste.
 4. Post do blog que deve aparecer no rodapé: ponha `[nome curto, caminho]` em
    `Frontend/src/conteudo/rodape.js`.
 5. Rode `cd Frontend && npm run build`. A rota, o título, o canonical, o `og:type` (article) e o

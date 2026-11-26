@@ -38,20 +38,55 @@ test('cada artigo tem caminho próprio, na ajuda ou no blog', () => {
   assert.ok(ARTIGOS.filter(artigo => artigo.secao === 'blog').every(post => post.publicadoEm));
 });
 
+// Regra de docs/marca.md: rede citada vem junto de "A vera não tem vínculo com as redes citadas."
+// Alguns nomes de rede também são cidade, bairro ou palavra comum (São Vicente, Zona Sul,
+// Confiança, Coop, Pão de Açúcar). Se o artigo usa o nome nesse outro sentido, ponha aqui o
+// caminho do artigo e o nome, e o teste deixa de pedir o aviso por ele.
+const NAO_E_A_REDE = {
+  // '/blog/exemplo': ['São Vicente'] (a cidade, não a rede)
+};
+
+const escapar = nome => nome.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const cita = (texto, nome) => new RegExp(`(?<!\\p{L})${escapar(nome)}(?!\\p{L})`, 'u').test(texto);
+
+/** Redes que o artigo cita sem o aviso de vínculo, fora as de outroSentido[caminho]. */
+function redesSemAviso(artigo, outroSentido) {
+  const texto = JSON.stringify(artigo).replace(/’/g, "'");
+  if (/(Sem|não tem) vínculo com as redes citadas/.test(texto)) return [];
+  const excecoes = outroSentido[artigo.caminho] || [];
+  return REDES.map(rede => rede.nome).filter(nome => !excecoes.includes(nome) && cita(texto, nome));
+}
+
 test('artigo que cita uma rede traz o aviso de que a vera não tem vínculo com ela', () => {
-  // Regra de docs/marca.md: rede citada vem junto de "A vera não tem vínculo com as redes citadas."
-  const escapar = nome => nome.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const cita = (texto, nome) => new RegExp(`(?<!\\p{L})${escapar(nome)}(?!\\p{L})`, 'u').test(texto);
   for (const artigo of ARTIGOS) {
-    const texto = JSON.stringify(artigo).replace(/’/g, "'");
-    const citadas = REDES.filter(rede => cita(texto, rede.nome)).map(rede => rede.nome);
-    if (citadas.length)
-      assert.match(
-        texto,
-        /(Sem|não tem) vínculo com as redes citadas/,
-        `${artigo.caminho} cita ${citadas.join(', ')} sem o aviso de vínculo`
-      );
+    const citadas = redesSemAviso(artigo, NAO_E_A_REDE);
+    assert.deepEqual(
+      citadas,
+      [],
+      `${artigo.caminho} cita ${citadas.join(', ')} sem o aviso "A vera não tem vínculo com as ` +
+        'redes citadas.". Se ali o nome é a cidade, o bairro ou uma palavra comum, e não a rede, ' +
+        'ponha o caminho e o nome em NAO_E_A_REDE (Backend/test/conteudo.test.js).'
+    );
   }
+  // Exceção só de artigo que existe e de nome que é de rede: senão ela não vale para nada.
+  const caminhos = ARTIGOS.map(artigo => artigo.caminho);
+  const nomes = REDES.map(rede => rede.nome);
+  for (const [caminho, excecoes] of Object.entries(NAO_E_A_REDE)) {
+    assert.ok(caminhos.includes(caminho), `NAO_E_A_REDE: ${caminho} não é um artigo`);
+    for (const nome of excecoes)
+      assert.ok(nomes.includes(nome), `NAO_E_A_REDE: ${nome} não é nome de rede`);
+  }
+});
+
+test('aviso de vínculo: a cidade de São Vicente passa só com a exceção do artigo', () => {
+  const artigo = { caminho: '/blog/teste', corpo: ['Em São Vicente, a feira é no domingo.'] };
+  assert.deepEqual(redesSemAviso(artigo, {}), ['São Vicente']);
+  assert.deepEqual(redesSemAviso(artigo, { '/blog/teste': ['São Vicente'] }), []);
+  // A exceção vale só para o nome listado: a rede citada no mesmo artigo ainda pede o aviso.
+  const comRede = { ...artigo, corpo: [...artigo.corpo, "O Sam's Club fica perto."] };
+  assert.deepEqual(redesSemAviso(comRede, { '/blog/teste': ['São Vicente'] }), ["Sam's Club"]);
+  const aviso = 'A vera não tem vínculo com as redes citadas.';
+  assert.deepEqual(redesSemAviso({ ...comRede, corpo: [...comRede.corpo, aviso] }, {}), []);
 });
 
 test('formato dos textos: links, texto puro e data por extenso', () => {
