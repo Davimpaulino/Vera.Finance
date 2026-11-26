@@ -67,7 +67,7 @@ export default function Login() {
   };
 
   return (
-    <section className="vera-page auth">
+    <main className="vera-page auth">
       <div className="auth__side auth__side--sunken">
         <Brand size="lg" to="/" className="auth__brand" />
         <span className="auth__headline">O seu ciclo continua exatamente de onde parou.</span>
@@ -120,6 +120,6 @@ export default function Login() {
           </Link>
         </span>
       </form>
-    </section>
+    </main>
   );
 }

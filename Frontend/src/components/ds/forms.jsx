@@ -34,11 +34,29 @@ export function Checkbox({ checked, disabled, onChange, description, done, child
   );
 }
 
+/**
+ * Ids do rótulo e da dica de um campo. O <label> envolve o campo inteiro (clicar na dica também
+ * foca), então sem isso o leitor de tela leria a dica como parte do nome ("Senha Sem conectar
+ * banco..."). Com aria-labelledby o nome é só o rótulo; a dica ou o erro vira a descrição.
+ */
+function useIdsDoCampo(label, dica) {
+  const id = useId();
+  return {
+    rotulo: label ? `${id}-rotulo` : undefined,
+    dica: dica ? `${id}-dica` : undefined
+  };
+}
+
 /** Campo de texto. Fundo de campo, fio de 1px, raio 12. */
 export function Input({ label, icon, suffix, hint, error, size, numeric, className, ...input }) {
+  const ids = useIdsDoCampo(label, error || hint);
   return (
     <label className={cx('vera-input', className)}>
-      {label ? <span className="vera-input__label">{label}</span> : null}
+      {label ? (
+        <span className="vera-input__label" id={ids.rotulo}>
+          {label}
+        </span>
+      ) : null}
       <span
         className={cx(
           'vera-input__field',
@@ -51,6 +69,8 @@ export function Input({ label, icon, suffix, hint, error, size, numeric, classNa
         <input
           type="text"
           aria-invalid={error ? 'true' : undefined}
+          aria-labelledby={ids.rotulo}
+          aria-describedby={ids.dica}
           {...input}
           className={cx(
             'vera-input__control',
@@ -61,7 +81,7 @@ export function Input({ label, icon, suffix, hint, error, size, numeric, classNa
         {suffix ? <span className="vera-input__suffix">{suffix}</span> : null}
       </span>
       {error || hint ? (
-        <span className={cx('vera-input__hint', error && 'vera-input__hint--error')}>
+        <span id={ids.dica} className={cx('vera-input__hint', error && 'vera-input__hint--error')}>
           {error || hint}
         </span>
       ) : null}
@@ -71,9 +91,14 @@ export function Input({ label, icon, suffix, hint, error, size, numeric, classNa
 
 /** Entrada de dinheiro: R$ fixo em cinza, número grande e tabular. */
 export function MoneyInput({ label, hint, error, size, tone, className, ...input }) {
+  const ids = useIdsDoCampo(label, error || hint);
   return (
     <label className={cx('vera-money', className)}>
-      {label ? <span className="vera-money__label">{label}</span> : null}
+      {label ? (
+        <span className="vera-money__label" id={ids.rotulo}>
+          {label}
+        </span>
+      ) : null}
       <span
         className={cx(
           'vera-money__field',
@@ -85,12 +110,15 @@ export function MoneyInput({ label, hint, error, size, tone, className, ...input
         <input
           inputMode="decimal"
           placeholder="0,00"
+          aria-invalid={error ? 'true' : undefined}
+          aria-labelledby={ids.rotulo}
+          aria-describedby={ids.dica}
           {...input}
           className={cx('vera-money__control', tone === 'danger' && 'vera-money__control--danger')}
         />
       </span>
       {error || hint ? (
-        <span className={cx('vera-money__hint', error && 'vera-money__hint--error')}>
+        <span id={ids.dica} className={cx('vera-money__hint', error && 'vera-money__hint--error')}>
           {error || hint}
         </span>
       ) : null}

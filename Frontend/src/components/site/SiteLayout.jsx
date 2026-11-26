@@ -47,6 +47,10 @@ export function SiteLayout({ children }) {
 
   return (
     <div>
+      {/* Teclado e leitor de tela pulam o menu e caem direto no conteúdo (WCAG 2.4.1). */}
+      <a href="#conteudo" className="vera-pular">
+        Pular para o conteúdo
+      </a>
       <header className="site-header">
         <Brand size="lg" to="/" />
         <nav className="vera-only-desktop" aria-label="Principal">
@@ -103,7 +107,9 @@ export function SiteLayout({ children }) {
           </div>
         </div>
       ) : null}
-      {children}
+      <main id="conteudo" tabIndex={-1}>
+        {children}
+      </main>
     </div>
   );
 }

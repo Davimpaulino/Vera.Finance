@@ -45,7 +45,7 @@
   color:var(--text-muted)
 }
 .landing-eyebrow--faint{
-  color:var(--text-placeholder)
+  color:var(--text-muted)
 }
 .landing-h2{
   font-family:var(--font-display);

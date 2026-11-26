@@ -11,7 +11,8 @@
   --cinza-050:#f5f2ee;
   --cinza-300:#b8bcc2;
   --cinza-500:#8a8f96;
-  --cinza-600:#6b7075;
+  /* Texto apagado do papel: 5,1:1 sobre papel-200 e 4,6:1 sobre papel-300 (AA pede 4,5:1). */
+  --cinza-600:#5f646a;
   --cinza-700:#5a5f66;
   --cinza-800:#4a4f55;
   --cinza-900:#17191c;
