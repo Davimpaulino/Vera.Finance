@@ -63,9 +63,10 @@ Tudo abaixo existe no código deste repositório.
   dura.
 - **Lançamentos**: entradas e saídas, com histórico e planilha (CSV) de todos os lançamentos.
 - **Leitura de nota fiscal**: a câmera lê o QR Code da NFC-e (cupom fiscal eletrônico); a API busca
-  os itens no portal da Secretaria da Fazenda do estado e separa cada item numa categoria. Lê o
-  layout do "Portal da NFC-e" usado pela maioria dos estados; quando o estado mostra outro formato,
-  o app pede para lançar à mão.
+  a nota no portal da Secretaria da Fazenda do estado, prepara um gasto com o valor e a loja para a
+  pessoa escolher a categoria e guarda os preços para comparar. Lê o layout do "Portal da NFC-e"
+  usado pela maioria dos estados; quando o estado mostra outro formato, o app pede para lançar à
+  mão.
 - **Metas**: valor-alvo, aportes e simulador de quantos ciclos faltam.
 - **Relatórios**: gastos dos últimos 6 ciclos e mês a mês no ano, limites estourados, a categoria
   que mais caiu e os lugares onde a pessoa mais gasta.
@@ -206,8 +207,9 @@ flowchart LR
   app em `dist/app.html`.
 - **PWA**: `public/manifest.webmanifest` e `public/sw.js` (detalhes no
   [deploy](#app-instalável-pwa)).
-- **Login no navegador**: Firebase Authentication (`src/services/firebase.js` e
-  `servicoDeLogin.js`), com o login próprio da API como plano B para as contas antigas.
+- **Login no navegador**: Firebase Authentication (`src/services/firebase.js`,
+  `configuracaoFirebase.js` e `servicoDeLogin.js`), com o login próprio da API como plano B para as
+  contas antigas.
 
 ---
 
@@ -298,9 +300,9 @@ npm run dev                   # http://localhost:5173, fala com a API em http://
 
 Para outra API, crie `Frontend/.env.local` com `VITE_API_URL=...`. Sem as variáveis
 `VITE_FIREBASE_*`, o site usa a configuração do projeto Firebase que está em
-`src/services/firebase.js`; para não criar contas de teste nele, aponte essas variáveis para um
-projeto Firebase de desenvolvimento e use o mesmo projeto em `FIREBASE_PROJECT_ID` na API (é com ele
-que a API confere o token de login).
+`src/services/configuracaoFirebase.js`; para não criar contas de teste nele, aponte essas variáveis
+para um projeto Firebase de desenvolvimento e use o mesmo projeto em `FIREBASE_PROJECT_ID` na API (é
+com ele que a API confere o token de login).
 
 `npm run preview` serve o `dist` do build do mesmo jeito que o Render (páginas pré-renderizadas e a
 regra `/* -> /app.html`).
@@ -390,7 +392,7 @@ Nunca coloque segredo numa variável `VITE_*`. Depois de mudar uma delas, faça 
 |---|---|---|---|
 | `VITE_API_URL` | Sim, em produção | Endereço da API. Padrão: `http://localhost:4000`. | `https://sua-api.onrender.com` |
 | `VITE_SITE_URL` | Não | Endereço público do site, sem `/` no fim. Vai para o `og:image`, o JSON-LD, os links absolutos e o canonical das páginas pré-renderizadas. Padrão: `https://vera-finance.onrender.com`. Ao trocar para um domínio próprio, atualize também `public/sitemap.xml`, `public/robots.txt` e `public/llms.txt`. | `https://vera-finance.onrender.com` |
-| `VITE_FIREBASE_API_KEY` | Não | Configuração Web do Firebase (pública). Padrão: a do projeto em `src/services/firebase.js`. | `AIza...` |
+| `VITE_FIREBASE_API_KEY` | Não | Configuração Web do Firebase (pública). Padrão: a do projeto em `src/services/configuracaoFirebase.js`. | `AIza...` |
 | `VITE_FIREBASE_AUTH_DOMAIN` | Não | Domínio de login do Firebase. Padrão: `<projeto>.firebaseapp.com`. | `meu-projeto.firebaseapp.com` |
 | `VITE_FIREBASE_PROJECT_ID` | Não | Projeto do Firebase do site. | `meu-projeto` |
 | `VITE_FIREBASE_APP_ID` | Não | Id do app Web no Firebase. | `1:000000000000:web:abc123` |
