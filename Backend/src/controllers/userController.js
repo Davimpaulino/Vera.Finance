@@ -91,7 +91,13 @@ export const userController = {
     if (body.ciclo !== undefined) data.ciclo = cicloDoCorpo(body.ciclo);
     if (body.local !== undefined) {
       data.local = localDoCorpo(body.local);
-      if (GeoModel.temCoordenadas(data.local)) {
+      const cepEmBranco = data.local.cep !== undefined && !/\d/.test(data.local.cep);
+      if (cepEmBranco && !GeoModel.temCoordenadas(data.local)) {
+        // CEP em branco apaga a localização (Política de Privacidade): o CEP, o ponto aproximado e
+        // a cidade. Na mescla, null tira a chave do perfil. Gravar lat e lng nulos não serve:
+        // Number(null) é 0, e temCoordenadas leria o ponto 0,0.
+        Object.assign(data.local, { cep: '', lat: null, lng: null, cidade: null });
+      } else if (GeoModel.temCoordenadas(data.local)) {
         // Guarda só o ponto aproximado (~100 m), nunca a posição exata do aparelho.
         Object.assign(data.local, GeoModel.aproximar(data.local));
         // Localização do aparelho: o CEP passa a ser o da rua onde a pessoa está.
