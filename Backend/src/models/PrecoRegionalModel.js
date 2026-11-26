@@ -589,6 +589,17 @@ export const PrecoRegionalModel = {
       const precos = {};
       const situacao = {};
       const substitutos = {};
+      // Qual produto deu o preço em cada loja. Num item genérico ("Arroz"), cada loja pode ter
+      // entrado com uma embalagem diferente (1 kg numa, 5 kg na outra): quem compara loja com
+      // loja (o alerta da lista, por exemplo) confere por aqui se é o mesmo produto.
+      const produtoUsado = {};
+      const anotar = (lojaId, nome, ean = '') => {
+        produtoUsado[lojaId] = {
+          chave: chaveDeProduto({ produto: nome, ean }),
+          tamanho: tamanho(nome),
+          variantes: [...variantes(nome)].sort().join(' ')
+        };
+      };
       respostas
         .filter(resposta => resposta.i === i)
         .forEach(resposta => {
@@ -597,6 +608,7 @@ export const PrecoRegionalModel = {
           if (oferta) {
             precos[lojaId] = oferta.preco;
             situacao[lojaId] = item.produto ? 'exato' : 'aproximado';
+            anotar(lojaId, oferta.produto, oferta.ean);
             return;
           }
           const troca = substitutoDoItem(item, resposta.achados);
@@ -604,13 +616,16 @@ export const PrecoRegionalModel = {
             precos[lojaId] = troca.preco;
             situacao[lojaId] = 'substituto';
             substitutos[lojaId] = troca.produto;
+            anotar(lojaId, troca.produto, troca.ean);
           }
         });
+      const produtoDaNota = daNota.itens[i]?.produtoDaNota || null;
       Object.entries(daNota.itens[i]?.precos || {}).forEach(([notaId, preco]) => {
         const loja = lojaDaNota[notaId];
         if (!loja || precos[loja.id] != null) return;
         precos[loja.id] = preco;
         situacao[loja.id] = 'nota';
+        if (produtoDaNota) anotar(loja.id, produtoDaNota);
       });
       const valores = Object.entries(precos).sort((a, b) => a[1] - b[1]);
       const melhorLoja = valores[0]
@@ -618,11 +633,12 @@ export const PrecoRegionalModel = {
         : null;
       return {
         ...item,
-        produtoDaNota: daNota.itens[i]?.produtoDaNota || null,
+        produtoDaNota,
         categoria: categoriaDoProduto(item.nome),
         precos,
         situacao,
         substitutos,
+        produtoUsado,
         estimativa: mediana(Object.values(precos)),
         disponivelEm: valores.length,
         melhorPreco: valores[0] ? valores[0][1] : null,

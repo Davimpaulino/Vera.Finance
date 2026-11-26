@@ -14,8 +14,12 @@ const PERCENTUAL_MINIMO = 0.05; // ...e pelo menos 5% a menos
 const MAXIMO_DE_ALERTAS = 3;
 const VALIDADE_MS = 2 * 24 * 60 * 60 * 1000;
 const RENOVAR_MS = 6 * 60 * 60 * 1000;
-// Substituto é outro produto (outra marca): não serve para dizer que "o mesmo item" está mais barato.
-const SITUACOES_DO_MESMO_ITEM = new Set(['exato', 'aproximado', 'nota']);
+// Situações (de PrecoRegionalModel.lista) em que duas lojas na mesma situação vendem o mesmo
+// produto: 'exato' é o produto escolhido na lista (mesmo código de barras, ou mesma marca,
+// tamanho e variante) e 'nota' é o mesmo produto das notas fiscais. 'aproximado' (item sem
+// produto escolhido) pega o mais parecido de cada loja, que pode ser 1 kg numa e 5 kg na outra.
+// 'substituto' é de outra marca e nunca serve para dizer que "o mesmo item" está mais barato.
+const SEMPRE_O_MESMO_PRODUTO = new Set(['exato', 'nota']);
 
 const caminho = uid => `usuarios/${uid}/perfil/alertasDaLista`;
 const centavos = valor => Math.round(Number(valor) * 100);
@@ -26,9 +30,22 @@ const reais = valor =>
     .replace(/\B(?=(\d{3})+(?!\d))/g, '.')}`;
 const km = valor => `${String(round2(valor)).replace('.', ',')} km`;
 
-// Sem `situacao` (ComparacaoModel.lista, só notas), todo preço é do próprio item.
-const mesmoItem = (item, mercadoId) =>
-  !item.situacao || !item.situacao[mercadoId] || SITUACOES_DO_MESMO_ITEM.has(item.situacao[mercadoId]);
+/**
+ * Os preços do item nas duas lojas são do mesmo produto? Sem `situacao` (ComparacaoModel.lista,
+ * só notas), todo preço é do mesmo produto das notas. Fora isso, vale a mesma situação 'exato' ou
+ * 'nota' nas duas; nos outros casos (item genérico, ou site de um lado e nota do outro), só com o
+ * mesmo código de barras ou a mesma embalagem (tamanho e variante) nas duas lojas.
+ */
+function mesmoProduto(item, habitualId, outroId) {
+  if (!item.situacao) return true;
+  const [a, b] = [item.situacao[habitualId], item.situacao[outroId]];
+  if (!a || !b || a === 'substituto' || b === 'substituto') return false;
+  if (a === b && SEMPRE_O_MESMO_PRODUTO.has(a)) return true;
+  const [x, y] = [item.produtoUsado?.[habitualId], item.produtoUsado?.[outroId]];
+  if (!x || !y) return false;
+  if (x.chave && x.chave === y.chave) return true;
+  return Boolean(x.tamanho) && x.tamanho === y.tamanho && x.variantes === y.variantes;
+}
 
 /**
  * Itens da comparação mais baratos fora do mercado habitual, por uma diferença que vale a viagem.
@@ -43,10 +60,10 @@ export function itensMaisBaratos(comparacao, mercados) {
   for (const item of comparacao.itens || []) {
     if (item.done) continue;
     const precoHabitual = item.precos?.[habitual.mercadoId];
-    if (precoHabitual == null || !mesmoItem(item, habitual.mercadoId)) continue;
+    if (precoHabitual == null) continue;
     const melhor = Object.entries(item.precos)
       .filter(([mercadoId, preco]) => mercadoId !== habitual.mercadoId && preco < precoHabitual)
-      .filter(([mercadoId]) => mesmoItem(item, mercadoId) && loja(mercadoId))
+      .filter(([mercadoId]) => mesmoProduto(item, habitual.mercadoId, mercadoId) && loja(mercadoId))
       .sort((a, b) => a[1] - b[1])[0];
     if (!melhor) continue;
     const [mercadoId, preco] = melhor;
