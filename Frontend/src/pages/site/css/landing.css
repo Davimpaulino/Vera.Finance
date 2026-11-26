@@ -302,6 +302,12 @@
   font-size:var(--fs-caption);
   color:var(--text-muted)
 }
+.landing-brands__link{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  font-weight:600
+}
 .landing-ilustrativa{
   font-size:var(--fs-caption);
   color:var(--text-muted)

@@ -4,6 +4,7 @@ import { Brand } from '../Brand.jsx';
 import { Link } from '../../lib/router.jsx';
 import { api } from '../../services/api.js';
 import { useUi } from '../../context/UiContext.jsx';
+import { POSTS_DO_BLOG } from '../../conteudo/blog.js';
 import './css/site-footer.css';
 
 const STATUS_URL =
@@ -24,17 +25,26 @@ const COLS = [
     itens: [
       ['Como funciona', '/#como-funciona'],
       ['Planos', '/precos'],
-      ['Perguntas frequentes', '/perguntas'],
+      ['Onde funciona', '/onde-funciona'],
       ['Base de preços', '/app/comparar']
     ]
   },
   {
     titulo: 'ajuda',
     itens: [
-      ['Central de ajuda', 'mailto:ajuda@vera.finance'],
-      ['Ler NF-e', '/app'],
+      ['Central de ajuda', '/ajuda'],
+      ['Perguntas frequentes', '/perguntas'],
+      ['Ler nota fiscal', '/ajuda/ler-nota-fiscal'],
       ['Contato', 'mailto:oi@vera.finance'],
       ['Status', STATUS_URL]
+    ]
+  },
+  {
+    // Os artigos mais novos do blog (src/conteudo/blog.js), pelo nome curto.
+    titulo: 'blog',
+    itens: [
+      ['Todos os artigos', '/blog'],
+      ...POSTS_DO_BLOG.slice(0, 4).map(post => [post.curto, `/blog/${post.slug}`])
     ]
   }
 ];

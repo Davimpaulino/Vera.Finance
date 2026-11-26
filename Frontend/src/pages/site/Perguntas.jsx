@@ -104,6 +104,12 @@ export default function Perguntas() {
           </div>
         ))}
         <p className="perguntas__p">
+          Passo a passo de cada parte do app está na <Link to="/ajuda">central de ajuda</Link>.
+          Para saber se há rede com preço online perto de você, veja{' '}
+          <Link to="/onde-funciona">onde a vera funciona</Link>. Dicas para economizar no mercado
+          estão no <Link to="/blog">blog</Link>.
+        </p>
+        <p className="perguntas__p">
           Veja também: <Link to="/precos">Planos</Link>,{' '}
           <Link to="/privacidade">Política de privacidade</Link> e{' '}
           <Link to="/termos">Termos de uso</Link>. Outra dúvida? Escreva para{' '}

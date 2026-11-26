@@ -182,6 +182,10 @@ export default function Landing() {
                   </span>
                 ))}
               </div>
+              <Link to="/onde-funciona" className="landing-brands__link">
+                Ver as {REDES_COM_PRECO.length} redes e consultar o seu CEP
+                <Icon name="arrow-right" size={16} />
+              </Link>
               <span className="landing-aviso">Sem vínculo com as redes citadas.</span>
             </div>
           </div>
