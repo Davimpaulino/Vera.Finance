@@ -1,4 +1,11 @@
 /* Verificador de CEP e lista de redes da página Onde funciona. */
+/* O formulário e a região do resultado vão juntos num bloco só do .conteudo: a região fica
+   sempre na página, mesmo vazia (leitor de tela só anuncia o que aparece numa região aria-live
+   que já existia), e o espaço vem da margem do resultado, não do gap do .conteudo. */
+.onde-consulta{
+  display:flex;
+  flex-direction:column
+}
 .onde-busca{
   display:flex;
   flex-direction:column;
@@ -21,8 +28,8 @@
   flex-direction:column;
   gap:16px
 }
-.onde-busca__saida:empty{
-  display:none
+.onde-busca__saida > :first-child{
+  margin-top:20px
 }
 .onde-resultado{
   display:flex;

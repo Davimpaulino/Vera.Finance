@@ -203,38 +203,40 @@ export default function OndeFunciona() {
           </p>
         </header>
 
-        <form
-          className="onde-busca"
-          onSubmit={e => {
-            e.preventDefault();
-            consultar();
-          }}
-        >
-          <div className="vera-filter-row">
-            <Input
-              label="Seu CEP"
-              placeholder="00000-000"
-              inputMode="numeric"
-              autoComplete="postal-code"
-              numeric
-              value={cep}
-              onChange={e => setCep(formatarCep(e.target.value))}
-              className="onde-busca__campo"
-            />
-            <Button type="submit" loading={buscando} loadingLabel="Consultando">
-              Ver redes
-            </Button>
-          </div>
-          <span className="onde-busca__dica">Não precisa de cadastro.</span>
-        </form>
-
-        <div aria-live="polite" className="onde-busca__saida">
-          {erro ? (
-            <div className="vera-form-error" role="alert">
-              {erro}
+        <div className="onde-consulta">
+          <form
+            className="onde-busca"
+            onSubmit={e => {
+              e.preventDefault();
+              consultar();
+            }}
+          >
+            <div className="vera-filter-row">
+              <Input
+                label="Seu CEP"
+                placeholder="00000-000"
+                inputMode="numeric"
+                autoComplete="postal-code"
+                numeric
+                value={cep}
+                onChange={e => setCep(formatarCep(e.target.value))}
+                className="onde-busca__campo"
+              />
+              <Button type="submit" loading={buscando} loadingLabel="Consultando">
+                Ver redes
+              </Button>
             </div>
-          ) : null}
-          {resultado ? <Resultado r={resultado} onTentar={consultar} /> : null}
+            <span className="onde-busca__dica">Não precisa de cadastro.</span>
+          </form>
+
+          <div aria-live="polite" className="onde-busca__saida">
+            {erro ? (
+              <div className="vera-form-error" role="alert">
+                {erro}
+              </div>
+            ) : null}
+            {resultado ? <Resultado r={resultado} onTentar={consultar} /> : null}
+          </div>
         </div>
 
         <h2 className="conteudo__h2">As {REDES_COM_PRECO.length} redes com preço online</h2>
