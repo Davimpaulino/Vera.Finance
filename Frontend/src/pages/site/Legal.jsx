@@ -1,12 +1,14 @@
 import { SiteLayout } from '../../components/site/SiteLayout.jsx';
 import { Link } from '../../lib/router.jsx';
+import { EMAIL_DE_CONTATO } from '../../lib/site.js';
 import './css/legal.css';
 
 // Textos legais. Cada bloco tem um título e parágrafos ou listas.
 // Atualize ATUALIZADO_EM sempre que o texto mudar (e avise quem usa, se a mudança for relevante).
 // Junto, troque VERSAO_DOS_TERMOS (Frontend/src/lib/termos.js e Backend/src/config/termos.js).
-const ATUALIZADO_EM = '26 de novembro de 2026';
-const CONTATO = 'privacidade@vera.finance';
+const ATUALIZADO_EM = '28 de novembro de 2026';
+// Contato de privacidade e do encarregado: o e-mail único da vera, provisório até ter domínio (lib/site.js).
+const CONTATO = EMAIL_DE_CONTATO;
 
 const TEXTOS = {
   termos: {
