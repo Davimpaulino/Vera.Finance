@@ -6,7 +6,8 @@ App brasileiro de finanças pessoais que funciona no navegador. A vera separa a 
 categorias, mostra quanto ainda dá para gastar e até que dia o dinheiro dura, guarda metas e
 compara o preço da lista de compras nos supermercados perto do CEP da pessoa.
 
-- Site: https://vera-finance.onrender.com
+- Site: https://vera-finance-ckfn.onrender.com
+- API: https://vera-finance.onrender.com (só a API, sem páginas)
 - Repositório: https://github.com/Davimpaulino/vera.finance
 - Contato: veragroup.ia@gmail.com (e-mail único para contato, ajuda e privacidade, provisório até a
   vera ter domínio próprio), WhatsApp [(11) 94072-3507](https://wa.me/5511940723507) e Instagram
@@ -28,6 +29,8 @@ não tem vínculo com as redes de supermercado citadas.
   - [Testes](#testes)
 - [Variáveis de ambiente](#variáveis-de-ambiente)
 - [Deploy no Render](#deploy-no-render)
+  - [Criar pelo Blueprint](#criar-pelo-blueprint-renderyaml)
+  - [Endereço do site](#endereço-do-site)
   - [Sem internet](#sem-internet)
   - [Deploy com a aba aberta](#deploy-com-a-aba-aberta)
 - [Scripts de operação](#scripts-de-operação)
@@ -372,7 +375,7 @@ formato.
 | Variável | Obrigatória | Para quê | Exemplo |
 |---|---|---|---|
 | `SEGREDO_LOGIN` | Sim, em produção | Assina as sessões do login próprio. Precisa de 32 caracteres ou mais. Sem ela, a API sorteia um segredo a cada início e as sessões do login por senha caem a cada reinício (a API avisa no log). Gere com `openssl rand -base64 48`. | `<48 bytes aleatórios em base64>` |
-| `CORS_ORIGIN` | Sim, em produção | Endereços do site que podem chamar a API, separados por vírgula. Nunca `*`. Padrão: `http://localhost:5173`. | `https://vera-finance.onrender.com` |
+| `CORS_ORIGIN` | Sim, em produção | Endereços do site que podem chamar a API, separados por vírgula. É o endereço do site (o Static Site), não o da API, sem `/` no fim. Nunca `*`. Padrão: `http://localhost:5173`. | `https://vera-finance-ckfn.onrender.com` |
 | `NODE_ENV` | Não | Só o valor `test` muda algo: desliga o aviso do `SEGREDO_LOGIN` (os testes usam). Outros valores, como `production`, não mudam nada na API. | `test` |
 | `FIREBASE_PROJECT_ID` | Sim, com Firebase | Projeto do Firebase: conta de serviço e conferência dos tokens de login. | `meu-projeto` |
 | `FIREBASE_CLIENT_EMAIL` | Sim, com Firebase | E-mail da conta de serviço (Admin SDK). | `firebase-adminsdk-xxxx@meu-projeto.iam.gserviceaccount.com` |
@@ -386,7 +389,7 @@ formato.
 | `BANCO` | Não | `memoria` força o banco em memória (desenvolvimento e testes). | `memoria` |
 | `PORT` | Não | Porta da API. O Render define sozinho. Padrão: 4000. | `4000` |
 | `TZ` | Não | Fuso horário das datas. Padrão: `America/Sao_Paulo`. | `America/Sao_Paulo` |
-| `SITE_URL` | Não | Endereço do site nos links dos modelos de e-mail (ainda sem envio) e no user-agent do [robô de coleta](#robô-de-coleta-identificado). Padrão: `https://vera-finance.onrender.com`. | `https://vera-finance.onrender.com` |
+| `SITE_URL` | Não | Endereço do site (o Static Site, não a API) nos links dos modelos de e-mail (ainda sem envio) e no user-agent do [robô de coleta](#robô-de-coleta-identificado). Padrão: `https://vera-finance-ckfn.onrender.com` (`Backend/src/config/site.js`). | `https://vera-finance-ckfn.onrender.com` |
 | `COLETA_IDENTIFICADA` | Não | `1` faz os pedidos aos sites das redes saírem com o user-agent do robô da vera e confere o robots.txt de cada site antes ([detalhes](#robô-de-coleta-identificado)). Sem ela, os pedidos vão como um navegador comum. | `1` |
 | `CEP_DE_TESTE` | Não | CEP usado pelo `npm run saude:redes` ([monitor das redes](#monitor-de-saúde-das-redes)). Só o script lê; a API não usa. Padrão: `01310100`. | `13334100` |
 
@@ -404,8 +407,8 @@ Nunca coloque segredo numa variável `VITE_*`. Depois de mudar uma delas, faça 
 
 | Variável | Obrigatória | Para quê | Exemplo |
 |---|---|---|---|
-| `VITE_API_URL` | Sim, em produção | Endereço da API. Padrão: `http://localhost:4000`. | `https://sua-api.onrender.com` |
-| `VITE_SITE_URL` | Não | Endereço público do site, sem `/` no fim. Vai para o `og:image`, o JSON-LD, os links absolutos e o canonical das páginas pré-renderizadas. Padrão: `https://vera-finance.onrender.com`. Ao trocar para um domínio próprio, atualize também `public/sitemap.xml`, `public/robots.txt` e `public/llms.txt`. | `https://vera-finance.onrender.com` |
+| `VITE_API_URL` | Sim, em produção | Endereço da API. Padrão: `http://localhost:4000`. | `https://vera-finance.onrender.com` |
+| `VITE_SITE_URL` | Sim, em produção | Endereço público do site, sem `/` no fim. Vai para o `og:image`, o JSON-LD, os links absolutos, o canonical das páginas pré-renderizadas, o `sitemap.xml`, o `robots.txt` e o `llms.txt` ([lista completa](#endereço-do-site)). Padrão: `https://vera-finance-ckfn.onrender.com` (`src/lib/site.js`). | `https://vera-finance-ckfn.onrender.com` |
 | `VITE_FIREBASE_API_KEY` | Não | Configuração Web do Firebase (pública). Padrão: a do projeto em `src/services/configuracaoFirebase.js`. | `AIza...` |
 | `VITE_FIREBASE_AUTH_DOMAIN` | Não | Domínio de login do Firebase. Padrão: `<projeto>.firebaseapp.com`. | `meu-projeto.firebaseapp.com` |
 | `VITE_FIREBASE_PROJECT_ID` | Não | Projeto do Firebase do site. | `meu-projeto` |
@@ -419,39 +422,96 @@ O `npm run indexnow` também lê `VITE_SITE_URL` do ambiente do terminal.
 
 ## Deploy no Render
 
-São dois serviços no Render, os dois ligados a este repositório: a API como **Web Service** e o site
-como **Static Site**. Um terceiro é opcional: o **Cron Job** do
+São dois serviços no Render, os dois ligados a este repositório e descritos no
+[`render.yaml`](render.yaml) da raiz (Blueprint): a API como **Web Service** e o site como
+**Static Site**. Um terceiro é opcional: o **Cron Job** do
 [monitor de saúde das redes](#monitor-de-saúde-das-redes).
 
+| Serviço | Tipo no Render | Pasta | Endereço hoje |
+|---|---|---|---|
+| API | Web Service | `Backend` | https://vera-finance.onrender.com |
+| Site | Static Site | `Frontend` | https://vera-finance-ckfn.onrender.com |
+
+O endereço do site e o da API são diferentes. `VITE_SITE_URL`, `SITE_URL` e `CORS_ORIGIN` levam o
+do site; `VITE_API_URL` leva o da API. Os dois `.onrender.com` mudam quando os serviços são criados
+de novo (numa conta nova, por exemplo). Depois disso, atualize esta tabela e o padrão em
+`Frontend/src/lib/site.js` e `Backend/src/config/site.js` (o teste confere que os dois batem).
+
+### Criar pelo Blueprint (`render.yaml`)
+
+O `render.yaml` cria os dois serviços de uma vez, com Node 22 fixo (`NODE_VERSION=22`) nos dois.
+As variáveis secretas estão com `sync: false`: o Render pede o valor na criação e ele fica só no
+painel. Nunca ponha um valor real no `render.yaml`.
+
+1. No Render: **New → Blueprint**. Conecte o GitHub, escolha este repositório e a branch de
+   produção. O Render lê o `render.yaml` e mostra `vera-finance-api` e `vera-finance-site`.
+2. Preencha as variáveis da **API**: `DATABASE_URL` (a connection string do Neon), `SEGREDO_LOGIN`,
+   `FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL` e `FIREBASE_PRIVATE_KEY`. `CORS_ORIGIN` e
+   `SITE_URL` pedem o endereço do site, que ainda não existe: deixe em branco por enquanto.
+3. As do **site** (`VITE_API_URL` e `VITE_SITE_URL`) também dependem de endereços que ainda não
+   existem: deixe em branco. Clique em **Apply**.
+4. **API primeiro.** Espere o deploy dela e abra `https://<api>.onrender.com/api/saude`. O log de
+   início mostra o banco em uso, por exemplo
+   `vera.finance API em http://localhost:<porta> · PostgreSQL (DATABASE_URL) · login pelo Firebase Auth`.
+5. **Depois o site.** No serviço do site → *Environment*: `VITE_API_URL` com o endereço da API e
+   `VITE_SITE_URL` com o endereço do próprio site (aparece no topo da página do serviço). Salve e
+   faça **Manual Deploy → Deploy latest commit**: as `VITE_*` só entram num build novo.
+6. **Volte à API.** *Environment*: `CORS_ORIGIN` e `SITE_URL` com o endereço do site, sem `/` no
+   fim. Salve; o Render publica a API de novo.
+7. **Firebase Authentication** → Settings → **Authorized domains**: adicione o domínio do site (só
+   o nome, sem `https://`, como `vera-finance-ckfn.onrender.com`). Sem isso, o login do Google e o
+   botão do e-mail de confirmação não funcionam no endereço novo.
+8. **Regras do Realtime Database.** O deploy no Render não publica as regras: publique o
+   `database.rules.json` à parte. Na pasta `Backend`, com a conta de serviço e `FIREBASE_URL_BANCO`
+   no `.env`, rode `npm run regras:firebase` (simula) e depois
+   `npm run regras:firebase -- --executar` (publica e confere; veja
+   [como usar](#publicar-as-regras-do-realtime-database)). Também dá pelo console: Firebase
+   Console → Realtime Database → Regras, colando o conteúdo do arquivo. O arquivo fecha o banco
+   para leitura e escrita diretas: só a API, com a conta de serviço, acessa.
+9. Confira o site (veja a lista no fim de [Site](#site-static-site)) e avise os buscadores com
+   `npm run indexnow` ([IndexNow](#avisar-os-buscadores-indexnow)).
+
+Mudou um endereço depois? Troque `VITE_API_URL`/`VITE_SITE_URL` no site e faça um deploy novo; troque
+`CORS_ORIGIN`/`SITE_URL` na API; ponha o domínio novo em Authorized domains.
+
+Depois de criado pelo Blueprint, o Render sincroniza o `render.yaml` a cada push: mudar build,
+start ou rewrite no arquivo muda o serviço. As variáveis `sync: false` não são tocadas na
+sincronização; mude-as no painel.
+
+### Região
+
+O Render não tem região no Brasil. As opções da API são `oregon` (padrão), `ohio`, `virginia`,
+`frankfurt` e `singapore`, e a região **não muda depois de criado o serviço**. O `render.yaml` não
+fixa região, então a API sai em `oregon`. Como o banco fica no Neon em São Paulo (AWS `sa-east-1`) e
+cada pedido da API consulta o banco, a mais perto deve ser `virginia` (leste dos EUA). Decida antes
+de criar: para usar `virginia`, tire o `#` da linha `region: virginia` no `render.yaml`. O site
+estático não tem região (sai por uma CDN global).
+
 ### API (Web Service)
+
+Os campos abaixo são os mesmos do `render.yaml`. Servem para conferir o serviço ou para criá-lo à mão,
+sem Blueprint.
 
 | Campo | Valor |
 |---|---|
 | Root Directory | `Backend` |
-| Runtime | Node. O Render segue `engines` do `Backend/package.json` (22.9 ou mais nova); para fixar a versão, defina `NODE_VERSION=22` no Environment |
+| Runtime | Node, com `NODE_VERSION=22` no Environment (o `engines` do `Backend/package.json` pede 22.9 ou mais nova) |
 | Build Command | `npm ci` |
 | Start Command | `npm start` |
 | Health Check Path | `/api/saude` |
 | Environment | as variáveis da tabela [API](#api-render--serviço-da-api--environment) |
 
-No log de início aparece o banco em uso, por exemplo
-`vera.finance API em http://localhost:<porta> · PostgreSQL (DATABASE_URL) · login pelo Firebase Auth`.
-
-Regras do Realtime Database: o arquivo `database.rules.json` fecha o banco para leitura e escrita
-diretas (só a API, com a conta de serviço, acessa). Publique com
-`npm run regras:firebase -- --executar`, que publica e confere (sem `--executar`, só simula; veja
-[como usar](#publicar-as-regras-do-realtime-database)). Também dá com
-`firebase deploy --only database` ou colando o conteúdo em Firebase Console → Realtime Database →
-Regras.
-
 ### Site (Static Site)
+
+Também iguais ao `render.yaml`:
 
 | Campo | Valor |
 |---|---|
 | Root Directory | `Frontend` |
-| Node | 22.12 ou mais nova (o Vite pede). Se o build reclamar da versão, defina `NODE_VERSION=22` no Environment |
-| Build Command | `npm ci && npm run build` |
+| Node | `NODE_VERSION=22` no Environment. O `Frontend/package.json` não tem `engines`: sem a variável, o Render usa a versão padrão da data em que o serviço foi criado, que pode ser antiga demais para o Vite 7 (pede 20.19 ou 22.12 ou mais nova) |
+| Build Command | `npm ci && npm run build` (não `npm install`: o `npm ci` instala exatamente o `package-lock.json`) |
 | Publish Directory | `dist` (relativo ao Root Directory, ou seja, `Frontend/dist`) |
+| Build Filters | `Frontend/**` e `Backend/src/models/PlanoModel.js` (o build lê os preços dos planos de lá; sem o filtro, mudar só esse arquivo não publica o site) |
 | Redirects/Rewrites | **Source** `/*` → **Destination** `/app.html`, **Action** `Rewrite` |
 | Environment | as variáveis da tabela [Site](#site-render--static-site--environment-usadas-no-build) |
 
@@ -477,6 +537,38 @@ Sem Root Directory, use `cd Frontend && npm ci && npm run build` no build e `Fro
 Publish Directory: o resultado é o mesmo.
 
 O checklist completo de deploy, logs e rollback está em [docs/operacao.md](docs/operacao.md).
+
+### Endereço do site
+
+O endereço do site sai de uma variável só: `VITE_SITE_URL` no build do site e `SITE_URL` na API.
+Nenhum arquivo tem o endereço escrito à mão; sem as variáveis, vale o padrão
+`https://vera-finance-ckfn.onrender.com`. Dependem dele:
+
+| Arquivo | O que leva o endereço | Como entra |
+|---|---|---|
+| `Frontend/index.html` | canonical, `og:url`, `og:image`, `twitter:image` e o `url`/`logo` do JSON-LD | marcador `__SITE_URL__`, trocado pelo plugin `vera-site-url` do `vite.config.js` |
+| `Frontend/public/sitemap.xml` | todas as URLs | marcador `__SITE_URL__`, trocado no `dist/` pelo plugin `vera-site-url-publico` |
+| `Frontend/public/robots.txt` | a linha `Sitemap:` | idem |
+| `Frontend/public/llms.txt` | os links das páginas | idem |
+| páginas pré-renderizadas (`dist/<rota>/index.html`) | canonical, `og:url` e JSON-LD de cada página | `urlDoSite()` de `src/lib/site.js`, usada por `src/lib/paginas.js` e `src/conteudo/` |
+| `Frontend/scripts/indexnow.mjs` | as URLs enviadas aos buscadores | argumento, `VITE_SITE_URL` ou o padrão |
+| `Backend/src/config/site.js` | links dos e-mails e o user-agent do robô de coleta | `SITE_URL` |
+
+O `manifest.webmanifest` e o `sw.js` só usam caminhos relativos e não dependem do endereço.
+
+Para trocar de endereço (domínio próprio ou serviço novo no Render): mude `VITE_SITE_URL` no site e
+faça um build novo; mude `SITE_URL` e `CORS_ORIGIN` na API; ponha o domínio em Firebase
+Authentication → Authorized domains; depois do deploy, rode `npm run indexnow`. Não precisa editar
+nenhum arquivo.
+
+- O build falha se um desses arquivos de `public/` perder o marcador, e o `scripts/prerender.mjs`
+  falha se sobrar algum `__SITE_URL__` no `dist/`.
+- Para conferir: `VITE_SITE_URL=https://exemplo.onrender.com npm run build` e
+  `grep -r onrender dist/` só mostra o endereço passado.
+- No `npm run dev`, o Vite serve os arquivos de `public/` como estão, com o marcador. Só o build
+  troca.
+- Página nova ou artigo novo entra no `sitemap.xml` e no `llms.txt` com o marcador, como as outras:
+  `__SITE_URL__/caminho`.
 
 ### App instalável (PWA)
 
@@ -527,7 +619,8 @@ npm run indexnow -- https://seu-dominio.com.br     # outro endereço
 npm run indexnow -- --teste                        # só mostra o que seria enviado
 ```
 
-O script lê as URLs de `public/sitemap.xml` e usa a chave do arquivo `public/<chave>.txt`, que
+O script lê as URLs de `public/sitemap.xml` (trocando o marcador `__SITE_URL__` pelo endereço) e
+usa a chave do arquivo `public/<chave>.txt`, que
 precisa estar no ar (abra `https://<site>/<chave>.txt` para conferir antes de enviar). Para
 aparecer no Google, cadastre o site no Google Search Console e envie o `sitemap.xml`.
 
@@ -580,10 +673,10 @@ A API funciona com o Firebase Realtime Database ou com PostgreSQL. Quem escolhe 
 3. Em **Connection string**, copie o endereço `postgresql://...?sslmode=require`. Ele tem a senha do
    banco: **nunca** coloque no código, em commit ou em print.
 
-O Neon passa a guardar dados pessoais: antes de migrar, inclua-o na lista de empresas que tratam
-dados da Política de privacidade (`Frontend/src/pages/site/Legal.jsx`) e decida com o encarregado de
-dados se a mudança pede um novo aceite (`VERSAO_DOS_TERMOS`; veja
-[docs/operacao.md](docs/operacao.md#pedidos-de-titulares-lgpd)).
+O Neon passa a guardar dados pessoais. Ele já está na lista de empresas que tratam dados da
+Política de privacidade (`Frontend/src/pages/site/Legal.jsx`, versão `v2026-11-29`, que pede o
+aceite de novo). Se trocar de provedor ou de região, atualize a Política e a versão
+(`VERSAO_DOS_TERMOS`; veja [docs/operacao.md](docs/operacao.md#pedidos-de-titulares-lgpd)).
 
 ### 2. Exportar o Firebase e migrar (em janela de manutenção)
 
@@ -959,7 +1052,8 @@ Recife, Goiânia, Porto Alegre e Campinas. O endereço é `/onde-funciona/<slug>
 - Depois de rodar, confira o JSON, faça o commit e publique o site. Atualize o `lastmod` das
   cidades no `public/sitemap.xml`.
 - Para pôr ou tirar uma cidade, mude `CIDADES` em `Backend/scripts/cobertura-das-cidades.mjs`, rode
-  o script e ponha a URL em `public/sitemap.xml` e em `public/llms.txt`. Os testes conferem as duas
+  o script e ponha a URL (`__SITE_URL__/onde-funciona/<slug>`) em `public/sitemap.xml` e em
+  `public/llms.txt`. Os testes conferem as duas
   listas e o JSON.
 - Cidade cujo nome leva artigo ("no Rio de Janeiro") entra em `COM_ARTIGO`, em
   `Frontend/src/conteudo/cidades.js`.
@@ -978,7 +1072,8 @@ Recife, Goiânia, Porto Alegre e Campinas. O endereço é `/onde-funciona/<slug>
    - `atualizadoEm`: data da última revisão. É obrigatória na ajuda e opcional no blog, e vai para o
      `dateModified` e para o "Atualizado em".
 2. Para pôr um link no texto, escreva `[rótulo](/caminho)`.
-3. Ponha a URL nova em `Frontend/public/sitemap.xml` e em `Frontend/public/llms.txt`. O teste
+3. Ponha a URL nova em `Frontend/public/sitemap.xml` e em `Frontend/public/llms.txt`, com o
+   marcador do endereço: `__SITE_URL__/ajuda/<slug>` ([Endereço do site](#endereço-do-site)). O teste
    `Backend/test/conteudo.test.js` falha se faltar. O mesmo teste falha se o artigo citar uma rede
    sem o aviso "A vera não tem vínculo com as redes citadas." ([docs/marca.md](docs/marca.md)). Se
    o nome ali é a cidade, o bairro ou uma palavra comum (São Vicente, Zona Sul, Confiança), e não a
@@ -1096,7 +1191,7 @@ Depois de atualizar pacotes, `npm audit --omit=dev` na pasta `Backend` precisa d
   Backend, o `npm ci` do Frontend mostra 9 avisos `EBADENGINE`. Isso é esperado e inofensivo,
   porque o SDK roda no navegador e o Node só testa e empacota. Não ligue `engine-strict` no Frontend.
 - Se um dia subir para Node 24, troque juntos o `node-version` do job frontend no
-  `.github/workflows/ci.yml` e o `NODE_VERSION` do site no painel do Render.
+  `.github/workflows/ci.yml` e o `NODE_VERSION` do site no `render.yaml`.
 - `overrides` no `Frontend/package.json`: o `@grpc/grpc-js` fica na 1.14.7, porque o Firestore do
   Firebase ainda pede a 1.9, que tem alertas no npm audit. Esse pacote só roda no Node e não entra
   no site. O `fontverter` (usado pelo `subset-font` no build) fica na 2.0.0.
@@ -1166,7 +1261,7 @@ mudam como esses pedidos saem:
 | Variável | Para quê |
 |---|---|
 | `COLETA_IDENTIFICADA` | Opcional. Com `1`, os pedidos aos sites das redes vão com o user-agent `vera-finance-bot/1.0 (+<SITE_URL>/robo)`, e o robots.txt de cada site é conferido antes de cada consulta (guardado por 24 h). Se o caminho está bloqueado para `vera-finance-bot` (ou para `*`, quando não há grupo próprio), a consulta não é feita e a rede fica sem preço naquela busca. Sem a variável, os pedidos vão como um navegador comum, como sempre foi. |
-| `SITE_URL` | Opcional. Endereço do site, usado no user-agent do robô. Padrão: `https://vera-finance.onrender.com`. |
+| `SITE_URL` | Opcional. Endereço do site (não o da API), usado no user-agent do robô. Padrão: `https://vera-finance-ckfn.onrender.com`. |
 
 - O nome do robô segue a RFC 9309 e só tem letras e hífen. Quem quiser escrever regras para ele no
   robots.txt usa `User-agent: vera-finance-bot`.
