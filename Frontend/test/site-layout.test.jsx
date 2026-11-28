@@ -3,6 +3,8 @@ import { screen, within } from '@testing-library/react';
 import Landing from '../src/pages/site/Landing.jsx';
 import Perguntas from '../src/pages/site/Perguntas.jsx';
 import Legal from '../src/pages/site/Legal.jsx';
+import { OndeFuncionaNaCidade } from '../src/pages/site/OndeFunciona.jsx';
+import { cidadeDoCaminho } from '../src/conteudo/cidades.js';
 import { renderComProvedores } from './auxiliares.jsx';
 import { EMAIL_DE_CONTATO, INSTAGRAM, WHATSAPP } from '../src/lib/site.js';
 
@@ -13,7 +15,12 @@ const PAGINAS = [
   ['home', <Landing key="home" />, '/'],
   ['perguntas', <Perguntas key="perguntas" />, '/perguntas'],
   ['termos', <Legal key="termos" tipo="termos" />, '/termos'],
-  ['privacidade', <Legal key="privacidade" tipo="privacidade" />, '/privacidade']
+  ['privacidade', <Legal key="privacidade" tipo="privacidade" />, '/privacidade'],
+  [
+    'cidade',
+    <OndeFuncionaNaCidade key="cidade" cidade={cidadeDoCaminho('/onde-funciona/sao-paulo-sp')} />,
+    '/onde-funciona/sao-paulo-sp'
+  ]
 ];
 
 describe('moldura do site', () => {

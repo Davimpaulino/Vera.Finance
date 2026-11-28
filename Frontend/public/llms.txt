@@ -24,9 +24,24 @@
 - [Início](https://vera-finance.onrender.com/): o que a vera faz e como funciona.
 - [Planos e preços](https://vera-finance.onrender.com/precos): o plano grátis e o vera+.
 - [Perguntas frequentes](https://vera-finance.onrender.com/perguntas): respostas curtas sobre preço, redes, nota fiscal, família, dados e conta.
-- [Onde a vera funciona](https://vera-finance.onrender.com/onde-funciona): consulta por CEP de quais redes com preço online têm loja perto, e a lista das redes separadas em supermercados e atacados.
+- [Onde a vera funciona](https://vera-finance.onrender.com/onde-funciona): consulta por CEP de quais redes com preço online têm loja perto, e a lista das redes separadas em supermercados e atacados, com links para as páginas por cidade.
 - [Política de privacidade](https://vera-finance.onrender.com/privacidade): como a vera trata os dados pessoais, conforme a LGPD.
 - [Termos de uso](https://vera-finance.onrender.com/termos): regras de uso do serviço.
+
+## Cidades
+
+- [Comparar preço de supermercado em São Paulo (SP)](https://vera-finance.onrender.com/onde-funciona/sao-paulo-sp): como a vera compara o preço na cidade e consulta por CEP.
+- [Comparar preço de supermercado no Rio de Janeiro (RJ)](https://vera-finance.onrender.com/onde-funciona/rio-de-janeiro-rj): como a vera compara o preço na cidade e consulta por CEP.
+- [Comparar preço de supermercado em Brasília (DF)](https://vera-finance.onrender.com/onde-funciona/brasilia-df): como a vera compara o preço na cidade e consulta por CEP.
+- [Comparar preço de supermercado em Fortaleza (CE)](https://vera-finance.onrender.com/onde-funciona/fortaleza-ce): como a vera compara o preço na cidade e consulta por CEP.
+- [Comparar preço de supermercado em Salvador (BA)](https://vera-finance.onrender.com/onde-funciona/salvador-ba): como a vera compara o preço na cidade e consulta por CEP.
+- [Comparar preço de supermercado em Belo Horizonte (MG)](https://vera-finance.onrender.com/onde-funciona/belo-horizonte-mg): como a vera compara o preço na cidade e consulta por CEP.
+- [Comparar preço de supermercado em Manaus (AM)](https://vera-finance.onrender.com/onde-funciona/manaus-am): como a vera compara o preço na cidade e consulta por CEP.
+- [Comparar preço de supermercado em Curitiba (PR)](https://vera-finance.onrender.com/onde-funciona/curitiba-pr): como a vera compara o preço na cidade e consulta por CEP.
+- [Comparar preço de supermercado em Recife (PE)](https://vera-finance.onrender.com/onde-funciona/recife-pe): como a vera compara o preço na cidade e consulta por CEP.
+- [Comparar preço de supermercado em Goiânia (GO)](https://vera-finance.onrender.com/onde-funciona/goiania-go): como a vera compara o preço na cidade e consulta por CEP.
+- [Comparar preço de supermercado em Porto Alegre (RS)](https://vera-finance.onrender.com/onde-funciona/porto-alegre-rs): como a vera compara o preço na cidade e consulta por CEP.
+- [Comparar preço de supermercado em Campinas (SP)](https://vera-finance.onrender.com/onde-funciona/campinas-sp): como a vera compara o preço na cidade e consulta por CEP.
 
 ## Central de ajuda
 

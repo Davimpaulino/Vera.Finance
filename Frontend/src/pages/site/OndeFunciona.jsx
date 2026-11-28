@@ -1,15 +1,15 @@
-import { useState } from 'react';
-import { Button, Callout, Input } from '../../components/ds/index.js';
 import { SiteLayout } from '../../components/site/SiteLayout.jsx';
 import { Chamada } from '../../components/site/Chamada.jsx';
 import { JsonLd } from '../../components/site/JsonLd.jsx';
 import { Trilha } from '../../components/site/Trilha.jsx';
+import { VerificadorDeCep } from '../../components/site/VerificadorDeCep.jsx';
 import { Link } from '../../lib/router.jsx';
 import { REDES_COM_PRECO, REDES_DE_ATACADO, urlDoSite } from '../../lib/site.js';
 import { metaDaPagina } from '../../lib/paginas.js';
 import { km, plural } from '../../lib/format.js';
 import { trilhaEstruturada } from '../../conteudo/dadosEstruturados.js';
-import { api } from '../../services/api.js';
+import { dataPorExtenso } from '../../conteudo/formato.js';
+import { CIDADES, temLevantamento } from '../../conteudo/cidades.js';
 import './css/conteudo.css';
 import './css/onde-funciona.css';
 
@@ -37,145 +37,25 @@ const COMO_FUNCIONA = [
   ]
 ];
 
-const formatarCep = texto =>
-  texto
-    .replace(/\D/g, '')
-    .slice(0, 8)
-    .replace(/^(\d{5})(\d)/, '$1-$2');
-
-/**
- * Resposta de GET /api/publico/redes?cep=, do jeito que a tela usa. Aceita `mapaFalhou: true`
- * ou `situacao: 'mapaFalhou'`; quando a rota manda também mercados sem preço online (sem id ou
- * com precoOnline false), eles vão para `semPreco`. Resposta sem a lista de redes é erro.
- */
-function lerResposta(r) {
-  if (!r || typeof r !== 'object' || !Array.isArray(r.redes)) return null;
-  const validas = r.redes.filter(rede => rede && typeof rede.nome === 'string' && rede.nome.trim());
-  const temPreco = rede => !!rede.id && rede.precoOnline !== false;
-  return {
-    cep: typeof r.cep === 'string' ? r.cep : '',
-    cidade: typeof r.cidade === 'string' ? r.cidade : '',
-    raioKm: Number(r.raioKm) || null,
-    mapaFalhou: r.mapaFalhou === true || r.situacao === 'mapaFalhou',
-    mensagem: typeof r.mensagem === 'string' ? r.mensagem : '',
-    comPreco: validas.filter(temPreco),
-    semPreco: validas.filter(rede => !temPreco(rede))
-  };
-}
-
-function mensagemDeErro(erro) {
-  // Rota que ainda não existe neste servidor: não é culpa do CEP.
-  if (erro.status === 405 || (erro.status === 404 && /rota/i.test(erro.message)))
-    return 'A consulta por CEP está fora do ar agora. Veja abaixo a lista de redes com preço online.';
-  if (erro.status >= 500) return 'Não deu para consultar agora. Tente de novo em alguns minutos.';
-  // Sem conexão (0), CEP inválido (400), CEP que não existe (404), muitas tentativas (429).
-  return erro.message || 'Não deu para consultar agora. Tente de novo em alguns minutos.';
-}
-
-// Sem distância na resposta (ou distância estranha), a linha mostra só o tipo da rede.
-const distancia = valor =>
-  typeof valor === 'number' && Number.isFinite(valor) && valor >= 0
-    ? km(Math.round(valor * 10) / 10)
-    : null;
-
-function Resultado({ r, onTentar }) {
-  const onde = [r.cep && `CEP ${r.cep}`, r.cidade].filter(Boolean).join(' · ');
-  const raio = r.raioKm ? `a até ${r.raioKm} km deste CEP` : 'perto deste CEP';
-
-  if (r.mapaFalhou)
-    return (
-      <Callout
-        tone="warning"
-        title="Não deu para ver os mercados agora"
-        action={
-          <Button size="sm" variant="secondary" onClick={onTentar}>
-            Tentar de novo
-          </Button>
-        }
-      >
-        {r.mensagem || 'O mapa de mercados não respondeu. Tente de novo em alguns minutos.'}
-      </Callout>
-    );
-
+/** Os três jeitos de a vera achar preço, iguais em todas as páginas de Onde funciona. */
+function ComoAVeraCompara() {
   return (
-    <div className="onde-resultado">
-      {onde ? <span className="onde-resultado__onde">{onde}</span> : null}
-      {r.comPreco.length ? (
-        <>
-          <span className="onde-resultado__titulo">
-            {plural(r.comPreco.length, 'rede', 'redes')} com preço online {raio}
-          </span>
-          <ul className="onde-resultado__lista">
-            {r.comPreco.map(rede => (
-              <li key={rede.id} className="onde-resultado__rede">
-                <span className="onde-resultado__nome">{rede.nome}</span>
-                <span className="onde-resultado__meta">
-                  {[
-                    rede.tipo === 'atacado' ? 'atacado' : 'supermercado',
-                    distancia(rede.distanciaKm) && `loja mais perto a ${distancia(rede.distanciaKm)}`
-                  ]
-                    .filter(Boolean)
-                    .join(' · ')}
-                </span>
-              </li>
-            ))}
-          </ul>
-          <p className="conteudo__p">
-            Na vera, você compara o preço da sua lista de compras nessas redes e nos mercados das
-            notas fiscais lidas perto de você.
-          </p>
-        </>
-      ) : (
-        <>
-          <span className="onde-resultado__titulo">Nenhuma rede com preço online {raio}</span>
-          <p className="conteudo__p">
-            Você ainda pode usar a vera: os mercados da região entram na comparação quando as notas
-            fiscais das compras são lidas, e o controle de gastos funciona em qualquer lugar.
-          </p>
-        </>
-      )}
-      {r.semPreco.length ? (
-        <p className="conteudo__p conteudo__p--nota">
-          Outros mercados perto: {r.semPreco.map(rede => rede.nome).join(', ')}. Eles não têm preço
-          online e entram na comparação quando alguém lê uma nota fiscal de lá.
-        </p>
-      ) : null}
-      <div className="vera-cta-stack conteudo-acoes">
-        <Link to="/cadastro" className="vera-btn vera-btn--primary">
-          Criar conta grátis
-        </Link>
-      </div>
-    </div>
+    <>
+      <h2 className="conteudo__h2">Como a vera compara os preços</h2>
+      <ol className="conteudo__passos">
+        {COMO_FUNCIONA.map(([titulo, texto]) => (
+          <li key={titulo} className="conteudo__passo">
+            <span className="conteudo__passo-nome">{titulo}</span>
+            <p className="conteudo__p">{texto}</p>
+          </li>
+        ))}
+      </ol>
+    </>
   );
 }
 
 /** /onde-funciona: verificador de CEP e a lista das redes com preço online. */
 export default function OndeFunciona() {
-  const [cep, setCep] = useState('');
-  const [buscando, setBuscando] = useState(false);
-  const [resultado, setResultado] = useState(null);
-  const [erro, setErro] = useState('');
-
-  const consultar = async () => {
-    const digitos = cep.replace(/\D/g, '');
-    setResultado(null);
-    if (digitos.length !== 8) {
-      setErro('Digite um CEP com 8 números.');
-      return;
-    }
-    setErro('');
-    setBuscando(true);
-    try {
-      const lido = lerResposta(await api.get(`/publico/redes?cep=${digitos}`));
-      if (lido) setResultado(lido);
-      else setErro('Não deu para consultar agora. Tente de novo em alguns minutos.');
-    } catch (e) {
-      setErro(mensagemDeErro(e));
-    } finally {
-      setBuscando(false);
-    }
-  };
-
   const dados = {
     '@context': 'https://schema.org',
     '@graph': [
@@ -202,41 +82,7 @@ export default function OndeFunciona() {
           </p>
         </header>
 
-        <div className="onde-consulta">
-          <form
-            className="onde-busca"
-            onSubmit={e => {
-              e.preventDefault();
-              consultar();
-            }}
-          >
-            <div className="vera-filter-row">
-              <Input
-                label="Seu CEP"
-                placeholder="00000-000"
-                inputMode="numeric"
-                autoComplete="postal-code"
-                numeric
-                value={cep}
-                onChange={e => setCep(formatarCep(e.target.value))}
-                className="onde-busca__campo"
-              />
-              <Button type="submit" loading={buscando} loadingLabel="Consultando">
-                Ver redes
-              </Button>
-            </div>
-            <span className="onde-busca__dica">Não precisa de cadastro.</span>
-          </form>
-
-          <div aria-live="polite" className="onde-busca__saida">
-            {erro ? (
-              <div className="vera-form-error" role="alert">
-                {erro}
-              </div>
-            ) : null}
-            {resultado ? <Resultado r={resultado} onTentar={consultar} /> : null}
-          </div>
-        </div>
+        <VerificadorDeCep />
 
         <h2 className="conteudo__h2">As {REDES_COM_PRECO.length} redes com preço online</h2>
         <p className="conteudo__p">
@@ -263,15 +109,21 @@ export default function OndeFunciona() {
           ))}
         </div>
 
-        <h2 className="conteudo__h2">Como a vera compara os preços</h2>
-        <ol className="conteudo__passos">
-          {COMO_FUNCIONA.map(([titulo, texto]) => (
-            <li key={titulo} className="conteudo__passo">
-              <span className="conteudo__passo-nome">{titulo}</span>
-              <p className="conteudo__p">{texto}</p>
+        <h2 className="conteudo__h2">Páginas por cidade</h2>
+        <p className="conteudo__p">
+          Como a vera compara o preço de supermercado em algumas das maiores cidades do Brasil.
+        </p>
+        <ul className="onde-cidades">
+          {CIDADES.map(cidade => (
+            <li key={cidade.slug}>
+              <Link to={cidade.caminho} className="onde-cidades__link">
+                {cidade.nome} <span className="onde-cidades__uf">{cidade.uf}</span>
+              </Link>
             </li>
           ))}
-        </ol>
+        </ul>
+
+        <ComoAVeraCompara />
         <p className="conteudo__p">
           Os detalhes estão em <Link to="/ajuda/como-funciona-a-comparacao">como funciona a
           comparação de preços</Link> e em{' '}
@@ -281,6 +133,106 @@ export default function OndeFunciona() {
             atacarejo ou supermercado: quando compensa
           </Link>
           . Outras dúvidas estão nas <Link to="/perguntas">perguntas frequentes</Link>.
+        </p>
+
+        <Chamada />
+      </section>
+      <JsonLd dados={dados} />
+    </SiteLayout>
+  );
+}
+
+const maiuscula = texto => texto.charAt(0).toUpperCase() + texto.slice(1);
+
+/** Supermercado ou atacado, as lojas e a distância da mais perto até o centro. */
+const detalheDaRede = rede =>
+  [
+    rede.tipo === 'atacado' ? 'atacado' : 'supermercado',
+    plural(rede.lojas, 'loja', 'lojas'),
+    `a mais perto a ${km(rede.distanciaKm)} do centro`
+  ].join(' · ');
+
+/**
+ * /onde-funciona/<cidade>: como a vera compara o preço na cidade, o verificador de CEP e, quando
+ * há levantamento (src/conteudo/cidades.json), as redes com preço online perto do centro.
+ */
+export function OndeFuncionaNaCidade({ cidade }) {
+  const trilha = [...TRILHA, [cidade.nome, cidade.caminho]];
+  const levantada = temLevantamento(cidade);
+  const dados = {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'WebPage',
+        name: `Comparar preço de supermercado ${cidade.em}`,
+        description: metaDaPagina(cidade.caminho).descricao,
+        url: urlDoSite(cidade.caminho),
+        inLanguage: 'pt-BR'
+      },
+      trilhaEstruturada(trilha)
+    ]
+  };
+
+  return (
+    <SiteLayout>
+      <section className="conteudo">
+        <Trilha itens={trilha} />
+        <header className="conteudo__cabeca">
+          <h1 className="conteudo__title">Comparar preço de supermercado {cidade.em}</h1>
+          <p className="conteudo__lead">
+            {maiuscula(cidade.em)} ({cidade.uf}), a vera compara o preço da sua lista de compras nos
+            mercados num raio de 2 a 15 km do seu CEP. Entram o preço do site das redes com preço
+            online e o das notas fiscais lidas por quem usa a vera.
+          </p>
+        </header>
+
+        <VerificadorDeCep />
+
+        {levantada ? (
+          <>
+            <h2 className="conteudo__h2">
+              Redes com preço online a até {cidade.raioKm} km do centro {cidade.de}
+            </h2>
+            {cidade.redes.length ? (
+              <ul className="onde-resultado__lista onde-cidade__redes">
+                {cidade.redes.map(rede => (
+                  <li key={rede.id} className="onde-resultado__rede">
+                    <span className="onde-resultado__nome">{rede.nome}</span>
+                    <span className="onde-resultado__meta">{detalheDaRede(rede)}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="conteudo__p">
+                Nenhuma rede com preço online tinha loja a até {cidade.raioKm} km do centro. Os
+                mercados da cidade entram na comparação quando alguém lê uma nota fiscal de lá.
+              </p>
+            )}
+            <p className="conteudo__p conteudo__p--nota">
+              Levantamento de {dataPorExtenso(cidade.levantadoEm)} com dados do OpenStreetMap
+              {Number.isFinite(cidade.totalMercados)
+                ? `: ${plural(cidade.totalMercados, 'mercado', 'mercados')} no mapa a até ${cidade.raioKm} km do centro`
+                : ''}
+              . As redes perto de você dependem do seu CEP: consulte no campo acima. A vera não tem
+              vínculo com as redes citadas.
+            </p>
+          </>
+        ) : (
+          <>
+            <h2 className="conteudo__h2">Quais redes têm loja perto de você</h2>
+            <p className="conteudo__p">
+              Digite o seu CEP no campo acima e veja quais das {REDES_COM_PRECO.length} redes com
+              preço online têm loja a até {cidade.raioKm} km de você {cidade.em}. Os outros mercados da
+              região entram na comparação quando alguém lê uma nota fiscal de lá.
+            </p>
+          </>
+        )}
+
+        <ComoAVeraCompara />
+        <p className="conteudo__p">
+          A lista de todas as redes com preço online e as outras cidades estão em{' '}
+          <Link to="/onde-funciona">onde a vera funciona</Link>. Os detalhes da comparação estão em{' '}
+          <Link to="/ajuda/como-funciona-a-comparacao">como funciona a comparação de preços</Link>.
         </p>
 
         <Chamada />
