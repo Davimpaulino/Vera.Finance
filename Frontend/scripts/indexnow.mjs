@@ -4,6 +4,7 @@
 import { readFile, readdir } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { SITE_PADRAO } from '../src/lib/site.js';
 
 const PUBLICO = join(dirname(fileURLToPath(import.meta.url)), '..', 'public');
 const ENDPOINT = 'https://api.indexnow.org/indexnow';
@@ -13,7 +14,7 @@ const teste = args.includes('--teste');
 const site = new URL(
   args.find(a => !a.startsWith('--')) ||
     process.env.VITE_SITE_URL ||
-    'https://vera-finance.onrender.com'
+    SITE_PADRAO
 );
 
 // A chave é o arquivo <32 hex>.txt em public/ (o IndexNow confere se ele está no ar).
@@ -21,8 +22,12 @@ const arquivoChave = (await readdir(PUBLICO)).find(nome => /^[0-9a-f]{32}\.txt$/
 if (!arquivoChave) throw new Error('Não achei o arquivo da chave do IndexNow em public/.');
 const chave = (await readFile(join(PUBLICO, arquivoChave), 'utf8')).trim();
 
-// URLs do sitemap, trocando o endereço padrão pelo do site informado.
-const sitemap = await readFile(join(PUBLICO, 'sitemap.xml'), 'utf8');
+// URLs do sitemap de public/, com o marcador __SITE_URL__ trocado pelo endereço do site informado
+// (o build faz a mesma troca no dist/).
+const sitemap = (await readFile(join(PUBLICO, 'sitemap.xml'), 'utf8')).replaceAll(
+  '__SITE_URL__',
+  site.origin
+);
 const urls = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map(([, loc]) => {
   const url = new URL(loc.trim());
   return new URL(url.pathname + url.search, site.origin).href;

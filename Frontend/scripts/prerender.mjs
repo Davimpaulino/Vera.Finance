@@ -2,7 +2,7 @@
 // e a casca do app (dist/app.html), que atende as rotas sem arquivo.
 // Robôs de busca e de IA que não rodam JavaScript passam a ler o conteúdo, não só <div id="root">.
 // Não usa navegador: importa o build SSR (src/entry-server.jsx) e chama renderToString.
-import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
@@ -91,3 +91,16 @@ for (const rota of ROTAS_PRE_RENDERIZADAS) {
 
 // O build SSR só serve para gerar o HTML; não vai para o site.
 await rm(SSR, { recursive: true, force: true });
+
+// Nenhum __SITE_URL__ pode sobrar no dist/: o vite.config.js troca o marcador no index.html e
+// nos arquivos de public/ com o endereço. Um que escapou sairia no ar como link quebrado.
+const MARCADOR_SITE = '__SITE_URL__';
+const DE_TEXTO = /\.(html|xml|txt|json|webmanifest|js|css)$/;
+const comMarcador = [];
+for (const entrada of await readdir(DIST, { recursive: true, withFileTypes: true })) {
+  if (!entrada.isFile() || !DE_TEXTO.test(entrada.name)) continue;
+  const arquivo = join(entrada.parentPath, entrada.name);
+  if ((await readFile(arquivo, 'utf8')).includes(MARCADOR_SITE)) comMarcador.push(arquivo.slice(RAIZ.length + 1));
+}
+if (comMarcador.length)
+  throw new Error(`${MARCADOR_SITE} ficou sem trocar em:\n- ${comMarcador.join('\n- ')}`);

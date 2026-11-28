@@ -18,4 +18,4 @@ Allow: /
 Disallow: /app
 Disallow: /onboarding
 
-Sitemap: https://vera-finance.onrender.com/sitemap.xml
+Sitemap: __SITE_URL__/sitemap.xml
