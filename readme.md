@@ -133,8 +133,8 @@ Para ninguém prometer o que o produto não faz:
 
 - **App nativo** (Android/iOS, lojas de aplicativo): não existe. Há o app instalável pelo navegador
   (PWA).
-- **Contas bancárias e Open Finance**: a vera não se conecta a banco nem a cartão. Os gastos entram
-  à mão, pela nota fiscal ou pela lista de compras.
+- **Conexão com bancos via Open Finance (planejada)**: ainda não existe. Hoje a vera não se conecta
+  a banco nem a cartão. Os gastos entram à mão, pela nota fiscal ou pela lista de compras.
 - **Pagamento**: ainda não há provedor de pagamento integrado. Os planos e os limites existem no
   código (`PlanoModel.js`), mas nada é cobrado: escolher o vera+ no cadastro ou nos botões de
   Configurações ("Assinar mensal · R$ 12,90", "Trocar para anual · R$ 99,90") ativa o plano na
