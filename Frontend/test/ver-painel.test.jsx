@@ -19,7 +19,7 @@ describe('"Ver o painel"', () => {
   });
 
   it('quem nunca entrou neste aparelho vai criar a conta', () => {
-    expect(verPainel('loading')).toBe('/cadastro');
+    expect(verPainel('loading')).toBe('/cadastro/');
   });
 
   it('com o login já ligado nesta aba, vale o status', () => {
@@ -27,7 +27,7 @@ describe('"Ver o painel"', () => {
   });
 
   it('login ligado e sem sessão: cadastro, mesmo com uma marca que tenha sobrado', () => {
-    expect(verPainel('out', { marca: true })).toBe('/cadastro');
+    expect(verPainel('out', { marca: true })).toBe('/cadastro/');
   });
 });
 

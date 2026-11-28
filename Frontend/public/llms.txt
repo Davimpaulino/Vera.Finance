@@ -22,46 +22,46 @@
 ## Páginas
 
 - [Início](__SITE_URL__/): o que a vera faz e como funciona.
-- [Planos e preços](__SITE_URL__/precos): o plano grátis e o vera+.
-- [Perguntas frequentes](__SITE_URL__/perguntas): respostas curtas sobre preço, redes, nota fiscal, família, dados e conta.
-- [Onde a vera funciona](__SITE_URL__/onde-funciona): consulta por CEP de quais redes com preço online têm loja perto, e a lista das redes separadas em supermercados e atacados, com links para as páginas por cidade.
-- [Política de privacidade](__SITE_URL__/privacidade): como a vera trata os dados pessoais, conforme a LGPD.
-- [Termos de uso](__SITE_URL__/termos): regras de uso do serviço.
+- [Planos e preços](__SITE_URL__/precos/): o plano grátis e o vera+.
+- [Perguntas frequentes](__SITE_URL__/perguntas/): respostas curtas sobre preço, redes, nota fiscal, família, dados e conta.
+- [Onde a vera funciona](__SITE_URL__/onde-funciona/): consulta por CEP de quais redes com preço online têm loja perto, e a lista das redes separadas em supermercados e atacados, com links para as páginas por cidade.
+- [Política de privacidade](__SITE_URL__/privacidade/): como a vera trata os dados pessoais, conforme a LGPD.
+- [Termos de uso](__SITE_URL__/termos/): regras de uso do serviço.
 
 ## Cidades
 
-- [Comparar preço de supermercado em São Paulo (SP)](__SITE_URL__/onde-funciona/sao-paulo-sp): como a vera compara o preço na cidade e consulta por CEP.
-- [Comparar preço de supermercado no Rio de Janeiro (RJ)](__SITE_URL__/onde-funciona/rio-de-janeiro-rj): como a vera compara o preço na cidade e consulta por CEP.
-- [Comparar preço de supermercado em Brasília (DF)](__SITE_URL__/onde-funciona/brasilia-df): como a vera compara o preço na cidade e consulta por CEP.
-- [Comparar preço de supermercado em Fortaleza (CE)](__SITE_URL__/onde-funciona/fortaleza-ce): como a vera compara o preço na cidade e consulta por CEP.
-- [Comparar preço de supermercado em Salvador (BA)](__SITE_URL__/onde-funciona/salvador-ba): como a vera compara o preço na cidade e consulta por CEP.
-- [Comparar preço de supermercado em Belo Horizonte (MG)](__SITE_URL__/onde-funciona/belo-horizonte-mg): como a vera compara o preço na cidade e consulta por CEP.
-- [Comparar preço de supermercado em Manaus (AM)](__SITE_URL__/onde-funciona/manaus-am): como a vera compara o preço na cidade e consulta por CEP.
-- [Comparar preço de supermercado em Curitiba (PR)](__SITE_URL__/onde-funciona/curitiba-pr): como a vera compara o preço na cidade e consulta por CEP.
-- [Comparar preço de supermercado em Recife (PE)](__SITE_URL__/onde-funciona/recife-pe): como a vera compara o preço na cidade e consulta por CEP.
-- [Comparar preço de supermercado em Goiânia (GO)](__SITE_URL__/onde-funciona/goiania-go): como a vera compara o preço na cidade e consulta por CEP.
-- [Comparar preço de supermercado em Porto Alegre (RS)](__SITE_URL__/onde-funciona/porto-alegre-rs): como a vera compara o preço na cidade e consulta por CEP.
-- [Comparar preço de supermercado em Campinas (SP)](__SITE_URL__/onde-funciona/campinas-sp): como a vera compara o preço na cidade e consulta por CEP.
+- [Comparar preço de supermercado em São Paulo (SP)](__SITE_URL__/onde-funciona/sao-paulo-sp/): como a vera compara o preço na cidade e consulta por CEP.
+- [Comparar preço de supermercado no Rio de Janeiro (RJ)](__SITE_URL__/onde-funciona/rio-de-janeiro-rj/): como a vera compara o preço na cidade e consulta por CEP.
+- [Comparar preço de supermercado em Brasília (DF)](__SITE_URL__/onde-funciona/brasilia-df/): como a vera compara o preço na cidade e consulta por CEP.
+- [Comparar preço de supermercado em Fortaleza (CE)](__SITE_URL__/onde-funciona/fortaleza-ce/): como a vera compara o preço na cidade e consulta por CEP.
+- [Comparar preço de supermercado em Salvador (BA)](__SITE_URL__/onde-funciona/salvador-ba/): como a vera compara o preço na cidade e consulta por CEP.
+- [Comparar preço de supermercado em Belo Horizonte (MG)](__SITE_URL__/onde-funciona/belo-horizonte-mg/): como a vera compara o preço na cidade e consulta por CEP.
+- [Comparar preço de supermercado em Manaus (AM)](__SITE_URL__/onde-funciona/manaus-am/): como a vera compara o preço na cidade e consulta por CEP.
+- [Comparar preço de supermercado em Curitiba (PR)](__SITE_URL__/onde-funciona/curitiba-pr/): como a vera compara o preço na cidade e consulta por CEP.
+- [Comparar preço de supermercado em Recife (PE)](__SITE_URL__/onde-funciona/recife-pe/): como a vera compara o preço na cidade e consulta por CEP.
+- [Comparar preço de supermercado em Goiânia (GO)](__SITE_URL__/onde-funciona/goiania-go/): como a vera compara o preço na cidade e consulta por CEP.
+- [Comparar preço de supermercado em Porto Alegre (RS)](__SITE_URL__/onde-funciona/porto-alegre-rs/): como a vera compara o preço na cidade e consulta por CEP.
+- [Comparar preço de supermercado em Campinas (SP)](__SITE_URL__/onde-funciona/campinas-sp/): como a vera compara o preço na cidade e consulta por CEP.
 
 ## Central de ajuda
 
-- [Central de ajuda](__SITE_URL__/ajuda): todos os artigos de ajuda.
-- [Como ler a nota fiscal pelo QR Code (NFC-e)](__SITE_URL__/ajuda/ler-nota-fiscal): passo a passo pela câmera, por foto ou colando o link; até 5 notas por mês no plano grátis.
-- [Como funciona a comparação de preços](__SITE_URL__/ajuda/como-funciona-a-comparacao): mercados num raio de 2 a 15 km do CEP, preço do site da rede e de notas de até 45 dias, mesmo produto por código de barras ou marca, tamanho e variante.
-- [Por que o preço da vera pode ser diferente na loja](__SITE_URL__/ajuda/preco-diferente-na-loja): o preço que vale é o do caixa; os motivos da diferença e como conferir.
-- [Como montar a lista de compras e escolher a marca e o tamanho](__SITE_URL__/ajuda/montar-a-lista): busca nos sites das redes da região, filtros por marca e tamanho, preço por kg/L e total em cada mercado.
-- [Como funciona o modo família](__SITE_URL__/ajuda/modo-familia): criar, convidar pelo e-mail, aceitar o convite e escolher as categorias compartilhadas; vera+ com 2 pessoas no mensal e 5 no anual.
-- [Como baixar os meus dados e apagar a conta](__SITE_URL__/ajuda/baixar-dados-e-apagar-conta): planilha CSV dos lançamentos, arquivo JSON com todos os dados e exclusão da conta em 30 dias.
-- [Planos da vera e como cancelar](__SITE_URL__/ajuda/planos-e-cancelamento): o que tem em cada plano e como cancelar em Configurações, sem multa.
-- [A vera precisa da senha do meu banco?](__SITE_URL__/ajuda/senha-do-banco): não; como os gastos entram sem acesso ao banco.
+- [Central de ajuda](__SITE_URL__/ajuda/): todos os artigos de ajuda.
+- [Como ler a nota fiscal pelo QR Code (NFC-e)](__SITE_URL__/ajuda/ler-nota-fiscal/): passo a passo pela câmera, por foto ou colando o link; até 5 notas por mês no plano grátis.
+- [Como funciona a comparação de preços](__SITE_URL__/ajuda/como-funciona-a-comparacao/): mercados num raio de 2 a 15 km do CEP, preço do site da rede e de notas de até 45 dias, mesmo produto por código de barras ou marca, tamanho e variante.
+- [Por que o preço da vera pode ser diferente na loja](__SITE_URL__/ajuda/preco-diferente-na-loja/): o preço que vale é o do caixa; os motivos da diferença e como conferir.
+- [Como montar a lista de compras e escolher a marca e o tamanho](__SITE_URL__/ajuda/montar-a-lista/): busca nos sites das redes da região, filtros por marca e tamanho, preço por kg/L e total em cada mercado.
+- [Como funciona o modo família](__SITE_URL__/ajuda/modo-familia/): criar, convidar pelo e-mail, aceitar o convite e escolher as categorias compartilhadas; vera+ com 2 pessoas no mensal e 5 no anual.
+- [Como baixar os meus dados e apagar a conta](__SITE_URL__/ajuda/baixar-dados-e-apagar-conta/): planilha CSV dos lançamentos, arquivo JSON com todos os dados e exclusão da conta em 30 dias.
+- [Planos da vera e como cancelar](__SITE_URL__/ajuda/planos-e-cancelamento/): o que tem em cada plano e como cancelar em Configurações, sem multa.
+- [A vera precisa da senha do meu banco?](__SITE_URL__/ajuda/senha-do-banco/): não; como os gastos entram sem acesso ao banco.
 
 ## Blog
 
-- [Blog](__SITE_URL__/blog): todos os artigos.
-- [Como economizar no supermercado comparando preços por quilo e por litro](__SITE_URL__/blog/economizar-comparando-preco-por-quilo-e-por-litro): a conta do preço por quilo, por litro e por unidade, e onde ela engana.
-- [Como ler o QR Code da nota fiscal (NFC-e) e o que ela mostra](__SITE_URL__/blog/qr-code-da-nota-fiscal-nfc-e): o que é a NFC-e, como consultar, o que ela mostra e os cuidados com o QR Code.
-- [Atacarejo ou supermercado: quando compensa](__SITE_URL__/blog/atacarejo-ou-supermercado-quando-compensa): para quais compras o atacarejo faz sentido e quando o supermercado ganha.
-- [Como organizar a renda por categorias e saber até que dia o dinheiro dura](__SITE_URL__/blog/organizar-renda-por-categorias): ciclo a partir do dia do salário, fixos, categorias com limite e a conta do ritmo de gasto.
+- [Blog](__SITE_URL__/blog/): todos os artigos.
+- [Como economizar no supermercado comparando preços por quilo e por litro](__SITE_URL__/blog/economizar-comparando-preco-por-quilo-e-por-litro/): a conta do preço por quilo, por litro e por unidade, e onde ela engana.
+- [Como ler o QR Code da nota fiscal (NFC-e) e o que ela mostra](__SITE_URL__/blog/qr-code-da-nota-fiscal-nfc-e/): o que é a NFC-e, como consultar, o que ela mostra e os cuidados com o QR Code.
+- [Atacarejo ou supermercado: quando compensa](__SITE_URL__/blog/atacarejo-ou-supermercado-quando-compensa/): para quais compras o atacarejo faz sentido e quando o supermercado ganha.
+- [Como organizar a renda por categorias e saber até que dia o dinheiro dura](__SITE_URL__/blog/organizar-renda-por-categorias/): ciclo a partir do dia do salário, fixos, categorias com limite e a conta do ritmo de gasto.
 
 ## Contato
 

@@ -1,9 +1,10 @@
 import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
-import { existsSync, statSync } from 'node:fs';
+import { existsSync } from 'node:fs';
 import { readFile, writeFile } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { cssDosIcones } from './scripts/icones.mjs';
+import { arquivoDoRender } from './scripts/como-o-render.mjs';
 import { SITE_PADRAO } from './src/lib/site.js';
 
 // O endereço público vem de VITE_SITE_URL; sem ela, o padrão de src/lib/site.js.
@@ -67,26 +68,17 @@ export default defineConfig(({ mode }) => {
         }
       },
       {
-        // npm run preview igual ao Render: /precos abre dist/precos/index.html (pré-renderizado)
-        // e o que não tem arquivo (/app, /app/lista, endereço que não existe, arquivo apagado)
-        // recebe dist/app.html, a casca do app, como na regra de rewrite /* -> /app.html.
+        // npm run preview igual ao Render (scripts/como-o-render.mjs): arquivo que existe sai
+        // como está; /precos/ abre dist/precos/index.html (pré-renderizado), mas /precos, sem a
+        // barra, e o que não tem arquivo (/app, /app/lista, endereço que não existe, arquivo
+        // apagado) recebem dist/app.html, a casca do app, como na regra de rewrite /* -> /app.html.
         name: 'vera-paginas-prerenderizadas',
         configurePreviewServer(server) {
           const dist = resolve(server.config.root, server.config.build.outDir);
           server.middlewares.use((req, _res, next) => {
             const [caminho, busca = ''] = req.url.split('?');
-            const pasta = caminho.replace(/\/+$/, '');
-            let nome;
-            try {
-              nome = decodeURIComponent(pasta);
-            } catch {
-              return next();
-            }
-            if (!nome || nome.includes('..')) return next();
-            const sufixo = busca ? `?${busca}` : '';
-            const local = join(dist, nome);
-            if (existsSync(join(local, 'index.html'))) req.url = `${pasta}/index.html${sufixo}`;
-            else if (!(existsSync(local) && statSync(local).isFile())) req.url = `/app.html${sufixo}`;
+            const arquivo = arquivoDoRender(dist, caminho);
+            if (arquivo) req.url = `${encodeURI(arquivo)}${busca ? `?${busca}` : ''}`;
             next();
           });
         }

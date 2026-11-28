@@ -22,7 +22,7 @@ describe('Legal', () => {
     const conteudo = screen.getByRole('main');
     expect(within(conteudo).getByRole('link', { name: 'Política de privacidade' })).toHaveAttribute(
       'href',
-      '/privacidade'
+      '/privacidade/'
     );
   });
 
@@ -31,7 +31,7 @@ describe('Legal', () => {
     expect(screen.getByRole('heading', { level: 1, name: 'Política de privacidade' })).toBeInTheDocument();
     expect(screen.getByText(/LGPD/, { selector: 'p' })).toBeInTheDocument();
     const conteudo = screen.getByRole('main');
-    expect(within(conteudo).getAllByRole('link', { name: 'Termos de uso' })[0]).toHaveAttribute('href', '/termos');
+    expect(within(conteudo).getAllByRole('link', { name: 'Termos de uso' })[0]).toHaveAttribute('href', '/termos/');
   });
 
   it('a data "Atualizado em" é a da versão dos termos que o cadastro aceita', () => {

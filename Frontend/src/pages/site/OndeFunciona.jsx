@@ -4,8 +4,8 @@ import { JsonLd } from '../../components/site/JsonLd.jsx';
 import { Trilha } from '../../components/site/Trilha.jsx';
 import { VerificadorDeCep } from '../../components/site/VerificadorDeCep.jsx';
 import { Link } from '../../lib/router.jsx';
-import { REDES_COM_PRECO, REDES_DE_ATACADO, urlDoSite } from '../../lib/site.js';
-import { metaDaPagina } from '../../lib/paginas.js';
+import { REDES_COM_PRECO, REDES_DE_ATACADO } from '../../lib/site.js';
+import { metaDaPagina, urlDaPagina } from '../../lib/paginas.js';
 import { km, plural } from '../../lib/format.js';
 import { trilhaEstruturada } from '../../conteudo/dadosEstruturados.js';
 import { dataPorExtenso } from '../../conteudo/formato.js';
@@ -63,7 +63,7 @@ export default function OndeFunciona() {
         '@type': 'WebPage',
         name: 'Onde a vera funciona',
         description: metaDaPagina('/onde-funciona').descricao,
-        url: urlDoSite('/onde-funciona'),
+        url: urlDaPagina('/onde-funciona'),
         inLanguage: 'pt-BR'
       },
       trilhaEstruturada(TRILHA)
@@ -166,7 +166,7 @@ export function OndeFuncionaNaCidade({ cidade }) {
         '@type': 'WebPage',
         name: `Comparar preço de supermercado ${cidade.em}`,
         description: metaDaPagina(cidade.caminho).descricao,
-        url: urlDoSite(cidade.caminho),
+        url: urlDaPagina(cidade.caminho),
         inLanguage: 'pt-BR'
       },
       trilhaEstruturada(trilha)

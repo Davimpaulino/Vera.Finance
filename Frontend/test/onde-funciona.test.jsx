@@ -48,7 +48,7 @@ describe('páginas das cidades', () => {
       'Onde a vera funciona',
       'São Paulo'
     ]);
-    expect(trilha.itemListElement[2].item).toMatch(/\/onde-funciona\/sao-paulo-sp$/);
+    expect(trilha.itemListElement[2].item).toMatch(/\/onde-funciona\/sao-paulo-sp\/$/);
   });
 
   it('com levantamento: as redes perto do centro, a data, a fonte e o aviso de vínculo', () => {
@@ -93,6 +93,6 @@ describe('páginas das cidades', () => {
     for (const cidade of CIDADES)
       expect(
         within(principal).getByRole('link', { name: `${cidade.nome} ${cidade.uf}` })
-      ).toHaveAttribute('href', cidade.caminho);
+      ).toHaveAttribute('href', `${cidade.caminho}/`);
   });
 });

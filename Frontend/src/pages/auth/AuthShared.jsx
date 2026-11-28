@@ -1,4 +1,5 @@
 import { Button, Checkbox } from '../../components/ds/index.js';
+import { caminhoPublico } from '../../lib/paginas.js';
 import './css/auth.css';
 
 export function Divisor() {
@@ -47,11 +48,11 @@ export function CaixaDeAceite({ checked, onChange }) {
   return (
     <Checkbox checked={checked} onChange={onChange} className="auth__aceite">
       Tenho 18 anos ou mais e li os{' '}
-      <a href="/termos" target="_blank" rel="noopener" className="vera-link-strong">
+      <a href={caminhoPublico('/termos')} target="_blank" rel="noopener" className="vera-link-strong">
         Termos de uso
       </a>{' '}
       e a{' '}
-      <a href="/privacidade" target="_blank" rel="noopener" className="vera-link-strong">
+      <a href={caminhoPublico('/privacidade')} target="_blank" rel="noopener" className="vera-link-strong">
         Política de privacidade
       </a>
     </Checkbox>

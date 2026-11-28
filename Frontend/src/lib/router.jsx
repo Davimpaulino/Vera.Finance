@@ -1,9 +1,12 @@
 import { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import { caminhoPublico } from './paginas.js';
 
 // Roteador mínimo sobre a History API: caminho atual, navegar e links.
 const RouterContext = createContext({ path: '/', navigate: () => {} });
 
-// "/precos/" e "/precos" são a mesma página (o servidor estático pode pôr a barra no fim).
+// "/precos/" e "/precos" são a mesma página. Os links e a navegação usam a forma com a barra no
+// fim nas páginas pré-renderizadas (caminhoPublico, em lib/paginas.js); o resto do app compara
+// sempre o caminho sem ela.
 const normalizar = caminho => (caminho.length > 1 ? caminho.replace(/\/+$/, '') || '/' : caminho);
 
 /** caminhoInicial serve para a pré-renderização no build, onde não existe window. */
@@ -17,10 +20,11 @@ export function RouterProvider({ children, caminhoInicial }) {
   }, []);
 
   const navigate = useCallback((to, { replace = false } = {}) => {
-    const url = new URL(to, window.location.origin);
+    const url = new URL(caminhoPublico(to), window.location.origin);
+    // A mesma página (com ou sem a barra no fim) não cria entrada nova no histórico.
     if (
-      url.pathname + url.search + url.hash ===
-      window.location.pathname + window.location.search + window.location.hash
+      normalizar(url.pathname) + url.search + url.hash ===
+      normalizar(window.location.pathname) + window.location.search + window.location.hash
     )
       return;
     window.history[replace ? 'replaceState' : 'pushState'](
@@ -37,12 +41,12 @@ export function RouterProvider({ children, caminhoInicial }) {
 
 export const useRouter = () => useContext(RouterContext);
 
-/** <a> que navega sem recarregar a página. */
+/** <a> que navega sem recarregar a página. O href sai na forma pública (caminhoPublico). */
 export function Link({ to, onClick, children, ...rest }) {
   const { navigate } = useRouter();
   return (
     <a
-      href={to}
+      href={caminhoPublico(to)}
       onClick={e => {
         if (onClick) onClick(e);
         if (e.defaultPrevented || e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;

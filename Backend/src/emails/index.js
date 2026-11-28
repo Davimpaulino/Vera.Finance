@@ -123,9 +123,11 @@ export function camposPadrao(site = enderecoDoSite()) {
     linkApp: `${base}/app`,
     linkConfiguracoes: `${base}/app/configuracoes`,
     linkLista: `${base}/app/lista`,
-    linkPrecos: `${base}/precos`,
-    linkPrivacidade: `${base}/privacidade`,
-    linkCadastro: `${base}/cadastro`,
+    // Páginas pré-renderizadas com a barra no fim, como no site (caminhoPublico, em
+    // Frontend/src/lib/paginas.js): no Render, /precos sem a barra passa pela casca do app.
+    linkPrecos: `${base}/precos/`,
+    linkPrivacidade: `${base}/privacidade/`,
+    linkCadastro: `${base}/cadastro/`,
     emailAjuda: EMAIL_DE_CONTATO,
     emailPrivacidade: EMAIL_DE_CONTATO
   };

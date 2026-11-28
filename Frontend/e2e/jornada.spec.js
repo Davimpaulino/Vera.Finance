@@ -8,7 +8,7 @@ const API = new RegExp(`localhost:${PORTA_API}/`);
 
 /** Cadastro com o aceite dos termos e as cinco perguntas, até o painel abrir. */
 async function criarConta(page, { email = emailNovo('jornada'), axe } = {}) {
-  await page.goto('/cadastro');
+  await page.goto('/cadastro/');
   await page.getByLabel('Nome').fill('Ana Teste');
   await page.getByLabel('E-mail').fill(email);
   await page.getByLabel('Senha').fill('senha-de-teste-123');
@@ -132,14 +132,14 @@ async function saiu(page) {
     await page.evaluate(() => localStorage.getItem('vera.token') || sessionStorage.getItem('vera.token'))
   ).toBeNull();
   await page.goto('/app');
-  await expect(page).toHaveURL(/\/entrar$/);
+  await expect(page).toHaveURL(/\/entrar\/$/);
   await expect(page.getByRole('heading', { level: 1, name: 'Entrar' })).toBeVisible();
 }
 
 // A API limita cadastros por IP (5 por hora) e todos os testes saem do mesmo IP: os testes de
 // sair voltam a entrar com a senha na mesma conta, em vez de criar outra.
 async function entrarComSenha(page, email) {
-  await page.goto('/entrar');
+  await page.goto('/entrar/');
   await page.getByLabel('E-mail').fill(email);
   await page.getByLabel('Senha').fill('senha-de-teste-123');
   await page.getByRole('button', { name: 'Entrar', exact: true }).click();
@@ -191,6 +191,6 @@ test('sair da conta funciona sem rede, em Configurações e na tela "Sem conexã
 test('"Ver o painel" na home leva o visitante para criar a conta', async ({ page }) => {
   await page.goto('/', { waitUntil: 'networkidle' });
   await page.getByRole('button', { name: 'Ver o painel' }).click();
-  await expect(page).toHaveURL(/\/cadastro$/);
+  await expect(page).toHaveURL(/\/cadastro\/$/);
   await expect(page.getByRole('heading', { level: 1, name: 'Criar conta' })).toBeVisible();
 });

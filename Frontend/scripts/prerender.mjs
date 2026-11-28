@@ -5,6 +5,7 @@
 import { mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { scriptDaBarra } from './como-o-render.mjs';
 
 const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..');
 const DIST = join(RAIZ, 'dist');
@@ -48,8 +49,15 @@ const CANONICAL = /\s*<link rel="canonical" href="[^"]*" \/>/;
 // /cadastro/perguntas, endereço que não existe) recebe este HTML, com o #root vazio.
 // Sem o conteúdo da landing, o navegador não baixa as imagens dela à toa e os robôs não veem
 // uma cópia da home em cada endereço. noindex e sem canonical: nada aqui deve entrar na busca.
+// O Render só serve dist/precos/index.html para /precos/ (com a barra); /precos cai no rewrite e
+// recebe esta casca. O script da barra (scripts/como-o-render.mjs), antes do bundle, leva quem
+// chegou sem a barra para a página pronta. A lista são as rotas pré-renderizadas deste build.
 let casca = modelo;
-casca = trocar(casca, /<title>[^<]*<\/title>/, '<title>vera.finance</title>');
+casca = trocar(
+  casca,
+  /<title>[^<]*<\/title>/,
+  `<title>vera.finance</title>\n    ${scriptDaBarra(ROTAS_PRE_RENDERIZADAS)}`
+);
 casca = trocar(casca, padraoDaMeta('name', 'robots'), tagMeta('name', 'robots', 'noindex, nofollow'));
 casca = trocar(casca, CANONICAL, '');
 await writeFile(join(DIST, 'app.html'), casca);

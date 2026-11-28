@@ -54,7 +54,7 @@ test('e-mail e senha pelo Firebase: o token do Firebase vai para a API', async (
     return rota.fulfill({ status: 503, json: { erro: 'API de teste: sessão do Firebase recebida.' } });
   });
 
-  await page.goto('/entrar');
+  await page.goto('/entrar/');
   await page.getByLabel('E-mail').fill(email);
   await page.getByLabel('Senha').fill('senha-de-teste-123');
   await page.getByRole('button', { name: 'Entrar', exact: true }).click();
@@ -68,7 +68,7 @@ test('e-mail e senha pelo Firebase: o token do Firebase vai para a API', async (
 });
 
 test('o botão do Google chama o login do Firebase (sem internet, avisa)', async ({ page }) => {
-  await page.goto('/entrar');
+  await page.goto('/entrar/');
   await page.getByRole('button', { name: 'Continuar com Google' }).click();
   // Sem rede para o Google, o SDK falha antes de abrir a janela e a tela explica o que houve,
   // em vez de mostrar o código do Firebase.

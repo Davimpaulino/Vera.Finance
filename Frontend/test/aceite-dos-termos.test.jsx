@@ -75,7 +75,7 @@ describe('AceiteDosTermos', () => {
   it('os links dos textos abrem em outra aba, sem perder o aceite', () => {
     renderComProvedores(<AceiteDosTermos />, { auth: { status: 'in', user: {} } });
     const termos = screen.getAllByRole('link', { name: 'Termos de uso' })[0];
-    expect(termos).toHaveAttribute('href', '/termos');
+    expect(termos).toHaveAttribute('href', '/termos/');
     expect(termos).toHaveAttribute('target', '_blank');
   });
 });
