@@ -2,6 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readdirSync } from 'node:fs';
 import {
+  EMAIL_DE_CONTATO,
   MODELOS,
   camposPadrao,
   escaparHtml,
@@ -33,7 +34,7 @@ test('todo modelo monta com os dados de exemplo, sem marcação sobrando', () =>
     assert.ok(assunto && !/[\r\n]/.test(assunto), `${nome}: assunto vazio ou com quebra de linha`);
     for (const [tipo, corpo] of [['html', html], ['texto', texto]]) {
       assert.doesNotMatch(corpo, /\{\{|\}\}/, `${nome} (${tipo}) sobrou marcação`);
-      assert.match(corpo, /ajuda@vera\.finance/, `${nome} (${tipo}) sem o contato`);
+      assert.ok(corpo.includes(EMAIL_DE_CONTATO), `${nome} (${tipo}) sem o contato`);
     }
     assert.match(html, /^<!doctype html>/);
     assert.match(html, /<html lang="pt-BR">/);

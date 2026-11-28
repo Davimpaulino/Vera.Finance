@@ -29,7 +29,12 @@ Onde está cada coisa:
 
 - O nome fica em minúsculas mesmo no começo da frase: "vera.finance é um app...". Quando a frase
   começa pelo artigo, só o artigo leva maiúscula: "A vera não vende produtos."
-- Em endereço de e-mail e de site, o nome é o mesmo: `ajuda@vera.finance`, `privacidade@vera.finance`.
+- Em endereço de site, o nome é o mesmo: `vera.finance`.
+- Contato: por enquanto, um e-mail só para tudo (contato, ajuda e privacidade),
+  `veragroup.ia@gmail.com`. É provisório, até a vera ter domínio próprio. Também há o WhatsApp
+  (11) 94072-3507 e o Instagram `@veragroup.ia`, da vera.group. Os três ficam em
+  `Frontend/src/lib/site.js` (`EMAIL_DE_CONTATO`, `WHATSAPP` e `INSTAGRAM`): use as constantes,
+  não escreva o contato à mão.
 
 ---
 

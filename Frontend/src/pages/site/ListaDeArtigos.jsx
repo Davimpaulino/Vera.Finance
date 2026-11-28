@@ -4,6 +4,7 @@ import { JsonLd } from '../../components/site/JsonLd.jsx';
 import { Trilha } from '../../components/site/Trilha.jsx';
 import { Link } from '../../lib/router.jsx';
 import { metaDaPagina } from '../../lib/paginas.js';
+import { EMAIL_DE_CONTATO } from '../../lib/site.js';
 import { ARTIGOS, SECOES } from '../../conteudo/index.js';
 import { secaoEstruturada } from '../../conteudo/dadosEstruturados.js';
 import { dataPorExtenso, textoPuro } from '../../conteudo/formato.js';
@@ -71,7 +72,7 @@ export default function ListaDeArtigos({ secao }) {
             <>
               Respostas rápidas estão nas <Link to="/perguntas">perguntas frequentes</Link>, e dicas
               para economizar no mercado, no <Link to="/blog">blog</Link>. Outra dúvida? Escreva para{' '}
-              <a href="mailto:ajuda@vera.finance">ajuda@vera.finance</a>.
+              <a href={`mailto:${EMAIL_DE_CONTATO}`}>{EMAIL_DE_CONTATO}</a>.
             </>
           )}
         </p>

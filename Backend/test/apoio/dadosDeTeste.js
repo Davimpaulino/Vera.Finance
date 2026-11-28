@@ -9,7 +9,7 @@ import { VERSAO_DOS_TERMOS } from '../../src/config/termos.js';
 const LOCAL_DE_TESTE = { lat: -23.0904, lng: -47.2181 };
 
 export const CONTA_DE_TESTE = {
-  email: 'demo@vera.finance',
+  email: 'demo@exemplo.com',
   senha: 'vera1234',
   nome: 'Thiago Serra',
   uid: 'demo-thiago'

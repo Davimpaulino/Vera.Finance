@@ -1,6 +1,6 @@
 import { SiteLayout } from '../../components/site/SiteLayout.jsx';
 import { Link } from '../../lib/router.jsx';
-import { REDES_COM_PRECO, urlDoSite } from '../../lib/site.js';
+import { EMAIL_DE_CONTATO, REDES_COM_PRECO, urlDoSite } from '../../lib/site.js';
 import './css/perguntas.css';
 
 // Respostas tiradas do que o app faz hoje (planos em Backend/src/models/PlanoModel.js,
@@ -112,7 +112,7 @@ export default function Perguntas() {
           Veja também: <Link to="/precos">Planos</Link>,{' '}
           <Link to="/privacidade">Política de privacidade</Link> e{' '}
           <Link to="/termos">Termos de uso</Link>. Outra dúvida? Escreva para{' '}
-          <a href="mailto:ajuda@vera.finance">ajuda@vera.finance</a>.
+          <a href={`mailto:${EMAIL_DE_CONTATO}`}>{EMAIL_DE_CONTATO}</a>.
         </p>
       </section>
       <script

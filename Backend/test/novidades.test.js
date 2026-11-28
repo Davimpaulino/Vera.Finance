@@ -39,7 +39,7 @@ before(async () => {
   server = createServer(handle).listen(0);
   base = `http://localhost:${server.address().port}/api`;
   token = (
-    await chamar('POST', '/auth/entrar', { email: 'demo@vera.finance', senha: 'vera1234' }, null)
+    await chamar('POST', '/auth/entrar', { email: 'demo@exemplo.com', senha: 'vera1234' }, null)
   ).body.token;
 });
 after(() => server.close());
@@ -143,7 +143,7 @@ test('trocar senha confere a atual e passa a valer a nova', async () => {
   const entrar = await chamar(
     'POST',
     '/auth/entrar',
-    { email: 'demo@vera.finance', senha: 'novaSenha1' },
+    { email: 'demo@exemplo.com', senha: 'novaSenha1' },
     null
   );
   assert.ok(entrar.body.token);

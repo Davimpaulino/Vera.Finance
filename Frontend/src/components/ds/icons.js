@@ -85,6 +85,7 @@ export const ICONS = {
   users: 'people',
   wallet: 'wallet2',
   warehouse: 'buildings',
+  whatsapp: 'whatsapp',
   wifi: 'wifi',
   'wifi-off': 'wifi-off',
   x: 'x-lg',
