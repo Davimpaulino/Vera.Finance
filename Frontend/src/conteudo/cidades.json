@@ -1,0 +1,110 @@
+[
+  {
+    "slug": "sao-paulo-sp",
+    "nome": "São Paulo",
+    "uf": "SP",
+    "raioKm": 15,
+    "totalMercados": null,
+    "redes": null,
+    "levantadoEm": null
+  },
+  {
+    "slug": "rio-de-janeiro-rj",
+    "nome": "Rio de Janeiro",
+    "uf": "RJ",
+    "raioKm": 15,
+    "totalMercados": null,
+    "redes": null,
+    "levantadoEm": null
+  },
+  {
+    "slug": "brasilia-df",
+    "nome": "Brasília",
+    "uf": "DF",
+    "raioKm": 15,
+    "totalMercados": null,
+    "redes": null,
+    "levantadoEm": null
+  },
+  {
+    "slug": "fortaleza-ce",
+    "nome": "Fortaleza",
+    "uf": "CE",
+    "raioKm": 15,
+    "totalMercados": null,
+    "redes": null,
+    "levantadoEm": null
+  },
+  {
+    "slug": "salvador-ba",
+    "nome": "Salvador",
+    "uf": "BA",
+    "raioKm": 15,
+    "totalMercados": null,
+    "redes": null,
+    "levantadoEm": null
+  },
+  {
+    "slug": "belo-horizonte-mg",
+    "nome": "Belo Horizonte",
+    "uf": "MG",
+    "raioKm": 15,
+    "totalMercados": null,
+    "redes": null,
+    "levantadoEm": null
+  },
+  {
+    "slug": "manaus-am",
+    "nome": "Manaus",
+    "uf": "AM",
+    "raioKm": 15,
+    "totalMercados": null,
+    "redes": null,
+    "levantadoEm": null
+  },
+  {
+    "slug": "curitiba-pr",
+    "nome": "Curitiba",
+    "uf": "PR",
+    "raioKm": 15,
+    "totalMercados": null,
+    "redes": null,
+    "levantadoEm": null
+  },
+  {
+    "slug": "recife-pe",
+    "nome": "Recife",
+    "uf": "PE",
+    "raioKm": 15,
+    "totalMercados": null,
+    "redes": null,
+    "levantadoEm": null
+  },
+  {
+    "slug": "goiania-go",
+    "nome": "Goiânia",
+    "uf": "GO",
+    "raioKm": 15,
+    "totalMercados": null,
+    "redes": null,
+    "levantadoEm": null
+  },
+  {
+    "slug": "porto-alegre-rs",
+    "nome": "Porto Alegre",
+    "uf": "RS",
+    "raioKm": 15,
+    "totalMercados": null,
+    "redes": null,
+    "levantadoEm": null
+  },
+  {
+    "slug": "campinas-sp",
+    "nome": "Campinas",
+    "uf": "SP",
+    "raioKm": 15,
+    "totalMercados": null,
+    "redes": null,
+    "levantadoEm": null
+  }
+]

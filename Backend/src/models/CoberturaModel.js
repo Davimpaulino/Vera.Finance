@@ -54,8 +54,11 @@ async function naVez(tarefa) {
 const cepBonito = cep => `${cep.slice(0, 5)}-${cep.slice(5)}`;
 const plural = (n, um, varios) => `${n} ${n === 1 ? um : varios}`;
 
-/** Agrupa os mercados por rede (ou pelo nome, quem não tem preço online), do mais perto ao mais longe. */
-function agrupar(mercados) {
+/**
+ * Agrupa os mercados por rede (ou pelo nome, quem não tem preço online), do mais perto ao mais longe.
+ * Também usado por scripts/cobertura-das-cidades.mjs, que monta as páginas das cidades do site.
+ */
+export function agruparPorRede(mercados) {
   const grupos = new Map();
   for (const mercado of mercados) {
     const rede = mercado.redeId ? RedeModel.buscar(mercado.redeId) : null;
@@ -112,7 +115,7 @@ async function consultar(cep) {
     const falha = { situacao: 'mapaFalhou', totalMercados: 0, comPrecoOnline: 0, redes: [] };
     return { ...base, ...falha, mensagem: mensagemDe({ ...falha, semCoordenadas }) };
   }
-  const redes = agrupar(mercados);
+  const redes = agruparPorRede(mercados);
   const resumo = {
     situacao: 'ok',
     totalMercados: mercados.length,
