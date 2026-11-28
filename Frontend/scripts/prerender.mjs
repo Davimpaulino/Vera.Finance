@@ -99,7 +99,7 @@ const DE_TEXTO = /\.(html|xml|txt|json|webmanifest|js|css)$/;
 const comMarcador = [];
 for (const entrada of await readdir(DIST, { recursive: true, withFileTypes: true })) {
   if (!entrada.isFile() || !DE_TEXTO.test(entrada.name)) continue;
-  const arquivo = join(entrada.parentPath, entrada.name);
+  const arquivo = join(entrada.parentPath ?? entrada.path, entrada.name);
   if ((await readFile(arquivo, 'utf8')).includes(MARCADOR_SITE)) comMarcador.push(arquivo.slice(RAIZ.length + 1));
 }
 if (comMarcador.length)
