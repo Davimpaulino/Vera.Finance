@@ -15,7 +15,8 @@ import {
 // sitemap.xml e o llms.txt são escritos à mão. Artigo novo precisa entrar nos dois, senão o Google
 // e as IAs demoram a achar. Os testes do próprio Frontend ficam em Frontend/test (Vitest) e Frontend/e2e.
 const raiz = new URL('../../Frontend/', import.meta.url);
-const SITE = 'https://vera-finance.onrender.com';
+// Nos arquivos de public/ o endereço é o marcador; o build troca pelo VITE_SITE_URL (vite.config.js).
+const SITE = '__SITE_URL__';
 // As páginas das cidades (/onde-funciona/<slug>) saem do Frontend/src/conteudo/cidades.json.
 const CIDADES = JSON.parse(await readFile(new URL('src/conteudo/cidades.json', raiz), 'utf8'));
 const FIXAS = [
@@ -30,6 +31,16 @@ test('sitemap.xml tem as páginas de conteúdo, das cidades e todos os artigos',
   const locs = new Set([...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map(([, loc]) => loc.trim()));
   for (const caminho of [...FIXAS, ...ARTIGOS.map(artigo => artigo.caminho)])
     assert.ok(locs.has(`${SITE}${caminho}`), `${caminho} falta no sitemap.xml`);
+});
+
+test('sitemap.xml, robots.txt e llms.txt levam o marcador, sem endereço escrito à mão', async () => {
+  for (const nome of ['sitemap.xml', 'robots.txt', 'llms.txt']) {
+    const texto = await readFile(new URL(`public/${nome}`, raiz), 'utf8');
+    assert.ok(texto.includes(SITE), `${nome} sem ${SITE}`);
+    assert.doesNotMatch(texto, /\.onrender\.com/, `${nome} com endereço do Render escrito à mão`);
+  }
+  const robots = await readFile(new URL('public/robots.txt', raiz), 'utf8');
+  assert.match(robots, /^Sitemap: __SITE_URL__\/sitemap\.xml$/m);
 });
 
 test('llms.txt cita as páginas de conteúdo, das cidades e todos os artigos', async () => {

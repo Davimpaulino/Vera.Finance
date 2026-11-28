@@ -1,9 +1,10 @@
-// Endereço público do site. Muda com VITE_SITE_URL quando houver domínio próprio.
+// Endereço público do site, sem "/" no fim. Vem de VITE_SITE_URL no build; sem ela, vale o
+// endereço atual do site no Render (o Static Site, não a API). O mesmo padrão está em
+// Backend/src/config/site.js (o teste confere). Usado também pelo vite.config.js, que troca
+// __SITE_URL__ no index.html e em public/ (sitemap.xml, robots.txt, llms.txt), e pelo IndexNow.
+export const SITE_PADRAO = 'https://vera-finance-ckfn.onrender.com';
 // O "?." deixa este arquivo rodar também no Node (testes da API e do conteúdo), sem o Vite.
-export const SITE_URL = (import.meta.env?.VITE_SITE_URL || 'https://vera-finance.onrender.com').replace(
-  /\/$/,
-  ''
-);
+export const SITE_URL = (import.meta.env?.VITE_SITE_URL || SITE_PADRAO).replace(/\/$/, '');
 
 /** Link absoluto para um caminho do site (canonical, JSON-LD). */
 export const urlDoSite = (caminho = '/') => `${SITE_URL}${caminho.startsWith('/') ? caminho : `/${caminho}`}`;

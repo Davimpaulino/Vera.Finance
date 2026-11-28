@@ -392,9 +392,10 @@ Prazo prometido na Política: resposta em até **15 dias**. Encarregado de dados
 | Saber com quem os dados são compartilhados | Política de privacidade, seção de compartilhamento | Responda com a lista da Política |
 
 A base anônima de preços continua depois da exclusão, porque não identifica ninguém (está na
-Política). Se o banco for para o Neon (PostgreSQL), inclua o Neon na lista de empresas da Política
-(`Frontend/src/pages/site/Legal.jsx`) antes da migração e decida com o encarregado de dados se a
-mudança pede um novo aceite (`VERSAO_DOS_TERMOS`).
+Política). O Neon (PostgreSQL, São Paulo) já está na lista de empresas da Política
+(`Frontend/src/pages/site/Legal.jsx`, versão `v2026-11-29`). Se trocar de provedor de banco ou de
+região, atualize a lista e decida com o encarregado de dados se a mudança pede um novo aceite
+(`VERSAO_DOS_TERMOS`).
 
 ### Exportar os dados pelo time
 

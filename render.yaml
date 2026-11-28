@@ -1,0 +1,66 @@
+# Blueprint do Render: a API (Web Service) e o site (Static Site) deste repositório.
+# Como usar: Render → New → Blueprint → escolha este repositório. Veja "Deploy no Render" no readme.
+# As variáveis com sync: false o Render pede na criação e nunca saem do painel. Nunca ponha um
+# valor real neste arquivo: o repositório é público.
+services:
+  # API: Node.js, pasta Backend.
+  - type: web
+    name: vera-finance-api
+    runtime: node
+    rootDir: Backend
+    buildCommand: npm ci
+    startCommand: npm start
+    healthCheckPath: /api/saude
+    plan: free
+    # Sem region, o Render cria em oregon. Não há região no Brasil; a escolha fica com o time e
+    # não muda depois de criado (veja o readme, "Região").
+    # region: virginia
+    autoDeployTrigger: commit
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: DATABASE_URL
+        sync: false
+      - key: SEGREDO_LOGIN
+        sync: false
+      - key: FIREBASE_PROJECT_ID
+        sync: false
+      - key: FIREBASE_CLIENT_EMAIL
+        sync: false
+      - key: FIREBASE_PRIVATE_KEY
+        sync: false
+      # Endereço do site (o Static Site abaixo). Na criação ainda não existe: preencha depois.
+      - key: CORS_ORIGIN
+        sync: false
+      - key: SITE_URL
+        sync: false
+
+  # Site: estático, pasta Frontend. O build grava o HTML pré-renderizado em dist/.
+  - type: web
+    name: vera-finance-site
+    runtime: static
+    rootDir: Frontend
+    buildCommand: npm ci && npm run build
+    staticPublishPath: dist
+    autoDeployTrigger: commit
+    # O build do site também lê Backend/src/models/PlanoModel.js (preços dos planos). Sem esta
+    # lista, uma mudança só nesse arquivo não publicaria o site de novo.
+    buildFilter:
+      paths:
+        - Frontend/**
+        - Backend/src/models/PlanoModel.js
+    # Toda rota sem arquivo cai na casca do app. As páginas públicas têm o próprio index.html e
+    # não passam por aqui (o Render só reescreve quando não existe arquivo no caminho).
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /app.html
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      # Endereço da API (o Web Service acima) e do site. Entram no build: depois de trocar,
+      # faça um deploy novo do site.
+      - key: VITE_API_URL
+        sync: false
+      - key: VITE_SITE_URL
+        sync: false

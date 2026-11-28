@@ -4,12 +4,14 @@ import {
   EMAIL_DE_CONTATO,
   INSTAGRAM,
   REDES_COM_PRECO,
+  SITE_PADRAO,
   SITE_URL,
   WHATSAPP,
   urlDoSite
 } from '../src/lib/site.js';
 import { REDES } from '../../Backend/src/models/RedeModel.js';
 import { EMAIL_DE_CONTATO as EMAIL_DOS_EMAILS } from '../../Backend/src/emails/index.js';
+import { SITE_PADRAO as SITE_PADRAO_DA_API } from '../../Backend/src/config/site.js';
 
 afterEach(() => {
   vi.unstubAllEnvs();
@@ -17,12 +19,17 @@ afterEach(() => {
 });
 
 describe('endereço do site', () => {
-  it('sem VITE_SITE_URL usa o endereço do Render', async () => {
+  it('sem VITE_SITE_URL usa o endereço do site no Render', async () => {
     // Quem tem VITE_SITE_URL no Frontend/.env (domínio próprio) roda este teste do mesmo jeito.
     vi.stubEnv('VITE_SITE_URL', '');
     vi.resetModules();
     const site = await import('../src/lib/site.js');
-    expect(site.SITE_URL).toBe('https://vera-finance.onrender.com');
+    expect(site.SITE_URL).toBe('https://vera-finance-ckfn.onrender.com');
+  });
+
+  it('o padrão é o mesmo na API (SITE_URL) e nunca o endereço da API', () => {
+    expect(SITE_PADRAO_DA_API).toBe(SITE_PADRAO);
+    expect(SITE_PADRAO).not.toBe('https://vera-finance.onrender.com');
   });
 
   it('urlDoSite monta o link absoluto com uma barra só', () => {

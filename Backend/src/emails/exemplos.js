@@ -1,3 +1,5 @@
+import { SITE_PADRAO } from '../config/site.js';
+
 // Dados de exemplo de cada modelo de e-mail: mostram os campos que cada um pede e servem para
 // o teste (test/emails.test.js) e para ver os e-mails no navegador (scripts/ver-emails.mjs).
 // Tudo aqui é fictício: pessoa, mercados e preços são só para preencher o modelo. Mercado de
@@ -7,7 +9,7 @@ export const EXEMPLOS = {
   'boas-vindas': { nome: 'Ana' },
   'confirme-email': {
     nome: 'Ana',
-    linkConfirmacao: 'https://vera-finance.onrender.com/confirmar?codigo=exemplo',
+    linkConfirmacao: `${SITE_PADRAO}/confirmar?codigo=exemplo`,
     validade: '24 horas'
   },
   'recibo-pagamento': {
@@ -27,7 +29,7 @@ export const EXEMPLOS = {
     valor: 'R$ 12,90',
     dataDaTentativa: '26/11/2026',
     dataLimite: '03/12/2026',
-    linkPagamento: 'https://vera-finance.onrender.com/app/configuracoes'
+    linkPagamento: `${SITE_PADRAO}/app/configuracoes`
   },
   'assinatura-cancelada': { nome: 'Ana', plano: 'vera+ mensal', ativaAte: '25/12/2026' },
   'exclusao-agendada': { nome: 'Ana', dataDaExclusao: '26/12/2026' },
@@ -61,7 +63,7 @@ export const EXEMPLOS = {
         distancia: '1,1 km'
       }
     ],
-    linkDescadastro: 'https://vera-finance.onrender.com/app/configuracoes'
+    linkDescadastro: `${SITE_PADRAO}/app/configuracoes`
   },
   'resumo-semanal': {
     nome: 'Ana',
@@ -73,6 +75,6 @@ export const EXEMPLOS = {
       { categoria: 'Comida', gasto: 'R$ 210,40', restante: 'R$ 389,60' },
       { categoria: 'Rolê', gasto: 'R$ 102,00', restante: 'R$ 98,00' }
     ],
-    linkDescadastro: 'https://vera-finance.onrender.com/app/configuracoes'
+    linkDescadastro: `${SITE_PADRAO}/app/configuracoes`
   }
 };

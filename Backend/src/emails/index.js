@@ -1,4 +1,5 @@
 import { readFileSync } from 'node:fs';
+import { enderecoDoSite } from '../config/site.js';
 
 // Modelos dos e-mails transacionais da vera. Aqui só se monta o e-mail (assunto, HTML e texto):
 // o envio ainda não existe, porque o provedor não foi escolhido. Quem for integrar chama
@@ -12,8 +13,6 @@ import { readFileSync } from 'node:fs';
 // Os valores chegam prontos para ler ("R$ 12,90", "26/11/2026"): o modelo não formata nada.
 // Campo que falta dá erro, para um e-mail nunca sair com "{{nome}}" ou com um buraco no texto.
 
-// Endereço público do site, o mesmo padrão de Frontend/src/lib/site.js.
-const SITE_PADRAO = 'https://vera-finance.onrender.com';
 const CONTA = 'Você recebeu este e-mail porque tem uma conta na vera.finance.';
 
 export const MODELOS = {
@@ -117,7 +116,7 @@ function ler(caminho) {
 export const EMAIL_DE_CONTATO = 'veragroup.ia@gmail.com';
 
 /** Campos que todo e-mail já tem: links do site e endereços de contato. */
-export function camposPadrao(site = process.env.SITE_URL || SITE_PADRAO) {
+export function camposPadrao(site = enderecoDoSite()) {
   const base = String(site).replace(/\/+$/, '');
   return {
     linkSite: base,

@@ -6,7 +6,7 @@ import './css/legal.css';
 // Textos legais. Cada bloco tem um título e parágrafos ou listas.
 // Atualize ATUALIZADO_EM sempre que o texto mudar (e avise quem usa, se a mudança for relevante).
 // Junto, troque VERSAO_DOS_TERMOS (Frontend/src/lib/termos.js e Backend/src/config/termos.js).
-const ATUALIZADO_EM = '28 de novembro de 2026';
+const ATUALIZADO_EM = '29 de novembro de 2026';
 // Contato de privacidade e do encarregado: o e-mail único da vera, provisório até ter domínio (lib/site.js).
 const CONTATO = EMAIL_DE_CONTATO;
 
@@ -115,7 +115,10 @@ const TEXTOS = {
         [
           'Não vendemos dados pessoais. Para o app funcionar, alguns serviços recebem apenas o necessário:',
           [
-            'Google Firebase (login e banco de dados) e Render (servidor da API), que podem guardar dados fora do Brasil, em empresas que oferecem garantias de proteção (art. 33 da LGPD).',
+            'Neon (banco de dados PostgreSQL gerenciado, com servidores em São Paulo, Brasil): guarda os dados do app, como perfil, renda, categorias, lançamentos, metas, lista de compras, notas lidas, modo família e lista de interessados.',
+            'Google Firebase: cuida do login (Firebase Authentication), com nome, e-mail e o login do Google ou da Apple.',
+            'Render: servidor da API e do site. Recebe os pedidos do app, com o endereço IP, para responder a eles.',
+            'O Google Firebase e o Render podem guardar dados fora do Brasil, em empresas que oferecem garantias de proteção (art. 33 da LGPD).',
             'Sites das redes de supermercado que mostram o preço por região: recebem o CEP (não o seu nome) para devolver o preço daquela região.',
             'OpenStreetMap e ViaCEP: recebem o CEP ou um ponto aproximado, para achar a região e os mercados.',
             'Portais da Secretaria da Fazenda: recebem o link da nota fiscal que você leu, para buscar os itens.',

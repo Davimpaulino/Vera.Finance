@@ -4,9 +4,12 @@ import { existsSync, statSync } from 'node:fs';
 import { readFile, writeFile } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { cssDosIcones } from './scripts/icones.mjs';
+import { SITE_PADRAO } from './src/lib/site.js';
 
-// Mesmo padrão de src/lib/site.js: o endereço público vem de VITE_SITE_URL.
-const SITE_PADRAO = 'https://vera-finance.onrender.com';
+// O endereço público vem de VITE_SITE_URL; sem ela, o padrão de src/lib/site.js.
+const MARCADOR_SITE = '__SITE_URL__';
+// Arquivos de public/ com o endereço do site: o build troca __SITE_URL__ neles, no dist/.
+const COM_ENDERECO = ['sitemap.xml', 'robots.txt', 'llms.txt'];
 // Marcador de public/sw.js trocado pela versão do cache em todo build do site.
 const MARCADOR_VERSAO = '__VERSAO_DO_BUILD__';
 
@@ -19,7 +22,22 @@ export default defineConfig(({ mode }) => {
       {
         // Troca __SITE_URL__ no index.html (JSON-LD e imagens de compartilhamento).
         name: 'vera-site-url',
-        transformIndexHtml: html => html.replaceAll('__SITE_URL__', site)
+        transformIndexHtml: html => html.replaceAll(MARCADOR_SITE, site)
+      },
+      {
+        // O mesmo nos arquivos de public/ que levam o endereço (COM_ENDERECO), já copiados para
+        // o dist/. Arquivo sem o marcador para o build: ele ia sair com um endereço escrito à mão.
+        name: 'vera-site-url-publico',
+        apply: (_config, { command, isSsrBuild }) => command === 'build' && !isSsrBuild,
+        async writeBundle(saida) {
+          for (const nome of COM_ENDERECO) {
+            const arquivo = join(saida.dir, nome);
+            const texto = existsSync(arquivo) ? await readFile(arquivo, 'utf8') : '';
+            if (!texto.includes(MARCADOR_SITE))
+              throw new Error(`${arquivo} não tem ${MARCADOR_SITE}: o endereço do site não ia entrar.`);
+            await writeFile(arquivo, texto.replaceAll(MARCADOR_SITE, site));
+          }
+        }
       },
       {
         // Versão nova do cache do service worker em todo build do site, com npm run build ou
