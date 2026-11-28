@@ -23,15 +23,28 @@ O readme explica a arquitetura, as variáveis de ambiente e o deploy no Render. 
 
 | Peça | Onde | Quem tem acesso |
 |---|---|---|
-| Site (páginas públicas e app) | Render, Static Site (`Frontend/dist`) | [PREENCHER] |
-| API | Render, Web Service (`Backend`) | [PREENCHER] |
+| Site (páginas públicas e app) | Render, Static Site `vera-finance` (`Frontend/dist`), https://vera-finance-vlto.onrender.com | [PREENCHER] |
+| API | Render, Web Service `vera-finance-api` (`Backend`, região `virginia`), https://vera-finance-api.onrender.com | [PREENCHER] |
 | Login | Firebase Authentication | [PREENCHER] |
-| Dados | Firebase Realtime Database ou PostgreSQL (Neon), conforme `DATABASE_URL` | [PREENCHER] |
+| Dados | PostgreSQL no Neon (São Paulo, AWS `sa-east-1`), pela `DATABASE_URL`. O Realtime Database fica só até apagar os dados (veja abaixo) | [PREENCHER] |
 | Código e CI | GitHub (`.github/workflows/ci.yml`) | [PREENCHER] |
 | Segredos (cópia de segurança) | [PREENCHER: cofre de senhas do time] | [PREENCHER] |
 
 Regra geral: segredo só no Render (Environment) e no cofre do time. Nunca em código, commit, issue,
 chat ou print.
+
+Os dois serviços do Render foram criados à mão no painel. O `render.yaml` da raiz é a referência da
+configuração e serve para recriar do zero; aplicar o Blueprint com eles no ar criaria serviços
+duplicados (veja o readme, "Deploy no Render").
+
+### Migração para o PostgreSQL
+
+- Feita em 28/11/2026: os dados foram do Firebase Realtime Database para o PostgreSQL (Neon), com
+  serviços novos no Render. Os serviços antigos foram excluídos.
+- **Próximo passo:** depois de alguns dias sem problema, guarde o JSON exportado num lugar seguro e
+  apague os dados do Realtime Database (readme, "PostgreSQL (dados)", passo 3). O projeto do
+  Firebase continua, por causa do Authentication. Depois, `FIREBASE_URL_BANCO` pode sair do Render.
+- O passo a passo no Windows (PowerShell) está no readme, em "No Windows (PowerShell)".
 
 ---
 
@@ -130,6 +143,9 @@ primeiro sem gravar e leia o relatório.
 É o jeito descrito no readme: na pasta `Backend`, um `.env` com as mesmas variáveis do Render e
 `node --env-file=.env scripts/<script>.mjs`. Simples, mas os segredos de produção ficam na sua
 máquina: apague o `.env` quando terminar e nunca faça commit dele (o Git já ignora).
+
+No Windows, crie o `.env` com `notepad .env` (dentro de `Backend`), em vez de colar o segredo no
+PowerShell, onde ele fica na tela e no histórico. Os scripts rodam igual no Windows.
 
 ### Opção 2: no Render, como job avulso (one-off job)
 
