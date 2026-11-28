@@ -1,14 +1,21 @@
 import { useState } from 'react';
-import { Button, Input } from '../ds/index.js';
+import { Button, Icon, Input } from '../ds/index.js';
 import { Brand } from '../Brand.jsx';
 import { Link } from '../../lib/router.jsx';
 import { api } from '../../services/api.js';
 import { useUi } from '../../context/UiContext.jsx';
+import { EMAIL_DE_CONTATO, INSTAGRAM, WHATSAPP } from '../../lib/site.js';
 import { BLOG_NO_RODAPE } from '../../conteudo/rodape.js';
 import './css/site-footer.css';
 
 const STATUS_URL =
   (import.meta.env.VITE_API_URL || 'http://localhost:4000').replace(/\/$/, '') + '/api/saude';
+
+// Redes da vera.group. Abrem em nova aba; o nome acessível diz isso.
+const REDES_SOCIAIS = [
+  ['instagram', 'Instagram', `Instagram da vera.group, ${INSTAGRAM.usuario} (abre em nova aba)`, INSTAGRAM.link],
+  ['whatsapp', 'WhatsApp', `WhatsApp da vera.group, ${WHATSAPP.numero} (abre em nova aba)`, WHATSAPP.link]
+];
 
 const COLS = [
   {
@@ -35,7 +42,7 @@ const COLS = [
       ['Central de ajuda', '/ajuda'],
       ['Perguntas frequentes', '/perguntas'],
       ['Ler nota fiscal', '/ajuda/ler-nota-fiscal'],
-      ['Contato', 'mailto:oi@vera.finance'],
+      ['Contato', `mailto:${EMAIL_DE_CONTATO}`],
       ['Status', STATUS_URL]
     ]
   },
@@ -94,6 +101,21 @@ export function SiteFooter() {
               Entrar na lista
             </Button>
           </form>
+          <div className="site-footer__social">
+            {REDES_SOCIAIS.map(([icone, nome, rotulo, href]) => (
+              <a
+                key={icone}
+                href={href}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={rotulo}
+                className="vera-tap site-footer__social-link"
+              >
+                <Icon name={icone} size={18} />
+                {nome}
+              </a>
+            ))}
+          </div>
         </div>
         {COLS.map(c => (
           <div key={c.titulo} className="site-footer__col">
@@ -126,7 +148,7 @@ export function SiteFooter() {
           <Link to="/privacidade" className="vera-tap site-footer__mute">
             Privacidade
           </Link>
-          <a href="mailto:oi@vera.finance" className="vera-tap site-footer__mute">
+          <a href={`mailto:${EMAIL_DE_CONTATO}`} className="vera-tap site-footer__mute">
             Contato
           </a>
         </div>

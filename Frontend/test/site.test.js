@@ -1,6 +1,15 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { REDES_COM_PRECO, SITE_URL, urlDoSite } from '../src/lib/site.js';
+import { readFileSync } from 'node:fs';
+import {
+  EMAIL_DE_CONTATO,
+  INSTAGRAM,
+  REDES_COM_PRECO,
+  SITE_URL,
+  WHATSAPP,
+  urlDoSite
+} from '../src/lib/site.js';
 import { REDES } from '../../Backend/src/models/RedeModel.js';
+import { EMAIL_DE_CONTATO as EMAIL_DOS_EMAILS } from '../../Backend/src/emails/index.js';
 
 afterEach(() => {
   vi.unstubAllEnvs();
@@ -39,5 +48,35 @@ describe('redes com preço online', () => {
 
   it('não repete rede', () => {
     expect(new Set(REDES_COM_PRECO).size).toBe(REDES_COM_PRECO.length);
+  });
+});
+
+describe('contatos', () => {
+  const ler = caminho => readFileSync(new URL(caminho, import.meta.url), 'utf8');
+
+  it('o JSON-LD da organização (index.html) tem o e-mail, o Instagram e o telefone de lib/site.js', () => {
+    const blocos = [...ler('../index.html').matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)];
+    const organizacao = blocos.map(([, json]) => JSON.parse(json)).find(d => d['@type'] === 'Organization');
+    expect(organizacao.email).toBe(EMAIL_DE_CONTATO);
+    expect(organizacao.sameAs).toEqual([INSTAGRAM.link]);
+    expect(organizacao.contactPoint).toMatchObject({
+      '@type': 'ContactPoint',
+      telephone: WHATSAPP.telefone,
+      contactType: 'customer support',
+      availableLanguage: 'pt-BR'
+    });
+  });
+
+  it('o llms.txt e os modelos de e-mail usam os mesmos contatos', () => {
+    const llms = ler('../public/llms.txt');
+    for (const texto of [EMAIL_DE_CONTATO, WHATSAPP.numero, WHATSAPP.link, INSTAGRAM.usuario, INSTAGRAM.link])
+      expect(llms).toContain(texto);
+    expect(EMAIL_DOS_EMAILS).toBe(EMAIL_DE_CONTATO);
+  });
+
+  it('o link do WhatsApp é o mesmo número do telefone', () => {
+    const digitos = WHATSAPP.telefone.replace(/\D/g, '');
+    expect(WHATSAPP.link).toBe(`https://wa.me/${digitos}`);
+    expect(`55${WHATSAPP.numero.replace(/\D/g, '')}`).toBe(digitos);
   });
 });

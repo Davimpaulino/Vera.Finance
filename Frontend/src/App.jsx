@@ -14,7 +14,8 @@ import Landing from './pages/site/Landing.jsx';
 import Precos from './pages/site/Precos.jsx';
 import Legal from './pages/site/Legal.jsx';
 import Perguntas from './pages/site/Perguntas.jsx';
-import OndeFunciona from './pages/site/OndeFunciona.jsx';
+import OndeFunciona, { OndeFuncionaNaCidade } from './pages/site/OndeFunciona.jsx';
+import { cidadeDoCaminho } from './conteudo/cidades.js';
 import { PaginaDeConteudo } from './pages/site/PaginaDeConteudo.jsx';
 import { ehCaminhoDeConteudo, useConteudo } from './conteudo/carregar.js';
 import Login from './pages/auth/Login.jsx';
@@ -101,6 +102,9 @@ export default function App() {
   if (path === '/termos') return <Legal tipo="termos" />;
   if (path === '/privacidade') return <Legal tipo="privacidade" />;
   if (path === '/onde-funciona') return <OndeFunciona />;
+  // Uma página por cidade prioritária (src/conteudo/cidades.json). Cidade que não existe vai para a home.
+  const cidade = cidadeDoCaminho(path);
+  if (cidade) return <OndeFuncionaNaCidade key={cidade.slug} cidade={cidade} />;
   // Central de ajuda, blog e artigos (src/conteudo), num pedaço separado do JavaScript.
   // Artigo que não existe vai para a home.
   if (ehCaminhoDeConteudo(path)) return <PaginaDeConteudo caminho={path} />;

@@ -4,6 +4,7 @@ import { JsonLd } from '../../components/site/JsonLd.jsx';
 import { Texto } from '../../components/site/Texto.jsx';
 import { Trilha } from '../../components/site/Trilha.jsx';
 import { Link } from '../../lib/router.jsx';
+import { EMAIL_DE_CONTATO } from '../../lib/site.js';
 import { SECOES, tituloDoCaminho } from '../../conteudo/index.js';
 import { artigoEstruturado } from '../../conteudo/dadosEstruturados.js';
 import { dataPorExtenso } from '../../conteudo/formato.js';
@@ -112,7 +113,7 @@ export default function Artigo({ artigo }) {
               Não achou o que procurava? Veja os outros artigos da{' '}
               <Link to="/ajuda">central de ajuda</Link>, as{' '}
               <Link to="/perguntas">perguntas frequentes</Link> ou escreva para{' '}
-              <a href="mailto:ajuda@vera.finance">ajuda@vera.finance</a>.
+              <a href={`mailto:${EMAIL_DE_CONTATO}`}>{EMAIL_DE_CONTATO}</a>.
             </>
           )}
         </p>

@@ -361,8 +361,9 @@ não precisa de rotação. Quem protege os dados são as regras do banco e a con
 
 ## Pedidos de titulares (LGPD)
 
-Canal oficial: **privacidade@vera.finance** (está na Política de privacidade). Prazo prometido na
-Política: resposta em até **15 dias**. Encarregado de dados: [PREENCHER].
+Canal oficial: **veragroup.ia@gmail.com** (está na Política de privacidade). É o e-mail único da
+vera, provisório até ter domínio próprio (`EMAIL_DE_CONTATO`, em `Frontend/src/lib/site.js`).
+Prazo prometido na Política: resposta em até **15 dias**. Encarregado de dados: [PREENCHER].
 
 ### Regras
 
@@ -507,7 +508,7 @@ dado pessoal (vazamento de segredo, acesso indevido, perda de dados).
 | Responsável pelo incidente (coordena e decide) | [PREENCHER] | [PREENCHER] |
 | Backend e banco | [PREENCHER] | [PREENCHER] |
 | Site e app | [PREENCHER] | [PREENCHER] |
-| Encarregado de dados (LGPD) | [PREENCHER] | privacidade@vera.finance |
+| Encarregado de dados (LGPD) | [PREENCHER] | veragroup.ia@gmail.com |
 | Comunicação com quem usa a vera | [PREENCHER] | [PREENCHER] |
 | Dono das contas do Render, Firebase, Neon e GitHub | [PREENCHER] | [PREENCHER] |
 

@@ -1,11 +1,27 @@
 // Endereço público do site. Muda com VITE_SITE_URL quando houver domínio próprio.
-export const SITE_URL = (import.meta.env.VITE_SITE_URL || 'https://vera-finance.onrender.com').replace(
+// O "?." deixa este arquivo rodar também no Node (testes da API e do conteúdo), sem o Vite.
+export const SITE_URL = (import.meta.env?.VITE_SITE_URL || 'https://vera-finance.onrender.com').replace(
   /\/$/,
   ''
 );
 
 /** Link absoluto para um caminho do site (canonical, JSON-LD). */
 export const urlDoSite = (caminho = '/') => `${SITE_URL}${caminho.startsWith('/') ? caminho : `/${caminho}`}`;
+
+// Contatos da vera.group. O e-mail é provisório e vale para tudo (contato, ajuda, privacidade e
+// encarregado de dados) até a vera ter domínio próprio. Ao trocar, mude também o index.html
+// (JSON-LD), o public/llms.txt e o Backend/src/emails/index.js (os testes conferem).
+export const EMAIL_DE_CONTATO = 'veragroup.ia@gmail.com';
+export const WHATSAPP = {
+  numero: '(11) 94072-3507',
+  // Formato do schema.org (contactPoint.telephone).
+  telefone: '+55-11-94072-3507',
+  link: 'https://wa.me/5511940723507'
+};
+export const INSTAGRAM = {
+  usuario: '@veragroup.ia',
+  link: 'https://www.instagram.com/veragroup.ia/'
+};
 
 // Redes com preço online, na mesma ordem de Backend/src/models/RedeModel.js.
 // Ao integrar ou tirar uma rede lá, atualize aqui (a landing e as perguntas usam esta lista).

@@ -1,4 +1,5 @@
 import { urlDoSite } from './site.js';
+import { CIDADES, metaDaCidade } from '../conteudo/cidades.js';
 
 // Título e descrição por página (o Google usa os dois no resultado da busca).
 // Usado pelo App no navegador e pela pré-renderização no build (scripts/prerender.mjs).
@@ -22,6 +23,8 @@ export const PAGINAS = {
     'Onde a vera funciona: redes com preço online pelo CEP · vera.finance',
     'Digite o seu CEP e veja quais redes de supermercado e de atacado com preço online atendem a sua região, e como a vera compara os preços.'
   ],
+  // Uma página por cidade prioritária (src/conteudo/cidades.json).
+  ...Object.fromEntries(CIDADES.map(cidade => [cidade.caminho, metaDaCidade(cidade)])),
   '/ajuda': [
     'Central de ajuda · vera.finance',
     'Como ler a nota fiscal, comparar preços, montar a lista de compras, usar o modo família, baixar os seus dados e cancelar o plano na vera.'

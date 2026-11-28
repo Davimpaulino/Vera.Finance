@@ -112,6 +112,10 @@ function ler(caminho) {
   return arquivos.get(caminho);
 }
 
+// E-mail de contato da vera, o mesmo de Frontend/src/lib/site.js (o teste confere). É provisório:
+// vale para ajuda e privacidade até a vera ter domínio próprio.
+export const EMAIL_DE_CONTATO = 'veragroup.ia@gmail.com';
+
 /** Campos que todo e-mail já tem: links do site e endereços de contato. */
 export function camposPadrao(site = process.env.SITE_URL || SITE_PADRAO) {
   const base = String(site).replace(/\/+$/, '');
@@ -123,8 +127,8 @@ export function camposPadrao(site = process.env.SITE_URL || SITE_PADRAO) {
     linkPrecos: `${base}/precos`,
     linkPrivacidade: `${base}/privacidade`,
     linkCadastro: `${base}/cadastro`,
-    emailAjuda: 'ajuda@vera.finance',
-    emailPrivacidade: 'privacidade@vera.finance'
+    emailAjuda: EMAIL_DE_CONTATO,
+    emailPrivacidade: EMAIL_DE_CONTATO
   };
 }
 

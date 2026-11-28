@@ -16,16 +16,23 @@ import {
 // e as IAs demoram a achar. Os testes do próprio Frontend ficam em Frontend/test (Vitest) e Frontend/e2e.
 const raiz = new URL('../../Frontend/', import.meta.url);
 const SITE = 'https://vera-finance.onrender.com';
-const FIXAS = ['/onde-funciona', '/ajuda', '/blog'];
+// As páginas das cidades (/onde-funciona/<slug>) saem do Frontend/src/conteudo/cidades.json.
+const CIDADES = JSON.parse(await readFile(new URL('src/conteudo/cidades.json', raiz), 'utf8'));
+const FIXAS = [
+  '/onde-funciona',
+  '/ajuda',
+  '/blog',
+  ...CIDADES.map(cidade => `/onde-funciona/${cidade.slug}`)
+];
 
-test('sitemap.xml tem as páginas de conteúdo e todos os artigos', async () => {
+test('sitemap.xml tem as páginas de conteúdo, das cidades e todos os artigos', async () => {
   const sitemap = await readFile(new URL('public/sitemap.xml', raiz), 'utf8');
   const locs = new Set([...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map(([, loc]) => loc.trim()));
   for (const caminho of [...FIXAS, ...ARTIGOS.map(artigo => artigo.caminho)])
     assert.ok(locs.has(`${SITE}${caminho}`), `${caminho} falta no sitemap.xml`);
 });
 
-test('llms.txt cita as páginas de conteúdo e todos os artigos', async () => {
+test('llms.txt cita as páginas de conteúdo, das cidades e todos os artigos', async () => {
   const llms = await readFile(new URL('public/llms.txt', raiz), 'utf8');
   for (const caminho of [...FIXAS, ...ARTIGOS.map(artigo => artigo.caminho)])
     assert.ok(llms.includes(`(${SITE}${caminho})`), `${caminho} falta no llms.txt`);

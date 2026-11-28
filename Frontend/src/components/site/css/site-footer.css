@@ -31,6 +31,22 @@
 .vera-input.site-footer__email{
   flex:1 1 180px
 }
+.site-footer__social{
+  display:flex;
+  gap:20px;
+  flex-wrap:wrap
+}
+.site-footer__social-link{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  font-size:var(--fs-meta);
+  color:var(--text-2);
+  transition:color var(--dur-fast) var(--ease-out)
+}
+.site-footer__social-link:hover{
+  color:var(--text-1)
+}
 .site-footer__col{
   flex:0 1 160px;
   min-width:140px;

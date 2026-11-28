@@ -8,6 +8,10 @@ compara o preço da lista de compras nos supermercados perto do CEP da pessoa.
 
 - Site: https://vera-finance.onrender.com
 - Repositório: https://github.com/Davimpaulino/vera.finance
+- Contato: veragroup.ia@gmail.com (e-mail único para contato, ajuda e privacidade, provisório até a
+  vera ter domínio próprio), WhatsApp [(11) 94072-3507](https://wa.me/5511940723507) e Instagram
+  [@veragroup.ia](https://www.instagram.com/veragroup.ia/). No código, ficam em
+  `Frontend/src/lib/site.js` (`EMAIL_DE_CONTATO`, `WHATSAPP` e `INSTAGRAM`).
 
 A vera não pede senha de banco, não vende produtos, não recebe de mercados para mostrar preços e
 não tem vínculo com as redes de supermercado citadas.
@@ -34,6 +38,7 @@ não tem vínculo com as redes de supermercado citadas.
 - [Verificador de CEP (público)](#verificador-de-cep-público)
 - [Alerta de preço da lista](#alerta-de-preço-da-lista)
 - [Páginas de conteúdo (Onde funciona, Central de ajuda e Blog)](#páginas-de-conteúdo-onde-funciona-central-de-ajuda-e-blog)
+  - [Páginas das cidades](#páginas-das-cidades)
 - [Planos](#planos)
 - [Desempenho do site](#desempenho-do-site)
 - [O que o navegador guarda](#o-que-o-navegador-guarda)
@@ -108,11 +113,16 @@ Tudo abaixo existe no código deste repositório.
 
 **Site**
 
-- Páginas públicas (início, planos, perguntas, onde funciona, central de ajuda e artigos, blog e
-  posts, termos, privacidade, entrar e cadastro) pré-renderizadas no build, para buscadores e robôs
-  de IA lerem sem JavaScript. `robots.txt`, `sitemap.xml`, `llms.txt` e aviso ao IndexNow.
+- Páginas públicas (início, planos, perguntas, onde funciona e as páginas das cidades, central de
+  ajuda e artigos, blog e posts, termos, privacidade, entrar e cadastro) pré-renderizadas no build,
+  para buscadores e robôs de IA lerem sem JavaScript. `robots.txt`, `sitemap.xml`, `llms.txt` e
+  aviso ao IndexNow.
 - **Onde funciona** (`/onde-funciona`): sem cadastro, a pessoa digita o CEP e vê quais redes com
   preço online têm loja perto ([verificador de CEP](#verificador-de-cep-público)).
+- **Páginas das cidades** (`/onde-funciona/<cidade>`): uma por cidade prioritária (12 hoje), com o
+  verificador de CEP e, depois do levantamento (`npm run cobertura:cidades`), as redes com preço
+  online a até 15 km do centro ([detalhes](#páginas-das-cidades)).
+- **Rodapé do site**: e-mail de contato, Instagram e WhatsApp da vera.group.
 - **Central de ajuda** (`/ajuda`) e **blog** (`/blog`), com um artigo por página
   ([como escrever](#páginas-de-conteúdo-onde-funciona-central-de-ajuda-e-blog)).
 - **App instalável (PWA)**: manifest e service worker; abre a casca do app sem internet.
@@ -123,8 +133,8 @@ Para ninguém prometer o que o produto não faz:
 
 - **App nativo** (Android/iOS, lojas de aplicativo): não existe. Há o app instalável pelo navegador
   (PWA).
-- **Contas bancárias e Open Finance**: a vera não se conecta a banco nem a cartão. Os gastos entram
-  à mão, pela nota fiscal ou pela lista de compras.
+- **Conexão com bancos via Open Finance (planejada)**: ainda não existe. Hoje a vera não se conecta
+  a banco nem a cartão. Os gastos entram à mão, pela nota fiscal ou pela lista de compras.
 - **Pagamento**: ainda não há provedor de pagamento integrado. Os planos e os limites existem no
   código (`PlanoModel.js`), mas nada é cobrado: escolher o vera+ no cadastro ou nos botões de
   Configurações ("Assinar mensal · R$ 12,90", "Trocar para anual · R$ 99,90") ativa o plano na
@@ -243,7 +253,7 @@ vera.finance/
 │   │   ├── entry-server.jsx      entrada da pré-renderização
 │   │   ├── App.jsx               escolhe a página pelo caminho
 │   │   ├── pages/site, auth, app páginas públicas, de login e do app
-│   │   ├── conteudo/             artigos da central de ajuda e do blog
+│   │   ├── conteudo/             artigos da ajuda e do blog e o levantamento das cidades
 │   │   ├── components/ds/        design system
 │   │   ├── components/app, site  peças do app e do site
 │   │   ├── css/                  tokens (cores, tipografia, espaços) e estilos globais
@@ -329,7 +339,8 @@ só na máquina de quem desenvolve.
 - `npm test` (Frontend) cobre `src/lib` (formatação, páginas, roteador, site, recarga depois de
   deploy), o seletor de produto, os textos legais, o aceite dos termos, os campos e o diálogo do
   design system, o estado "Sem conexão" (com as saídas), o "Ver o painel", a moldura do site
-  (rodapé fora do `<main>`) e a lista de ícones.
+  (rodapé fora do `<main>`, com o Instagram e o WhatsApp), as páginas das cidades, os contatos
+  (iguais no `index.html`, no `llms.txt` e nos modelos de e-mail) e a lista de ícones.
 - `npm run test:e2e` sobe a API com `BANCO=memoria` na porta **4100** e o site do build
   (`vite preview`) na **4180**. Ele nunca reaproveita um servidor que já esteja rodando, para não
   gravar contas de teste num banco de verdade. Tudo fora de `localhost` é bloqueado e o Firebase Auth
@@ -345,8 +356,9 @@ só na máquina de quem desenvolve.
   (`entrarComSenha` em `e2e/jornada.spec.js`) a criar outra.
 
 Alguns testes do backend conferem arquivos do frontend: o service worker (`public/sw.js`), a lista
-de redes do site (`src/lib/site.js` e `public/llms.txt`) e as páginas de conteúdo no
-`public/sitemap.xml` e no `public/llms.txt` (`test/conteudo.test.js`).
+de redes do site (`src/lib/site.js` e `public/llms.txt`), as páginas de conteúdo e das cidades no
+`public/sitemap.xml` e no `public/llms.txt` (`test/conteudo.test.js`) e o
+`src/conteudo/cidades.json` (`test/coberturaDasCidades.test.js`).
 
 ---
 
@@ -444,8 +456,8 @@ Regras.
 | Environment | as variáveis da tabela [Site](#site-render--static-site--environment-usadas-no-build) |
 
 - O `npm run build` grava o HTML pronto das páginas públicas (`/`, `/precos`, `/perguntas`,
-  `/onde-funciona`, `/ajuda`, `/ajuda/<slug>`, `/blog`, `/blog/<slug>`, `/termos`, `/privacidade`,
-  `/entrar`, `/cadastro`) em `dist/<rota>/index.html`. Assim buscadores e robôs de IA, que não rodam
+  `/onde-funciona`, `/onde-funciona/<cidade>`, `/ajuda`, `/ajuda/<slug>`, `/blog`, `/blog/<slug>`,
+  `/termos`, `/privacidade`, `/entrar`, `/cadastro`) em `dist/<rota>/index.html`. Assim buscadores e robôs de IA, que não rodam
   JavaScript, leem o conteúdo. Não precisa de navegador no build. Título, descrição, canonical,
   robots e os textos de compartilhamento (`og:`/`twitter:`) de cada página vêm de
   `src/lib/paginas.js`; os dos artigos vêm de `src/conteudo/`. A home mantém os do `index.html`.
@@ -534,6 +546,7 @@ job, está em [docs/operacao.md](docs/operacao.md#rodar-um-script-como-job).
 | `Backend/scripts/saude-das-redes.mjs` | `npm run saude:redes` (opções `--cep=`, `--termo=`, `--redes=`) | Busca um produto em cada rede e mostra se o leitor funciona. Sai com código 1 se alguma rede deu erro ou voltou sem produtos. Não grava nada, então não precisa de simulação. | Todo dia, como Cron Job no Render, e depois de mexer num leitor ([detalhes](#monitor-de-saúde-das-redes)). |
 | `Backend/scripts/importar-usuarios-firebase.mjs` | `node --env-file=.env scripts/importar-usuarios-firebase.mjs` (simulação) e depois com `--executar` | Leva as contas do login próprio para o Firebase Authentication sem trocar a senha de ninguém. | Uma vez, antes de desligar o login próprio ([passo a passo](#levar-as-contas-do-login-por-senha-para-o-firebase-authentication)). |
 | `Backend/scripts/conferir-restauracao.mjs` | `node --env-file=.env scripts/conferir-restauracao.mjs retrato <arquivo>` no banco atual; depois `conferir <arquivo>` (simulação) e `conferir <arquivo> --executar` no banco restaurado | Depois de restaurar um backup, apaga de novo as contas apagadas depois dele, recria os pedidos de exclusão feitos depois e tira os de quem desistiu. O login do Firebase só sai quando tem o mesmo uid da conta. | Em toda restauração de backup, antes de a API usar o banco restaurado ([passo a passo](docs/operacao.md#restaurar-sem-perder-ninguém-passo-a-passo)). |
+| `Backend/scripts/cobertura-das-cidades.mjs` | `npm run cobertura:cidades` (ou `npm run cobertura:cidades -- --cidades=sao-paulo-sp,recife-pe`) | Acha o centro de cada cidade prioritária no Nominatim e lista as redes com preço online a até 15 km, pelo OpenStreetMap. Grava só o `Frontend/src/conteudo/cidades.json`, com o banco em memória. Se o mapa falha numa cidade, ela fica como estava e o script sai com código 1. | De vez em quando, para atualizar as [páginas das cidades](#páginas-das-cidades). Depois, faça o commit do JSON e um deploy do site. |
 | `Backend/scripts/ver-emails.mjs` | `npm run emails:ver` (ou `npm run emails:ver -- ./pasta`) | Grava os modelos de e-mail com dados de exemplo para ver no navegador. Não envia nada. | Ao mudar um modelo de e-mail. |
 | `Frontend/scripts/prerender.mjs` | parte do `npm run build` | Grava o HTML das páginas públicas e a casca `app.html`. | Sozinho, em todo build. |
 | `Frontend/scripts/indexnow.mjs` | `npm run indexnow` (com `--teste` só mostra) | Avisa os buscadores do IndexNow das URLs do sitemap. | Depois de um deploy que muda páginas públicas. |
@@ -824,7 +837,7 @@ a pasta raiz do serviço não for `Backend`, use `cd Backend && node scripts/pub
 ## Verificador de CEP (público)
 
 `GET /api/publico/redes?cep=13334100` (aceita `13334-100`). Não precisa de login. É a rota que a
-página `/onde-funciona` consulta.
+página `/onde-funciona` e as páginas das cidades (`/onde-funciona/<cidade>`) consultam.
 
 Limites:
 
@@ -919,9 +932,37 @@ São páginas públicas, pré-renderizadas no build para os buscadores e as IAs:
   ficam:
   - as redes com preço online, separadas em supermercados e atacados (`REDES_COM_PRECO` e
     `REDES_DE_ATACADO` em `Frontend/src/lib/site.js`, que seguem o `Backend/src/models/RedeModel.js`);
+  - os links para as páginas das cidades;
   - como a comparação funciona.
+- `/onde-funciona/<cidade>`: uma página por cidade prioritária
+  (`Frontend/src/conteudo/cidades.json`; veja [Páginas das cidades](#páginas-das-cidades)).
 - `/ajuda` e `/ajuda/<slug>`: central de ajuda (`Frontend/src/conteudo/ajuda.js`).
 - `/blog` e `/blog/<slug>`: blog (`Frontend/src/conteudo/blog.js`).
+
+### Páginas das cidades
+
+São 12: São Paulo, Rio de Janeiro, Brasília, Fortaleza, Salvador, Belo Horizonte, Manaus, Curitiba,
+Recife, Goiânia, Porto Alegre e Campinas. O endereço é `/onde-funciona/<slug>`, como
+`/onde-funciona/sao-paulo-sp`.
+
+- Cada página tem título, descrição, h1, o verificador de CEP, como a vera compara os preços e a
+  trilha no JSON-LD (Início › Onde a vera funciona › cidade).
+- Os dados vêm do `Frontend/src/conteudo/cidades.json`, que o `npm run cobertura:cidades` (na pasta
+  `Backend`) grava. Para cada cidade, o script acha o centro no Nominatim e lista as redes com preço
+  online a até 15 km, pelo OpenStreetMap, agrupadas como no verificador de CEP. O script precisa de
+  internet e não grava nada no banco.
+- Cidade sem levantamento (`redes: null`) mostra só o texto geral e o verificador de CEP. Com
+  levantamento, a página lista as redes, com lojas e distância do centro, a data, a fonte e o aviso
+  "A vera não tem vínculo com as redes citadas."
+- Se o mapa falha numa cidade, o script mantém o que já havia no JSON para ela e avisa. Rode de novo
+  mais tarde só para ela: `npm run cobertura:cidades -- --cidades=<slug>`.
+- Depois de rodar, confira o JSON, faça o commit e publique o site. Atualize o `lastmod` das
+  cidades no `public/sitemap.xml`.
+- Para pôr ou tirar uma cidade, mude `CIDADES` em `Backend/scripts/cobertura-das-cidades.mjs`, rode
+  o script e ponha a URL em `public/sitemap.xml` e em `public/llms.txt`. Os testes conferem as duas
+  listas e o JSON.
+- Cidade cujo nome leva artigo ("no Rio de Janeiro") entra em `COM_ARTIGO`, em
+  `Frontend/src/conteudo/cidades.js`.
 
 ### Escrever um artigo novo
 
@@ -974,6 +1015,8 @@ Para não quebrar esse esquema:
   volta para o pacote principal.
 - O CSS dessas páginas (`src/pages/site/css/conteudo.css`) precisa continuar no pacote principal. Se
   for para o pedaço, o HTML pré-renderizado abre sem estilo.
+- As páginas das cidades não usam o pedaço: o `cidades.json` é pequeno e vai no pacote principal,
+  junto com a página Onde funciona. Se ele crescer muito, mude para o mesmo esquema dos artigos.
 
 ### Conteúdo verdadeiro
 

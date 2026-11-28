@@ -1,3 +1,5 @@
+import { EMAIL_DE_CONTATO } from '../lib/site.js';
+
 // Artigos da central de ajuda. Cada um vira a página /ajuda/<slug>, pré-renderizada no build
 // (a lista de rotas sai daqui, por src/lib/paginas.js). Para escrever um artigo novo, copie um
 // bloco e troque os textos; depois ponha a URL em public/sitemap.xml e em public/llms.txt
@@ -19,6 +21,9 @@
 // O funcionamento descrito aqui foi conferido no código (rotas da API, models e telas do app).
 // Preços e limites dos planos vêm de Backend/src/models/PlanoModel.js. Se o produto mudar,
 // mude o artigo junto: o mesmo texto vai para os buscadores e para as IAs.
+
+// O e-mail como link no texto (provisório até a vera ter domínio; veja lib/site.js).
+const CONTATO = `[${EMAIL_DE_CONTATO}](mailto:${EMAIL_DE_CONTATO})`;
 
 export const ARTIGOS_DE_AJUDA = [
   {
@@ -152,7 +157,7 @@ export const ARTIGOS_DE_AJUDA = [
           'Depois da compra, [leia a nota fiscal](/ajuda/ler-nota-fiscal): o preço que você pagou entra na comparação e ajuda quem compra na mesma loja.'
         ]
       },
-      'A vera não vende produtos e não recebe nada de mercados para mostrar preços. Se um preço parecer errado, escreva para [ajuda@vera.finance](mailto:ajuda@vera.finance).'
+      `A vera não vende produtos e não recebe nada de mercados para mostrar preços. Se um preço parecer errado, escreva para ${CONTATO}.`
     ],
     relacionados: [
       '/ajuda/como-funciona-a-comparacao',
@@ -160,7 +165,7 @@ export const ARTIGOS_DE_AJUDA = [
       '/blog/atacarejo-ou-supermercado-quando-compensa'
     ],
     publicadoEm: '2026-11-26',
-    atualizadoEm: '2026-11-26'
+    atualizadoEm: '2026-11-28'
   },
   {
     slug: 'montar-a-lista',
@@ -309,11 +314,11 @@ export const ARTIGOS_DE_AJUDA = [
       { titulo: 'O que é apagado' },
       'O perfil, os lançamentos, as metas, a lista, as notas, o login e a participação em família. Se você é o dono do ciclo num [modo família](/ajuda/modo-familia), ele acaba e cada pessoa volta a ter a própria conta.',
       'Ficam só os preços da base anônima, porque não identificam ninguém, e os registros de acesso, guardados por 6 meses como exige o Marco Civil da Internet. Os detalhes estão na [política de privacidade](/privacidade).',
-      'Dúvidas sobre os seus dados: [privacidade@vera.finance](mailto:privacidade@vera.finance).'
+      `Dúvidas sobre os seus dados: ${CONTATO}.`
     ],
     relacionados: ['/privacidade', '/ajuda/planos-e-cancelamento', '/ajuda/senha-do-banco'],
     publicadoEm: '2026-11-26',
-    atualizadoEm: '2026-11-26'
+    atualizadoEm: '2026-11-28'
   },
   {
     slug: 'planos-e-cancelamento',
@@ -383,10 +388,10 @@ export const ARTIGOS_DE_AJUDA = [
       { titulo: 'O que a vera pede' },
       'Para criar a conta: nome, e-mail e uma senha só da vera, ou o login do Google. Para comparar preços: o CEP e o raio de busca. Nada de senha de banco, nem acesso ao internet banking ou ao app do banco.',
       { titulo: 'Cuidado com golpes' },
-      'Se alguém pedir a senha do seu banco em nome da vera, não passe: é golpe. A vera nunca faz esse pedido. Na dúvida, escreva para [ajuda@vera.finance](mailto:ajuda@vera.finance).'
+      `Se alguém pedir a senha do seu banco em nome da vera, não passe: é golpe. A vera nunca faz esse pedido. Na dúvida, escreva para ${CONTATO}.`
     ],
     relacionados: ['/privacidade', '/ajuda/ler-nota-fiscal', '/perguntas'],
     publicadoEm: '2026-11-26',
-    atualizadoEm: '2026-11-26'
+    atualizadoEm: '2026-11-28'
   }
 ];

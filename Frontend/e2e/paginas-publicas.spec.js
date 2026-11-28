@@ -6,6 +6,7 @@ const DO_SITE = [
   '/precos',
   '/perguntas',
   '/onde-funciona',
+  '/onde-funciona/sao-paulo-sp',
   '/ajuda',
   '/ajuda/ler-nota-fiscal',
   '/blog',

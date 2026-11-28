@@ -12,6 +12,7 @@
     "migrar:postgres": "node --env-file-if-exists=.env scripts/migrar-firebase-para-postgres.mjs",
     "regras:firebase": "node --env-file-if-exists=.env scripts/publicar-regras-firebase.mjs",
     "saude:redes": "node --env-file-if-exists=.env scripts/saude-das-redes.mjs",
+    "cobertura:cidades": "node scripts/cobertura-das-cidades.mjs",
     "emails:ver": "node scripts/ver-emails.mjs"
   },
   "engines": {
