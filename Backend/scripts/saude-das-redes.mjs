@@ -8,7 +8,7 @@
 // O CEP de teste também pode vir de CEP_DE_TESTE. Não grava nada no banco: usa os leitores direto,
 // sem o cache nem o histórico do CatalogoModel. Respeita COLETA_IDENTIFICADA como a API.
 import { performance } from 'node:perf_hooks';
-import { pathToFileURL } from 'node:url';
+import { rodouDireto } from '../src/utils/execucao.js';
 import { REDES } from '../src/models/RedeModel.js';
 import { LEITORES } from '../src/models/LeitoresDeCatalogo.js';
 import { coletaIdentificada, agenteDaColeta } from '../src/models/ColetaModel.js';
@@ -189,7 +189,7 @@ export async function principal(argumentos, { redes = REDES, escrever = console.
   return resultados.some(r => QUEBRADAS.has(r.estado)) ? 1 : 0;
 }
 
-if (import.meta.url === pathToFileURL(process.argv[1] || '').href)
+if (rodouDireto(import.meta.url))
   principal(process.argv.slice(2))
     .then(codigo => (process.exitCode = codigo))
     .catch(erro => {

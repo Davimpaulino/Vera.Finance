@@ -10,7 +10,7 @@
 // regiões do mapa. Se o mapa falhar numa cidade, ela fica como estava no JSON e o script avisa
 // (sai com código 1). Os pedidos ao Nominatim saem na fila de 1 por segundo do GeoModel.
 import { readFile, writeFile } from 'node:fs/promises';
-import { pathToFileURL } from 'node:url';
+import { rodouDireto } from '../src/utils/execucao.js';
 
 // Antes de carregar os models: o banco é escolhido na hora do import (src/config/banco.js).
 process.env.BANCO = 'memoria';
@@ -165,7 +165,7 @@ export async function principal(
   return 0;
 }
 
-if (import.meta.url === pathToFileURL(process.argv[1] || '').href)
+if (rodouDireto(import.meta.url))
   principal(process.argv.slice(2))
     .then(codigo => (process.exitCode = codigo))
     .catch(erro => {
