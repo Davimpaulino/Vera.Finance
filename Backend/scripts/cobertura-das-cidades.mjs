@@ -1,5 +1,7 @@
 // Cobertura das cidades prioritárias: para cada cidade, acha o ponto central no mapa (Nominatim) e
 // lista as redes com preço online que têm loja a até 15 km dele (OpenStreetMap, pela Overpass).
+// Se o mapa não responde para 15 km, tenta 10 e depois 5 km; o raio usado vai no JSON (raioKm) e
+// na página da cidade ("a até X km do centro").
 // O resultado vai para Frontend/src/conteudo/cidades.json, que o site usa nas páginas
 // /onde-funciona/<cidade>.
 //
@@ -9,6 +11,8 @@
 // Só escreve o JSON: não grava nada no banco (roda sempre com o banco em memória) e não guarda as
 // regiões do mapa. Se o mapa falhar numa cidade, ela fica como estava no JSON e o script avisa
 // (sai com código 1). Os pedidos ao Nominatim saem na fila de 1 por segundo do GeoModel.
+// Cada tentativa no mapa sai numa linha (servidor, status HTTP ou erro, tempo), para saber por
+// que uma cidade falhou.
 import { readFile, writeFile } from 'node:fs/promises';
 import { rodouDireto } from '../src/utils/execucao.js';
 
@@ -22,6 +26,15 @@ const { normalize } = await import('../src/utils/text.js');
 
 export const ARQUIVO = new URL('../../Frontend/src/conteudo/cidades.json', import.meta.url);
 export const RAIO_KM = 15;
+// Raios tentados, nesta ordem, quando o mapa não responde.
+export const RAIOS_KM = [RAIO_KM, 10, 5];
+// O mapa para o script: espera mais que o app (25 s) e pede a consulta mais leve, o retângulo em
+// volta do raio, com teto de tempo e de memória na própria consulta (RegiaoModel.consultaDosMercados).
+// A espera do pedido passa um pouco do [timeout] da consulta, para receber a resposta do servidor.
+export const MAPA = {
+  esperaMs: 100_000,
+  consulta: { forma: 'caixa', timeoutS: 90, maxsize: 128 * 1024 * 1024 }
+};
 
 // As cidades mais populosas do Brasil, na ordem em que aparecem no site.
 export const CIDADES = [
@@ -63,14 +76,31 @@ const umaCasa = km => Math.round(km * 10) / 10;
 
 /**
  * Levanta uma cidade. Devolve { ok: true, cidade } com a entrada do JSON, ou { ok: false, motivo }
- * quando o mapa não achou o centro ou não respondeu.
+ * quando o mapa não achou o centro ou não respondeu em nenhum dos raios.
+ * `registrar(linha)` recebe cada tentativa no mapa.
  */
-export async function levantarCidade(cidade, { hoje = hojeNoBrasil() } = {}) {
+export async function levantarCidade(
+  cidade,
+  { hoje = hojeNoBrasil(), raios = RAIOS_KM, mapa = MAPA, registrar = () => {} } = {}
+) {
   const centro = await GeoModel.geocodificar(`${cidade.nome}, ${cidade.uf}`);
   if (!GeoModel.temCoordenadas(centro)) return { ok: false, motivo: 'o mapa não achou o centro da cidade' };
-  // guardar: false — a região não vai para o banco nem fica na memória.
-  const mercados = await RegiaoModel.mercadosPerto(centro, RAIO_KM, { guardar: false });
-  if (!mercados) return { ok: false, motivo: 'o mapa de mercados não respondeu' };
+  let mercados = null;
+  let raioKm = null;
+  for (const raio of raios) {
+    // guardar: false — a região não vai para o banco nem fica na memória.
+    mercados = await RegiaoModel.mercadosPerto(centro, raio, {
+      guardar: false,
+      ...mapa,
+      registrar: linha => registrar(`${cidade.nome} (${cidade.uf}), ${raio} km: ${linha}`)
+    });
+    if (mercados) {
+      raioKm = raio;
+      break;
+    }
+  }
+  if (!mercados)
+    return { ok: false, motivo: `o mapa de mercados não respondeu (tentei ${raios.join(', ')} km)` };
   const redes = agruparPorRede(mercados)
     .filter(grupo => grupo.precoOnline)
     .map(({ id, nome, tipo, lojas, distanciaKm }) => ({
@@ -84,6 +114,7 @@ export async function levantarCidade(cidade, { hoje = hojeNoBrasil() } = {}) {
     ok: true,
     cidade: {
       ...semLevantamento(cidade),
+      raioKm,
       totalMercados: mercados.length,
       redes,
       levantadoEm: hoje
@@ -116,7 +147,7 @@ function lerOpcoes(argumentos) {
 
 const descrever = cidade =>
   `${cidade.nome} (${cidade.uf}): ${cidade.redes.length} ${cidade.redes.length === 1 ? 'rede' : 'redes'} com preço online, ` +
-  `${cidade.totalMercados} ${cidade.totalMercados === 1 ? 'mercado' : 'mercados'} no mapa a até ${RAIO_KM} km do centro`;
+  `${cidade.totalMercados} ${cidade.totalMercados === 1 ? 'mercado' : 'mercados'} no mapa a até ${cidade.raioKm} km do centro`;
 
 /**
  * Roda o levantamento e grava o JSON. Devolve o código de saída: 0 tudo certo, 1 alguma cidade
@@ -124,7 +155,15 @@ const descrever = cidade =>
  */
 export async function principal(
   argumentos,
-  { arquivo = ARQUIVO, cidades = CIDADES, escrever = console.log, avisar = console.error, hoje = hojeNoBrasil() } = {}
+  {
+    arquivo = ARQUIVO,
+    cidades = CIDADES,
+    escrever = console.log,
+    avisar = console.error,
+    hoje = hojeNoBrasil(),
+    raios = RAIOS_KM,
+    mapa = MAPA
+  } = {}
 ) {
   const { cidades: filtro } = lerOpcoes(argumentos);
   if (filtro) {
@@ -143,7 +182,12 @@ export async function principal(
       resultado.push(anterior || semLevantamento(cidade));
       continue;
     }
-    const levantado = await levantarCidade(cidade, { hoje });
+    const levantado = await levantarCidade(cidade, {
+      hoje,
+      raios,
+      mapa,
+      registrar: linha => avisar(`  ${linha}`)
+    });
     if (levantado.ok) {
       resultado.push(levantado.cidade);
       escrever(descrever(levantado.cidade));

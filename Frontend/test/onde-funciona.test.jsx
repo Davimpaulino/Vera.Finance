@@ -78,6 +78,24 @@ describe('páginas das cidades', () => {
     expect(screen.getByLabelText('Seu CEP')).toBeInTheDocument();
   });
 
+  it('levantamento num raio menor (o mapa não respondeu para 15 km): o texto diz o raio usado', () => {
+    const menor = {
+      ...SAO_PAULO,
+      raioKm: 5,
+      totalMercados: 3,
+      redes: [{ id: 'atacadao', nome: 'Atacadão', tipo: 'atacado', lojas: 1, distanciaKm: 2.1 }],
+      levantadoEm: '2026-11-28'
+    };
+    renderComProvedores(<OndeFuncionaNaCidade cidade={menor} />, { caminho: SAO_PAULO.caminho });
+    expect(
+      screen.getByRole('heading', { level: 2, name: 'Redes com preço online a até 5 km do centro de São Paulo' })
+    ).toBeInTheDocument();
+    expect(screen.getByText(/Levantamento de 28 de novembro/)).toHaveTextContent(
+      '3 mercados no mapa a até 5 km do centro'
+    );
+    expect(metaDaCidade(menor)[1]).toMatch(/^1 rede com preço online tem loja a até 5 km do centro de São Paulo/);
+  });
+
   it('no Rio de Janeiro, o texto usa o artigo', () => {
     const rio = cidadeDoCaminho('/onde-funciona/rio-de-janeiro-rj');
     renderComProvedores(<OndeFuncionaNaCidade cidade={rio} />, { caminho: rio.caminho });

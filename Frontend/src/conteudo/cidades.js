@@ -33,7 +33,7 @@ export function metaDaCidade(cidade) {
   const titulo = `Comparar preço de supermercado ${cidade.em} · vera.finance`;
   const quantas = temLevantamento(cidade) ? cidade.redes.length : 0;
   const descricao = quantas
-    ? `${quantas} ${quantas === 1 ? 'rede' : 'redes'} com preço online têm loja a até ${cidade.raioKm} km do centro ${cidade.de} (${cidade.uf}). Veja quais e compare o preço da sua lista de compras.`
+    ? `${quantas} ${quantas === 1 ? 'rede' : 'redes'} com preço online ${quantas === 1 ? 'tem' : 'têm'} loja a até ${cidade.raioKm} km do centro ${cidade.de} (${cidade.uf}). Veja quais e compare o preço da sua lista de compras.`
     : `Como a vera compara o preço da lista de compras ${cidade.em} (${cidade.uf}): digite o seu CEP e veja quais redes com preço online têm loja perto de você.`;
   return [titulo, descricao];
 }
