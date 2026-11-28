@@ -1,4 +1,5 @@
 import { lerRobots, permitido } from '../utils/robots.js';
+import { enderecoDoSite } from '../config/site.js';
 
 // Como a vera pede os preços aos sites das redes. Todos os leitores de catálogo passam por aqui.
 //
@@ -32,9 +33,6 @@ export class ColetaBloqueada extends Error {
 
 export const coletaIdentificada = () =>
   /^(1|true|sim|on|ligad[ao])$/i.test(String(process.env.COLETA_IDENTIFICADA || '').trim());
-
-const enderecoDoSite = () =>
-  String(process.env.SITE_URL || 'https://vera-finance.onrender.com').replace(/\/+$/, '');
 
 /** User-agent dos pedidos às redes, conforme COLETA_IDENTIFICADA. */
 export const agenteDaColeta = () =>
