@@ -14,6 +14,8 @@ import {
 // Páginas de conteúdo do site (Frontend/src/conteudo): o build gera uma página por artigo, mas o
 // sitemap.xml e o llms.txt são escritos à mão. Artigo novo precisa entrar nos dois, senão o Google
 // e as IAs demoram a achar. Os testes do próprio Frontend ficam em Frontend/test (Vitest) e Frontend/e2e.
+// Toda página pré-renderizada, menos a home, entra com a barra no fim (/precos/): no Render, /precos
+// sem a barra devolve a casca do app (caminhoPublico, em Frontend/src/lib/paginas.js).
 const raiz = new URL('../../Frontend/', import.meta.url);
 // Nos arquivos de public/ o endereço é o marcador; o build troca pelo VITE_SITE_URL (vite.config.js).
 const SITE = '__SITE_URL__';
@@ -30,7 +32,9 @@ test('sitemap.xml tem as páginas de conteúdo, das cidades e todos os artigos',
   const sitemap = await readFile(new URL('public/sitemap.xml', raiz), 'utf8');
   const locs = new Set([...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map(([, loc]) => loc.trim()));
   for (const caminho of [...FIXAS, ...ARTIGOS.map(artigo => artigo.caminho)])
-    assert.ok(locs.has(`${SITE}${caminho}`), `${caminho} falta no sitemap.xml`);
+    assert.ok(locs.has(`${SITE}${caminho}/`), `${caminho}/ falta no sitemap.xml`);
+  for (const loc of locs)
+    if (loc !== `${SITE}/`) assert.match(loc, /\/$/, `${loc} sem a barra no fim no sitemap.xml`);
 });
 
 test('sitemap.xml, robots.txt e llms.txt levam o marcador, sem endereço escrito à mão', async () => {
@@ -46,7 +50,9 @@ test('sitemap.xml, robots.txt e llms.txt levam o marcador, sem endereço escrito
 test('llms.txt cita as páginas de conteúdo, das cidades e todos os artigos', async () => {
   const llms = await readFile(new URL('public/llms.txt', raiz), 'utf8');
   for (const caminho of [...FIXAS, ...ARTIGOS.map(artigo => artigo.caminho)])
-    assert.ok(llms.includes(`(${SITE}${caminho})`), `${caminho} falta no llms.txt`);
+    assert.ok(llms.includes(`(${SITE}${caminho}/)`), `${caminho}/ falta no llms.txt`);
+  for (const [, link] of llms.matchAll(/\((__SITE_URL__[^)]*)\)/g))
+    if (link !== `${SITE}/`) assert.match(link, /\/$/, `${link} sem a barra no fim no llms.txt`);
 });
 
 test('cada artigo tem caminho próprio, na ajuda ou no blog', () => {

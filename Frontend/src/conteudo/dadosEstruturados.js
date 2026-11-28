@@ -1,4 +1,5 @@
 import { urlDoSite } from '../lib/site.js';
+import { urlDaPagina } from '../lib/paginas.js';
 import { textoPuro } from './formato.js';
 
 // JSON-LD (schema.org) das páginas de conteúdo, montado a partir dos mesmos dados da página:
@@ -9,7 +10,7 @@ import { textoPuro } from './formato.js';
 const VERA = {
   '@type': 'Organization',
   name: 'vera.finance',
-  url: urlDoSite('/'),
+  url: urlDaPagina('/'),
   logo: { '@type': 'ImageObject', url: urlDoSite('/icons/icon-512.png') }
 };
 
@@ -20,7 +21,7 @@ export const trilhaEstruturada = itens => ({
     '@type': 'ListItem',
     position: i + 1,
     name: rotulo,
-    item: urlDoSite(caminho)
+    item: urlDaPagina(caminho)
   }))
 });
 
@@ -41,7 +42,7 @@ function textoDoArtigo(artigo) {
  * Vai num @graph junto com a trilha (BreadcrumbList).
  */
 export function artigoEstruturado(artigo, trilha) {
-  const url = urlDoSite(artigo.caminho);
+  const url = urlDaPagina(artigo.caminho);
   const comum = {
     name: artigo.titulo,
     description: artigo.descricao,
@@ -102,14 +103,14 @@ export function secaoEstruturada({ caminho, nome, descricao, artigos, blog }, tr
     '@type': blog ? 'BlogPosting' : artigo.tipo,
     headline: artigo.titulo,
     name: artigo.titulo,
-    url: urlDoSite(artigo.caminho),
+    url: urlDaPagina(artigo.caminho),
     ...(blog ? { datePublished: artigo.publicadoEm, author: VERA } : {})
   }));
   const pagina = {
     '@type': blog ? 'Blog' : 'CollectionPage',
     name: nome,
     description: descricao,
-    url: urlDoSite(caminho),
+    url: urlDaPagina(caminho),
     inLanguage: 'pt-BR',
     publisher: VERA,
     ...(blog ? { blogPost: partes } : { hasPart: partes })

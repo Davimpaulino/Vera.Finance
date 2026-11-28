@@ -2,7 +2,7 @@
 // endereço atual do site no Render (o Static Site, não a API). O mesmo padrão está em
 // Backend/src/config/site.js (o teste confere). Usado também pelo vite.config.js, que troca
 // __SITE_URL__ no index.html e em public/ (sitemap.xml, robots.txt, llms.txt), e pelo IndexNow.
-export const SITE_PADRAO = 'https://vera-finance-ckfn.onrender.com';
+export const SITE_PADRAO = 'https://vera-finance-vlto.onrender.com';
 // O "?." deixa este arquivo rodar também no Node (testes da API e do conteúdo), sem o Vite.
 export const SITE_URL = (import.meta.env?.VITE_SITE_URL || SITE_PADRAO).replace(/\/$/, '');
 

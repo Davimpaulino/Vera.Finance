@@ -30,7 +30,7 @@ test('a aba aberta antes do deploy recarrega e abre a tela Entrar', async ({ pag
   await entrarNoMenu(page).click();
   await recarregou;
 
-  await expect(page).toHaveURL(/\/entrar$/);
+  await expect(page).toHaveURL(/\/entrar\/$/);
   // O segundo pedido é o da página recarregada, que já recebeu o arquivo de verdade.
   await expect.poll(() => pedidos.total).toBe(2);
   await expect(page.getByRole('heading', { level: 1, name: 'Entrar' })).toBeVisible();

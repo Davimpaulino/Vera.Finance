@@ -14,7 +14,7 @@
 //   npm run migrar:postgres -- --origem-firebase                  (lê do Firebase e grava)
 // Opções: --lote=500 (caminhos por transação) e --continuar (aceita banco de destino com dados).
 import { readFileSync } from 'node:fs';
-import { pathToFileURL } from 'node:url';
+import { rodouDireto } from '../src/utils/execucao.js';
 import { localizar } from '../src/config/bancoPostgres.js';
 import { podar, vazio } from '../src/config/caminhos.js';
 import { resumoDaChaveDaNota } from '../src/utils/resumoDaNota.js';
@@ -269,7 +269,7 @@ export async function principal(argumentos) {
   }
 }
 
-if (import.meta.url === pathToFileURL(process.argv[1] || '').href)
+if (rodouDireto(import.meta.url))
   principal(process.argv.slice(2))
     .then(codigo => (process.exitCode = codigo))
     .catch(erro => {

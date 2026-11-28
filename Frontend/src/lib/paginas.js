@@ -49,6 +49,34 @@ export const PAGINAS = {
 // junto, pelo entry-server (ROTAS_PRE_RENDERIZADAS).
 export const ROTAS_PUBLICAS = Object.keys(PAGINAS);
 
+// Artigo da ajuda ou do blog: /ajuda/<slug> ou /blog/<slug> (o slug segue a regra de
+// problemasDoConteudo). Vale pela forma, não pela lista: no navegador os artigos só chegam com o
+// pedaço do conteúdo, e o link tem de sair igual no HTML do build e no navegador.
+const CAMINHO_DE_ARTIGO = /^\/(ajuda|blog)\/[a-z0-9]+(-[a-z0-9]+)*$/;
+
+/** O caminho (sem barra no fim) tem HTML pronto no build, em dist/<caminho>/index.html? */
+export const ehPreRenderizada = caminho =>
+  caminho !== '/' && (Object.hasOwn(PAGINAS, caminho) || CAMINHO_DE_ARTIGO.test(caminho));
+
+/**
+ * Forma pública de um endereço interno: as páginas pré-renderizadas (menos a home) ganham "/" no
+ * fim, com a busca e o "#" preservados. O Render só serve dist/precos/index.html para /precos/;
+ * /precos cai no rewrite e devolve a casca do app (dist/app.html), que buscadores leem como
+ * página vazia. Canonical, og:url, JSON-LD, links e navegação passam todos por aqui. O resto
+ * (/app, /cadastro/perguntas, endereço de fora) volta como veio.
+ */
+export function caminhoPublico(endereco) {
+  if (typeof endereco !== 'string' || !endereco.startsWith('/') || endereco.startsWith('//'))
+    return endereco;
+  const corte = endereco.search(/[?#]/);
+  const caminho = corte === -1 ? endereco : endereco.slice(0, corte);
+  const resto = corte === -1 ? '' : endereco.slice(corte);
+  return ehPreRenderizada(caminho) ? `${caminho}/${resto}` : endereco;
+}
+
+/** Link absoluto de uma página do site, na forma pública (canonical, og:url, JSON-LD, sitemap). */
+export const urlDaPagina = (caminho = '/') => urlDoSite(caminhoPublico(caminho));
+
 // Artigos da ajuda e do blog: caminho → [título, descrição].
 const ARTIGOS_REGISTRADOS = new Map();
 
@@ -71,8 +99,9 @@ export function metaDaPagina(caminho) {
   return {
     titulo,
     descricao,
-    // Canonical sempre no endereço público, mesmo abrindo por outro domínio.
-    canonical: urlDoSite(caminho),
+    // Canonical sempre no endereço público, mesmo abrindo por outro domínio, e com a barra no
+    // fim nas páginas pré-renderizadas (caminhoPublico).
+    canonical: urlDaPagina(caminho),
     robots: privada ? 'noindex, nofollow' : 'index, follow',
     ...(artigo ? { tipo: 'article' } : {})
   };

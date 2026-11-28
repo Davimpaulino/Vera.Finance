@@ -24,25 +24,45 @@ const MAPA_DE_CAMPINAS = {
 };
 
 const consultas = [];
+// Centro e raio (km) da consulta: o script pede o retângulo em volta do círculo, com 150 m de folga.
+const daCaixa = consulta => {
+  const [sul, , norte] = consulta.match(/\((-?[\d.]+),(-?[\d.]+),(-?[\d.]+),(-?[\d.]+)\)/).slice(1).map(Number);
+  return { lat: (sul + norte) / 2, raio: Math.round((((norte - sul) / 2) * 111320 - 150) / 1000) };
+};
+const perto = (lat, centro) => Math.abs(lat - centro.lat) < 0.01;
 globalThis.fetch = async (endereco, opcoes = {}) => {
   const url = new URL(String(endereco));
   consultas.push(url.hostname);
   const json = (corpo, status = 200) => ({ ok: status < 400, status, json: async () => corpo });
+  assert.match(opcoes.headers['User-Agent'], /github\.com\/Davimpaulino\/Vera\.Finance/);
   if (url.hostname === 'nominatim.openstreetmap.org') {
     const lugar = Object.keys(CENTROS).find(nome => url.searchParams.get('q').startsWith(nome));
     return json(lugar ? [{ lat: String(CENTROS[lugar].lat), lon: String(CENTROS[lugar].lng) }] : []);
   }
   if (url.pathname.endsWith('/interpreter')) {
     const consulta = decodeURIComponent(String(opcoes.body));
-    assert.match(consulta, /around:15150,/, 'raio de 15 km');
-    // Recife: o mapa não responde.
-    if (consulta.includes('-8.048')) return json({}, 500);
+    // A consulta do script: retângulo, uma busca só, com teto de tempo e de memória.
+    assert.match(consulta, /^data=\[out:json\]\[timeout:90\]\[maxsize:134217728\];nwr\["shop"~"\^\(supermarket\|wholesale\)\$"\]\(/);
+    assert.match(consulta, /out center tags qt;$/);
+    assert.doesNotMatch(consulta, /around:/);
+    const { lat, raio } = daCaixa(consulta);
+    // Recife: o mapa não responde em raio nenhum.
+    if (perto(lat, CENTROS.Recife)) return json({}, 500);
+    // Manaus: 15 km dá 504, 10 km estoura o tempo do Overpass (200 com "remark"), 5 km responde.
+    if (perto(lat, CENTROS.Manaus)) {
+      if (raio === 15) return json({}, 504);
+      if (raio === 10)
+        return json({ elements: [], remark: 'runtime error: Query timed out in "query" at line 1 after 91 seconds.' });
+      assert.equal(raio, 5);
+      return json({ elements: [{ type: 'node', id: 9, lat: -3.12, lon: -60.02, tags: { shop: 'supermarket', name: 'Atacadão' } }] });
+    }
+    assert.equal(raio, 15, 'Campinas responde já nos 15 km');
     return json(MAPA_DE_CAMPINAS);
   }
   throw new Error(`fetch inesperado: ${url}`);
 };
 
-const { CIDADES, principal, slugDaCidade, semLevantamento, hojeNoBrasil } = await import(
+const { CIDADES, RAIOS_KM, principal, slugDaCidade, semLevantamento, hojeNoBrasil } = await import(
   '../scripts/cobertura-das-cidades.mjs'
 );
 const { banco } = await import('../src/config/banco.js');
@@ -56,12 +76,12 @@ const DE_TESTE = [
   { slug: 'porto-alegre-rs', nome: 'Porto Alegre', uf: 'RS' }
 ];
 
-const rodar = async (argumentos, arquivo) => {
+const rodar = async (argumentos, arquivo, cidades = DE_TESTE) => {
   const saida = [];
   const avisos = [];
   const codigo = await principal(argumentos, {
     arquivo,
-    cidades: DE_TESTE,
+    cidades,
     hoje: '2026-11-28',
     escrever: linha => saida.push(linha),
     avisar: linha => avisos.push(linha)
@@ -111,12 +131,35 @@ test('levanta as redes com preço online a até 15 km e, se o mapa falha, manté
   assert.deepEqual(recife, anteriorDoRecife);
   // O Nominatim não achou e não havia nada antes: a cidade fica sem levantamento, sem lista.
   assert.deepEqual(portoAlegre, semLevantamento(DE_TESTE[2]));
-  assert.match(avisos.join('\n'), /Recife \(PE\): o mapa de mercados não respondeu\. Ficou o levantamento de 2026-10-01/);
+  assert.match(
+    avisos.join('\n'),
+    /Recife \(PE\): o mapa de mercados não respondeu \(tentei 15, 10, 5 km\)\. Ficou o levantamento de 2026-10-01/
+  );
+  // Cada tentativa sai numa linha: servidor, status e tempo, em cada raio.
+  for (const raio of [15, 10, 5])
+    assert.match(avisos.join('\n'), new RegExp(`Recife \\(PE\\), ${raio} km: overpass-api\\.de: HTTP 500 em \\d+,\\d s`));
+  assert.match(avisos.join('\n'), /Recife \(PE\), 15 km: overpass\.kumi\.systems: HTTP 500/);
   assert.match(avisos.join('\n'), /Porto Alegre \(RS\): o mapa não achou o centro da cidade\. Ficou sem levantamento/);
   // Sem coordenadas nem endereço de loja no JSON do site.
   assert.ok(!/"lat"|"lng"|endereco/.test(JSON.stringify(json)));
   // Nada no banco: nem a região do mapa.
   assert.equal(await banco.ler('regioes'), null);
+});
+
+test('se 15 km falha, tenta 10 e 5 km e grava o raio usado', async () => {
+  const arquivo = join(pasta, 'manaus.json');
+  const manaus = [{ slug: 'manaus-am', nome: 'Manaus', uf: 'AM' }];
+  const { codigo, json, avisos, saida } = await rodar([], arquivo, manaus);
+  assert.equal(codigo, 0);
+  assert.equal(json[0].raioKm, 5);
+  assert.deepEqual(json[0].redes, [
+    { id: 'atacadao', nome: 'Atacadão', tipo: 'atacado', lojas: 1, distanciaKm: 0.2 }
+  ]);
+  assert.match(saida.join('\n'), /Manaus \(AM\): 1 rede com preço online, 1 mercado no mapa a até 5 km do centro/);
+  const log = avisos.join('\n');
+  assert.match(log, /Manaus \(AM\), 15 km: overpass-api\.de: HTTP 504/);
+  assert.match(log, /Manaus \(AM\), 10 km: overpass-api\.de: runtime error: Query timed out/);
+  assert.match(log, /Manaus \(AM\), 5 km: overpass-api\.de: 1 mercado em \d+,\d s/);
 });
 
 test('--cidades levanta só as escolhidas e deixa as outras como estavam', async () => {
@@ -142,7 +185,7 @@ test('o cidades.json do site tem as 12 cidades da lista, e lista só com levanta
     CIDADES
   );
   for (const cidade of doSite) {
-    assert.equal(cidade.raioKm, 15, cidade.slug);
+    assert.ok(RAIOS_KM.includes(cidade.raioKm), `${cidade.slug}: raio ${cidade.raioKm}`);
     if (cidade.redes === null) {
       assert.equal(cidade.levantadoEm, null, `${cidade.slug}: data sem levantamento`);
       assert.equal(cidade.totalMercados, null, `${cidade.slug}: total sem levantamento`);

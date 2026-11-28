@@ -24,12 +24,12 @@ describe('endereço do site', () => {
     vi.stubEnv('VITE_SITE_URL', '');
     vi.resetModules();
     const site = await import('../src/lib/site.js');
-    expect(site.SITE_URL).toBe('https://vera-finance-ckfn.onrender.com');
+    expect(site.SITE_URL).toBe('https://vera-finance-vlto.onrender.com');
   });
 
   it('o padrão é o mesmo na API (SITE_URL) e nunca o endereço da API', () => {
     expect(SITE_PADRAO_DA_API).toBe(SITE_PADRAO);
-    expect(SITE_PADRAO).not.toBe('https://vera-finance.onrender.com');
+    expect(SITE_PADRAO).not.toBe('https://vera-finance-api.onrender.com');
   });
 
   it('urlDoSite monta o link absoluto com uma barra só', () => {

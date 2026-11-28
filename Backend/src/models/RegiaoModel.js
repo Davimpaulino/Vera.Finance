@@ -1,5 +1,5 @@
 import { banco } from '../config/banco.js';
-import { GeoModel } from './GeoModel.js';
+import { GeoModel, IDENTIFICACAO } from './GeoModel.js';
 import { RedeModel } from './RedeModel.js';
 
 // Mercados de verdade perto de um ponto, pelo OpenStreetMap (API Overpass, gratuita).
@@ -71,28 +71,87 @@ function paraMercado(elemento) {
   };
 }
 
-async function consultar(origem, raioKm) {
+// Padrão do app: o pedido ao mapa espera até 25 s, e a consulta pede ao Overpass o mesmo teto.
+const ESPERA_PADRAO_MS = 25000;
+const METROS_POR_GRAU = 111320;
+
+/**
+ * Consulta Overpass dos supermercados e atacados a até `raioKm` do ponto (com 150 m de folga).
+ * `forma: 'circulo'` (o app) usa (around:...). `forma: 'caixa'` (o script das cidades) pede o
+ * retângulo em volta do mesmo círculo: o Overpass só confere o índice, sem medir a distância de
+ * cada rua, e pesa menos numa capital. Vem um pouco mais (os cantos), mas mercadosPerto confere a
+ * distância de cada mercado ao ponto do mesmo jeito, então o resultado é o mesmo.
+ * `timeoutS` e `maxsize` (bytes) vão na própria consulta: o servidor aceita mais fácil uma
+ * consulta que pede menos memória que o padrão dele (512 MiB).
+ */
+export function consultaDosMercados(origem, raioKm, { forma = 'circulo', timeoutS = 25, maxsize = null } = {}) {
   // O ponto vai arredondado (~100 m): o mapa não precisa do endereço exato de quem pergunta.
-  const lat = Number(origem.lat).toFixed(3);
-  const lng = Number(origem.lng).toFixed(3);
-  const perto = `(around:${Math.round(raioKm * 1000) + 150},${lat},${lng})`;
-  const consulta = `[out:json][timeout:25];(nwr[shop=supermarket]${perto};nwr[shop=wholesale]${perto};);out center tags;`;
+  const lat = Number(Number(origem.lat).toFixed(3));
+  const lng = Number(Number(origem.lng).toFixed(3));
+  const metros = Math.round(raioKm * 1000) + 150;
+  let area;
+  if (forma === 'caixa') {
+    const dLat = metros / METROS_POR_GRAU;
+    const dLng = metros / (METROS_POR_GRAU * Math.cos((lat * Math.PI) / 180));
+    const borda = valor => valor.toFixed(4);
+    area = `(${borda(lat - dLat)},${borda(lng - dLng)},${borda(lat + dLat)},${borda(lng + dLng)})`;
+  } else area = `(around:${metros},${lat.toFixed(3)},${lng.toFixed(3)})`;
+  const limites = `[timeout:${timeoutS}]${maxsize ? `[maxsize:${maxsize}]` : ''}`;
+  if (forma === 'caixa')
+    return `[out:json]${limites};nwr["shop"~"^(supermarket|wholesale)$"]${area};out center tags qt;`;
+  return `[out:json]${limites};(nwr[shop=supermarket]${area};nwr[shop=wholesale]${area};);out center tags;`;
+}
+
+const segundos = ms => `${(ms / 1000).toFixed(1).replace('.', ',')} s`;
+
+/**
+ * Pergunta ao mapa, servidor por servidor. Devolve a lista ou null se nenhum respondeu.
+ * `registrar(texto)` recebe uma linha por tentativa (servidor, status HTTP ou erro, tempo); o
+ * app não passa nada e não registra. `esperaMs` é quanto cada pedido espera a resposta.
+ */
+async function consultar(origem, raioKm, { esperaMs = ESPERA_PADRAO_MS, consulta = {}, registrar } = {}) {
+  const texto = consultaDosMercados(origem, raioKm, consulta);
+  const anotar = linha => {
+    try {
+      registrar?.(linha);
+    } catch {
+      // Quem registra não pode derrubar a consulta.
+    }
+  };
   for (const servidor of [...SERVIDORES, SERVIDORES[0]]) {
+    const nome = new URL(servidor).hostname;
+    const inicio = Date.now();
     try {
       const resposta = await fetch(servidor, {
         method: 'POST',
         headers: {
-          'User-Agent': 'vera.finance/1.0 (https://github.com/veragroupia/vera-finances)',
+          'User-Agent': IDENTIFICACAO,
           'Content-Type': 'application/x-www-form-urlencoded'
         },
-        body: `data=${encodeURIComponent(consulta)}`,
-        signal: AbortSignal.timeout(25000)
+        body: `data=${encodeURIComponent(texto)}`,
+        signal: AbortSignal.timeout(esperaMs)
       });
-      if (resposta.status === 429) await esperar(1500);
-      if (!resposta.ok) continue;
+      if (!resposta.ok) {
+        anotar(`${nome}: HTTP ${resposta.status} em ${segundos(Date.now() - inicio)}`);
+        if (resposta.status === 429) await esperar(1500);
+        continue;
+      }
       const dados = await resposta.json();
-      return (dados.elements || []).map(paraMercado).filter(Boolean);
-    } catch {
+      // Com [out:json], estouro de tempo ou de memória no Overpass volta 200 com um "remark" e a
+      // lista pela metade: conta como falha, para não guardar uma região vazia por 7 dias.
+      if (/runtime error/i.test(dados.remark || '')) {
+        anotar(`${nome}: ${dados.remark} (${segundos(Date.now() - inicio)})`);
+        continue;
+      }
+      const lista = (dados.elements || []).map(paraMercado).filter(Boolean);
+      anotar(
+        `${nome}: ${lista.length} ${lista.length === 1 ? 'mercado' : 'mercados'} em ${segundos(Date.now() - inicio)}`
+      );
+      return lista;
+    } catch (erro) {
+      const motivo =
+        erro?.name === 'TimeoutError' ? `sem resposta em ${segundos(esperaMs)}` : erro?.message || String(erro);
+      anotar(`${nome}: ${motivo}`);
       continue;
     }
   }
@@ -107,8 +166,12 @@ export const RegiaoModel = {
    * `guardar: false` (o verificador público de CEP, que qualquer um chama sem login) usa o que já
    * estiver guardado, mas o que vier do mapa não é gravado no banco nem fica na memória: pedido
    * anônimo não faz o banco nem a memória crescerem.
+   *
+   * `registrar`, `esperaMs` e `consulta` são do script das cidades (scripts/cobertura-das-cidades.mjs):
+   * uma linha por tentativa no console, mais tempo de espera e a consulta mais leve (veja
+   * consultaDosMercados). O app não passa nenhum dos três.
    */
-  async mercadosPerto(origem, raioKm, { guardar = true } = {}) {
+  async mercadosPerto(origem, raioKm, { guardar = true, ...mapa } = {}) {
     if (!GeoModel.temCoordenadas(origem)) return [];
     // Raio em km inteiros: 5 e 5,0001 são a mesma região (e a mesma consulta ao mapa).
     const raio = Math.min(RAIO_MAXIMO_KM, Math.max(1, Math.round(Number(raioKm) || 5)));
@@ -120,7 +183,7 @@ export const RegiaoModel = {
       // quem guarda (dá o mesmo resultado); o contrário não, para a região não deixar de ser gravada.
       let carga = emAndamento.get(chave) || emAndamento.get(chaveDaCarga);
       if (!carga) {
-        carga = this.carregar(chave, origem, raio, { guardar }).finally(() =>
+        carga = this.carregar(chave, origem, raio, { guardar, ...mapa }).finally(() =>
           emAndamento.delete(chaveDaCarga)
         );
         emAndamento.set(chaveDaCarga, carga);
@@ -135,13 +198,13 @@ export const RegiaoModel = {
   },
 
   // Uma consulta por região de cada vez: pedidos ao mesmo tempo esperam a mesma resposta.
-  async carregar(chave, origem, raio, { guardar = true } = {}) {
+  async carregar(chave, origem, raio, { guardar = true, ...mapa } = {}) {
     const salvo = await banco.ler(`regioes/${chave}`).catch(() => null);
     let mercados;
     if (salvo && Date.now() - new Date(salvo.em).getTime() < VALIDADE_MS) {
       mercados = { em: new Date(salvo.em).getTime(), lista: Object.values(salvo.lista || {}) };
     } else {
-      const lista = await consultar(origem, raio);
+      const lista = await consultar(origem, raio, mapa);
       if (!lista) return null;
       mercados = { em: Date.now(), lista };
       if (guardar)

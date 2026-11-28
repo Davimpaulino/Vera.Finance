@@ -1,20 +1,22 @@
 // Páginas do site: não baixam o Firebase, a home só baixa as imagens do tema, e passam no axe.
 import { expect, test, usarTema, violacoesWcag } from './apoio.js';
 
+// Com a barra no fim, como nos links do site: no Render (e no npm run preview) /precos/ abre o
+// HTML pronto e /precos passa pela casca do app (veja barra-no-fim.spec.js).
 const DO_SITE = [
   '/',
-  '/precos',
-  '/perguntas',
-  '/onde-funciona',
-  '/onde-funciona/sao-paulo-sp',
-  '/ajuda',
-  '/ajuda/ler-nota-fiscal',
-  '/blog',
-  '/blog/qr-code-da-nota-fiscal-nfc-e',
-  '/termos',
-  '/privacidade'
+  '/precos/',
+  '/perguntas/',
+  '/onde-funciona/',
+  '/onde-funciona/sao-paulo-sp/',
+  '/ajuda/',
+  '/ajuda/ler-nota-fiscal/',
+  '/blog/',
+  '/blog/qr-code-da-nota-fiscal-nfc-e/',
+  '/termos/',
+  '/privacidade/'
 ];
-const PUBLICAS = [...DO_SITE, '/entrar', '/cadastro'];
+const PUBLICAS = [...DO_SITE, '/entrar/', '/cadastro/'];
 const PEDACO_DO_FIREBASE = /\/assets\/firebase-[\w-]+\.js$/;
 
 /** Abre a página e devolve os endereços pedidos e quantos bytes chegaram do próprio site. */
@@ -55,7 +57,7 @@ test.describe('desempenho', () => {
   });
 
   test('a tela Entrar baixa o Firebase (o login precisa dele)', async ({ page }) => {
-    const { pedidos } = await abrir(page, '/entrar');
+    const { pedidos } = await abrir(page, '/entrar/');
     await expect(page.getByRole('heading', { level: 1, name: 'Entrar' })).toBeVisible();
     await expect.poll(() => pedidos.some(url => PEDACO_DO_FIREBASE.test(url))).toBe(true);
   });
@@ -113,7 +115,7 @@ test.describe('acessibilidade (WCAG 2.1 AA)', () => {
     });
 
   test('o primeiro Tab mostra "Pular para o conteúdo" e leva ao conteúdo', async ({ page }) => {
-    await page.goto('/precos', { waitUntil: 'networkidle' });
+    await page.goto('/precos/', { waitUntil: 'networkidle' });
     await page.keyboard.press('Tab');
     const pular = page.getByRole('link', { name: 'Pular para o conteúdo' });
     await expect(pular).toBeFocused();
@@ -123,7 +125,7 @@ test.describe('acessibilidade (WCAG 2.1 AA)', () => {
   });
 
   test('o foco do teclado aparece no link e no botão', async ({ page }) => {
-    await page.goto('/entrar', { waitUntil: 'networkidle' });
+    await page.goto('/entrar/', { waitUntil: 'networkidle' });
     const contorno = () =>
       page.evaluate(() => {
         const estilo = getComputedStyle(document.activeElement);

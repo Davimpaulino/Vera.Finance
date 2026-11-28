@@ -15,7 +15,7 @@
 //
 // O retrato guarda só os uids das contas e os pedidos de exclusão (uid e data), sem e-mail nem nome.
 import { readFileSync, writeFileSync } from 'node:fs';
-import { pathToFileURL } from 'node:url';
+import { rodouDireto } from '../src/utils/execucao.js';
 import { banco, autenticacaoFirebase, modoBanco } from '../src/config/banco.js';
 import { configuracao } from '../src/config/env.js';
 import { ExclusaoModel } from '../src/models/ExclusaoModel.js';
@@ -186,7 +186,7 @@ async function principal() {
   process.exit(0);
 }
 
-if (import.meta.url === pathToFileURL(process.argv[1] || '').href)
+if (rodouDireto(import.meta.url))
   principal().catch(erro => {
     console.error(erro.message);
     process.exit(1);

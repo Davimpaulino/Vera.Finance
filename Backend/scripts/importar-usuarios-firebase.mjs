@@ -7,7 +7,7 @@
 //
 // A simulação só lê e confere; nada é gravado. Quem já existe no Firebase (mesmo uid ou
 // mesmo e-mail) é pulado, para não sobrescrever uma conta que já entra pelo Firebase.
-import { pathToFileURL } from 'node:url';
+import { rodouDireto } from '../src/utils/execucao.js';
 
 // Parâmetros do scrypt usados em CredencialModel (scryptSync do Node com as opções padrão).
 export const OPCOES_DO_HASH = {
@@ -134,4 +134,4 @@ async function principal() {
   process.exit(relatorio.falhas.length ? 1 : 0);
 }
 
-if (import.meta.url === pathToFileURL(process.argv[1] || '').href) principal();
+if (rodouDireto(import.meta.url)) principal();

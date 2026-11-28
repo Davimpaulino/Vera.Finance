@@ -1,5 +1,7 @@
 # Blueprint do Render: a API (Web Service) e o site (Static Site) deste repositório.
-# Como usar: Render → New → Blueprint → escolha este repositório. Veja "Deploy no Render" no readme.
+# Os serviços de produção foram criados à mão no painel, não por este arquivo. Aplicar o Blueprint
+# agora (Render → New → Blueprint) criaria serviços duplicados. Ele fica como referência da
+# configuração e para recriar tudo do zero. Veja "Deploy no Render" no readme.
 # As variáveis com sync: false o Render pede na criação e nunca saem do painel. Nunca ponha um
 # valor real neste arquivo: o repositório é público.
 services:
@@ -12,9 +14,9 @@ services:
     startCommand: npm start
     healthCheckPath: /api/saude
     plan: free
-    # Sem region, o Render cria em oregon. Não há região no Brasil; a escolha fica com o time e
-    # não muda depois de criado (veja o readme, "Região").
-    # region: virginia
+    # A mais perto do banco (Neon, sa-east-1). Não há região no Brasil e ela não muda depois de
+    # criado o serviço (veja o readme, "Região"). O site estático não tem região (CDN global).
+    region: virginia
     autoDeployTrigger: commit
     envVars:
       - key: NODE_VERSION
@@ -37,7 +39,7 @@ services:
 
   # Site: estático, pasta Frontend. O build grava o HTML pré-renderizado em dist/.
   - type: web
-    name: vera-finance-site
+    name: vera-finance
     runtime: static
     rootDir: Frontend
     buildCommand: npm ci && npm run build

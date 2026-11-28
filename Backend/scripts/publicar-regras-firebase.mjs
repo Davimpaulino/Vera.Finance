@@ -16,7 +16,7 @@
 // não conferir, para o job aparecer como falho no Render.
 import { readFile } from 'node:fs/promises';
 import { isDeepStrictEqual } from 'node:util';
-import { pathToFileURL } from 'node:url';
+import { rodouDireto } from '../src/utils/execucao.js';
 
 export const ARQUIVO_PADRAO = new URL('../../database.rules.json', import.meta.url);
 const NOME_DO_APP = 'publicar-regras';
@@ -240,7 +240,7 @@ export async function executar({
   return conferem && leituraOk ? 0 : 1;
 }
 
-if (import.meta.url === pathToFileURL(process.argv[1] || '').href)
+if (rodouDireto(import.meta.url))
   executar()
     .then(codigo => process.exit(codigo))
     .catch(erro => {

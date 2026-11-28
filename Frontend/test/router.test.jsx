@@ -59,7 +59,8 @@ describe('RouterProvider', () => {
     const antes = window.history.length;
     fireEvent.click(screen.getByText('ir para /precos'));
     expect(caminho()).toBe('/precos');
-    expect(window.location.pathname).toBe('/precos');
+    // Página pré-renderizada: o endereço ganha a barra no fim (caminhoPublico).
+    expect(window.location.pathname).toBe('/precos/');
     expect(window.history.length).toBe(antes + 1);
 
     fireEvent.click(screen.getByText('ir para /termos'));
@@ -102,7 +103,7 @@ describe('Link', () => {
       </RouterProvider>
     );
     const link = screen.getByRole('link', { name: 'Criar conta' });
-    expect(link).toHaveAttribute('href', '/cadastro');
+    expect(link).toHaveAttribute('href', '/cadastro/');
     const evento = new MouseEvent('click', { bubbles: true, cancelable: true, button: 0 });
     act(() => {
       link.dispatchEvent(evento);
@@ -163,7 +164,7 @@ describe('Redirect', () => {
       </RouterProvider>
     );
     expect(caminho()).toBe('/entrar');
-    expect(window.location.pathname).toBe('/entrar');
+    expect(window.location.pathname).toBe('/entrar/');
     expect(window.history.length).toBe(antes);
   });
 });

@@ -1,6 +1,7 @@
 import { SiteLayout } from '../../components/site/SiteLayout.jsx';
 import { Link } from '../../lib/router.jsx';
-import { EMAIL_DE_CONTATO, REDES_COM_PRECO, urlDoSite } from '../../lib/site.js';
+import { EMAIL_DE_CONTATO, REDES_COM_PRECO } from '../../lib/site.js';
+import { urlDaPagina } from '../../lib/paginas.js';
 import './css/perguntas.css';
 
 // Respostas tiradas do que o app faz hoje (planos em Backend/src/models/PlanoModel.js,
@@ -79,7 +80,7 @@ export const PERGUNTAS = [
 const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'FAQPage',
-  url: urlDoSite('/perguntas'),
+  url: urlDaPagina('/perguntas'),
   inLanguage: 'pt-BR',
   mainEntity: PERGUNTAS.map(({ pergunta, resposta }) => ({
     '@type': 'Question',
